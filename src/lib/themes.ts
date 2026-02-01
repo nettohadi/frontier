@@ -3,13 +3,13 @@ import type { Theme } from '@prisma/client';
 
 /**
  * Get the next theme for video generation using sequential rotation.
- * Goes through themes in order of creation (oldest first), cycling back to the start.
+ * Goes through themes alphabetically by name, cycling back to the start.
  */
 export async function getNextTheme(): Promise<Theme> {
-  // Get all active themes ordered by creation date
+  // Get all active themes ordered alphabetically (matches UI display order)
   const allThemes = await prisma.theme.findMany({
     where: { isActive: true },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { name: 'asc' },
   });
 
   if (allThemes.length === 0) {

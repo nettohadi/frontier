@@ -34,7 +34,7 @@ GAYA FOTO REALISTIK - SANGAT PENTING:
 - Grain film subtle untuk kesan cinematic
 
 WARNA & PENCAHAYAAN - SANGAT PENTING:
-- WAJIB menggunakan latar belakang GELAP (dark background)
+- WAJIB menggunakan latar belakang GELAP seperti sore hari, subuh, dan malam (dark background)
 - Hindari latar terang atau putih - JANGAN gunakan siang hari yang terang
 - Waktu terbaik: malam hari, senja (twilight), blue hour, golden hour gelap, atau subuh
 - Warna dominan: deep blue, dark purple, midnight black, dark teal, deep indigo
