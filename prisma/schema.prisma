@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VideoStatus {
+  PENDING
+  GENERATING_SCRIPT
+  GENERATING_IMAGE_PROMPTS
+  GENERATING_IMAGES
+  GENERATING_AUDIO
+  GENERATING_SRT
+  RENDERING
+  COMPLETED
+  FAILED
+}
+
+enum RenderMode {
+  BACKGROUND_VIDEO
+  AI_IMAGES
+}
+
+model Video {
+  id              String       @id @default(uuid())
+
+  // Input
+  topic           String
+  style           String?      @default("educational")
+
+  // Generated content
+  script          String?      @db.Text
+  scriptWordCount Int?
+
+  // File paths (relative to project root)
+  audioPath       String?
+  srtPath         String?
+  outputPath      String?
+
+  // Processing
+  status          VideoStatus  @default(PENDING)
+  errorMessage    String?      @db.Text
+  retryCount      Int          @default(0)
+
+  // Background video relation
+  backgroundId    String?
+  background      BackgroundVideo? @relation(fields: [backgroundId], references: [id])
+
+  // Theme relation (for Hakikat/Sufi style)
+  themeId         String?
+  theme           Theme?       @relation(fields: [themeId], references: [id])
+
+  // Render mode selection
+  renderMode      RenderMode   @default(BACKGROUND_VIDEO)
+
+  // AI Images mode fields
+  imagePrompts    Json?        // [{prompt, timing, description}]
+  imagePaths      String[]     // Generated image paths
+
+  // Overlay used (for AI Images mode)
+  overlayPath     String?
+
+  // Timestamps
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  completedAt     DateTime?
+
+  // Job tracking
+  currentJobId    String?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model BackgroundVideo {
+  id          String   @id @default(uuid())
+  name        String
+  filename    String   @unique
+  durationMs  Int
+  category    String?
+  videos      Video[]
+
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+}
+
+model Theme {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String    @db.Text
+  isActive    Boolean   @default(true)
+  usageCount  Int       @default(0)
+  lastUsedAt  DateTime?
+
+  videos      Video[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive, lastUsedAt])
+}

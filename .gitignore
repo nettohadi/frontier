@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Production
+build/
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated content
+output/
+temp/
+
+# Prisma
+prisma/migrations/**/migration_lock.toml
+
+# Large binary assets (keep structure, exclude files)
+assets/backgrounds/*.mp4
+assets/musics/*.mp3
+assets/overlays/*.mp4
+assets/voices/*.mp3
+bin/
+
+# Keep .gitkeep files
+!assets/backgrounds/.gitkeep
+!assets/musics/.gitkeep
+!assets/overlays/.gitkeep
+!assets/voices/.gitkeep
