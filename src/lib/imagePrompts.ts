@@ -11,6 +11,67 @@ export interface ImagePrompt {
   description: string;
 }
 
+// Color schemes for rotation - ensures variety across videos
+const COLOR_SCHEMES = [
+  {
+    name: 'Crimson Night',
+    colors: 'deep crimson red, dark maroon, blood red accents',
+    lighting: 'warm red firelight, ember glow',
+    mood: 'passionate and intense',
+  },
+  {
+    name: 'Golden Dusk',
+    colors: 'dark amber, burnt orange, golden yellow highlights',
+    lighting: 'sunset glow, warm candlelight',
+    mood: 'warm and hopeful',
+  },
+  {
+    name: 'Midnight Blue',
+    colors: 'deep navy blue, midnight black, silver moonlight',
+    lighting: 'cool moonlight, starlight',
+    mood: 'serene and mysterious',
+  },
+  {
+    name: 'Forest Shadow',
+    colors: 'dark forest green, deep olive, moss green accents',
+    lighting: 'filtered forest light, misty glow',
+    mood: 'natural and grounding',
+  },
+  {
+    name: 'Purple Twilight',
+    colors: 'deep purple, dark violet, magenta highlights',
+    lighting: 'twilight glow, ethereal light',
+    mood: 'mystical and spiritual',
+  },
+  {
+    name: 'Copper Earth',
+    colors: 'dark copper, rust brown, bronze accents',
+    lighting: 'warm lantern light, torch glow',
+    mood: 'earthy and ancient',
+  },
+  {
+    name: 'Wine & Gold',
+    colors: 'deep wine red, burgundy, gold accents',
+    lighting: 'warm ambient light, soft glow',
+    mood: 'rich and contemplative',
+  },
+  {
+    name: 'Teal Ocean',
+    colors: 'dark teal, deep sea green, turquoise highlights',
+    lighting: 'underwater light, bioluminescent glow',
+    mood: 'deep and calming',
+  },
+];
+
+// Track which color scheme was last used (rotates sequentially)
+let colorSchemeIndex = 0;
+
+function getNextColorScheme() {
+  const scheme = COLOR_SCHEMES[colorSchemeIndex];
+  colorSchemeIndex = (colorSchemeIndex + 1) % COLOR_SCHEMES.length;
+  return scheme;
+}
+
 const IMAGE_PROMPT_SYSTEM = `Kamu adalah seorang visual director untuk video spiritual pendek. Tugas kamu adalah membuat 1 prompt untuk generate gambar AI (Flux) yang SANGAT RELEVAN dengan isi narasi spiritual yang diberikan.
 
 INSTRUKSI:
@@ -98,21 +159,32 @@ FORMAT OUTPUT (JSON):
 HANYA output JSON array dengan 1 item, tanpa penjelasan tambahan.`;
 
 /**
- * Generate 3 image prompts from a spiritual script
+ * Generate image prompts from a spiritual script
  * Uses Gemini 2.5 Flash via OpenRouter
+ * Color scheme rotates automatically for variety
  */
 export async function generateImagePrompts(
   script: string,
   themeName: string
 ): Promise<ImagePrompt[]> {
-  console.log(`[ImagePrompts] Generating prompts for theme: ${themeName}`);
+  // Get next color scheme in rotation
+  const colorScheme = getNextColorScheme();
+  console.log(`[ImagePrompts] Generating prompts for theme: ${themeName}, color scheme: ${colorScheme.name}`);
 
   const userPrompt = `Tema: ${themeName}
 
 Narasi spiritual:
 ${script}
 
-Buat 1 prompt gambar AI untuk video ini.`;
+=== SKEMA WARNA YANG HARUS DIGUNAKAN ===
+Nama: ${colorScheme.name}
+Warna dominan: ${colorScheme.colors}
+Pencahayaan: ${colorScheme.lighting}
+Mood: ${colorScheme.mood}
+
+PENTING: Gambar HARUS menggunakan skema warna di atas. Jangan gunakan warna lain sebagai warna dominan.
+
+Buat 1 prompt gambar AI untuk video ini dengan skema warna tersebut.`;
 
   const response = await client.chat.completions.create({
     model: 'google/gemini-2.5-flash',
