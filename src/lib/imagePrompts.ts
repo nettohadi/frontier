@@ -37,8 +37,12 @@ WARNA & PENCAHAYAAN - SANGAT PENTING:
 - WAJIB menggunakan latar belakang GELAP seperti sore hari, subuh, dan malam (dark background)
 - Hindari latar terang atau putih - JANGAN gunakan siang hari yang terang
 - Waktu terbaik: malam hari, senja (twilight), blue hour, golden hour gelap, atau subuh
-- Warna dominan: deep blue, dark purple, midnight black, dark teal, deep indigo
-- Pencahayaan: moonlight, starlight, subtle ambient light, rim lighting
+- VARIASI WARNA (pilih salah satu palette per gambar, JANGAN monoton):
+  * Cool tones: deep blue, dark purple, midnight black, dark teal, deep indigo
+  * Warm tones: deep crimson red, dark amber, burnt orange, dark maroon, rust brown
+  * Earth tones: dark forest green, deep olive, dark bronze, mahogany, dark copper
+  * Mixed: dark magenta, deep wine red, dark gold, burgundy, dark coral
+- Pencahayaan bervariasi: moonlight, firelight, candlelight, sunset glow, ember glow, lantern light
 - Kontras tinggi antara elemen terang (focal point) dan latar gelap
 
 ELEMEN ATMOSFER MISTIS:
@@ -49,12 +53,14 @@ ELEMEN ATMOSFER MISTIS:
 - Refleksi air yang tenang
 - Partikel debu atau embun yang tertangkap cahaya
 
-CONTOH KONEKSI NARASI-VISUAL (Photo Realistic):
-- Narasi tentang "rindu" → photo of silhouette standing alone under starry night sky, moonlight, mist
-- Narasi tentang "cinta Ilahi" → photo of moonbeams breaking through dark clouds, volumetric light
-- Narasi tentang "keheningan" → photo of still lake reflecting stars at night, long exposure
-- Narasi tentang "perjalanan jiwa" → photo of lone figure on misty path at twilight, backlit
-- Narasi tentang "air mata" → photo of rain droplets on window at night, city lights bokeh
+CONTOH KONEKSI NARASI-VISUAL (Photo Realistic dengan variasi warna):
+- Narasi tentang "rindu" → silhouette under deep crimson sunset sky, warm amber glow on horizon
+- Narasi tentang "cinta Ilahi" → golden candlelight in dark temple, warm orange tones, sacred atmosphere
+- Narasi tentang "keheningan" → dark forest with deep green shadows, single ray of warm light
+- Narasi tentang "perjalanan jiwa" → lone figure on path at dusk, deep purple and orange sky gradient
+- Narasi tentang "air mata" → rain on window with warm city lights bokeh, amber and red reflections
+- Narasi tentang "api" → dark embers glowing deep red and orange, dramatic shadows
+- Narasi tentang "harapan" → single lantern in darkness, warm golden light against deep blue night
 
 GAYA VISUAL:
 - Photo realistic, shot on professional camera
@@ -74,10 +80,11 @@ TECHNICAL PHOTOGRAPHY TERMS TO INCLUDE:
 
 ELEMEN YANG HARUS SELALU ADA:
 1. "photo realistic" atau "photographic" dalam prompt
-2. Dark background (night/twilight/dusk)
+2. Dark background (night/twilight/dusk) - TAPI dengan VARIASI WARNA (tidak selalu biru/ungu)
 3. Atmospheric elements (mist, fog, or particles)
-4. High contrast cinematic lighting
+4. High contrast cinematic lighting dengan warna yang bervariasi
 5. Professional camera/photography reference
+6. PENTING: Gunakan warm tones (merah, oranye, amber, emas) sesering cool tones (biru, ungu)
 
 FORMAT OUTPUT (JSON):
 [
