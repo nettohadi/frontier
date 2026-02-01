@@ -22,51 +22,67 @@ ATURAN PENTING:
 - Dalam bahasa Inggris (untuk AI image generator)
 - Format vertikal (portrait 9:16)
 - TIDAK menampilkan wajah manusia atau teks
-- Gaya: artistik, ethereal, spiritual, dreamlike, MYSTICAL
+- Gaya: PHOTO REALISTIC, cinematic, high-quality photography
 - Fokus pada elemen visual yang DISEBUTKAN atau TERSIRAT dalam narasi
+
+GAYA FOTO REALISTIK - SANGAT PENTING:
+- WAJIB menggunakan gaya PHOTO REALISTIC / PHOTOGRAPHIC
+- Seperti hasil foto dari kamera profesional (Sony A7, Canon EOS, Hasselblad)
+- Bukan digital painting, bukan ilustrasi, bukan artistic rendering
+- Detail tajam, tekstur nyata, pencahayaan natural
+- Depth of field yang realistis (bokeh natural)
+- Grain film subtle untuk kesan cinematic
 
 WARNA & PENCAHAYAAN - SANGAT PENTING:
 - WAJIB menggunakan latar belakang GELAP (dark background)
 - Hindari latar terang atau putih - JANGAN gunakan siang hari yang terang
-- Waktu terbaik: malam hari, senja (twilight), blue hour, atau subuh gelap
+- Waktu terbaik: malam hari, senja (twilight), blue hour, golden hour gelap, atau subuh
 - Warna dominan: deep blue, dark purple, midnight black, dark teal, deep indigo
-- Cahaya hanya dari sumber mistis: bulan, bintang, aurora, cahaya ilahi yang lembut
+- Pencahayaan: moonlight, starlight, subtle ambient light, rim lighting
 - Kontras tinggi antara elemen terang (focal point) dan latar gelap
 
-AURA MISTIS - WAJIB ADA:
-- Tambahkan elemen mystical aura: glowing particles, ethereal mist, divine light rays
-- Soft glowing orbs atau floating light particles
-- Subtle aurora atau nebula di langit malam
-- Mystical fog atau kabut yang bercahaya lembut
-- Elemen supernatural: celestial glow, spiritual energy wisps
+ELEMEN ATMOSFER MISTIS:
+- Kabut tipis atau mist yang terlihat natural
+- Cahaya bulan yang menembus awan
+- Bintang-bintang di langit malam
+- Siluet yang dramatis dengan backlight
+- Refleksi air yang tenang
+- Partikel debu atau embun yang tertangkap cahaya
 
-CONTOH KONEKSI NARASI-VISUAL:
-- Narasi tentang "rindu" → silhouette di bawah langit malam berbintang dengan aurora lembut
-- Narasi tentang "cinta Ilahi" → cahaya bulan menembus awan gelap dengan mystical particles
-- Narasi tentang "keheningan" → danau gelap memantulkan bintang dengan kabut bercahaya
-- Narasi tentang "perjalanan jiwa" → siluet di padang malam dengan jalur cahaya mistis
-- Narasi tentang "air mata" → hujan malam dengan butiran air yang bercahaya ethereal
+CONTOH KONEKSI NARASI-VISUAL (Photo Realistic):
+- Narasi tentang "rindu" → photo of silhouette standing alone under starry night sky, moonlight, mist
+- Narasi tentang "cinta Ilahi" → photo of moonbeams breaking through dark clouds, volumetric light
+- Narasi tentang "keheningan" → photo of still lake reflecting stars at night, long exposure
+- Narasi tentang "perjalanan jiwa" → photo of lone figure on misty path at twilight, backlit
+- Narasi tentang "air mata" → photo of rain droplets on window at night, city lights bokeh
 
 GAYA VISUAL:
-- Dark, moody, cinematic atmosphere
-- Mystical and ethereal dengan aura supernatural
+- Photo realistic, shot on professional camera
+- Dark, moody, cinematic photography
+- Natural lighting dengan mood atmospheric
 - Deep shadows dengan highlights yang dramatis
-- Nature elements dalam setting malam: mountains under stars, moonlit water, night forest
-- Symbolic imagery dengan sentuhan otherworldly
-- Fine art photography atau digital painting style
-- Beautiful, artistic, museum-quality composition
+- Nature photography dalam setting low-light
+- Editorial quality, National Geographic style
+- 8K, ultra detailed, sharp focus
+
+TECHNICAL PHOTOGRAPHY TERMS TO INCLUDE:
+- "shot on [camera brand]" atau "professional photography"
+- "cinematic lighting" atau "dramatic lighting"
+- "8K resolution" atau "ultra high detail"
+- "shallow depth of field" atau "bokeh"
+- "low key photography" atau "chiaroscuro"
 
 ELEMEN YANG HARUS SELALU ADA:
-1. Dark background (night/twilight/dusk)
-2. Mystical aura atau glowing elements
-3. Ethereal atmosphere
-4. High contrast lighting
-5. Artistic dan beautiful composition
+1. "photo realistic" atau "photographic" dalam prompt
+2. Dark background (night/twilight/dusk)
+3. Atmospheric elements (mist, fog, or particles)
+4. High contrast cinematic lighting
+5. Professional camera/photography reference
 
 FORMAT OUTPUT (JSON):
 [
   {
-    "prompt": "detailed image prompt in English, MUST include dark background, mystical aura, ethereal atmosphere...",
+    "prompt": "photo realistic, [detailed scene description], dark background, cinematic lighting, shot on Sony A7IV, 8K, atmospheric...",
     "timing": "full",
     "description": "penjelasan singkat bagaimana gambar ini merepresentasikan narasi"
   }

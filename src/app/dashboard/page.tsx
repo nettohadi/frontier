@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Play,
   Download,
@@ -24,7 +24,6 @@ import {
   Lightbulb,
   ImageIcon,
   LayoutGrid,
-  Settings,
   Home,
   ChevronLeft,
   ChevronRight,
@@ -37,6 +36,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -87,12 +92,12 @@ const statusConfig: Record<
   { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' }
 > = {
   PENDING: { label: 'Pending', variant: 'secondary' },
-  GENERATING_SCRIPT: { label: 'Script', variant: 'info' },
-  GENERATING_IMAGE_PROMPTS: { label: 'Prompts', variant: 'info' },
-  GENERATING_IMAGES: { label: 'Images', variant: 'info' },
-  GENERATING_AUDIO: { label: 'Audio', variant: 'info' },
-  GENERATING_SRT: { label: 'Subtitles', variant: 'info' },
-  RENDERING: { label: 'Rendering', variant: 'warning' },
+  GENERATING_SCRIPT: { label: 'Generating Script', variant: 'info' },
+  GENERATING_IMAGE_PROMPTS: { label: 'Creating Prompts', variant: 'info' },
+  GENERATING_IMAGES: { label: 'Generating Images', variant: 'info' },
+  GENERATING_AUDIO: { label: 'Generating Audio', variant: 'info' },
+  GENERATING_SRT: { label: 'Generating Subtitles', variant: 'info' },
+  RENDERING: { label: 'Rendering Video', variant: 'warning' },
   COMPLETED: { label: 'Completed', variant: 'success' },
   FAILED: { label: 'Failed', variant: 'destructive' },
 };
@@ -156,7 +161,9 @@ export default function Dashboard() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+  const [playingVideo, setPlayingVideo] = useState<VideoItem | null>(null);
+  const [inlinePlayingId, setInlinePlayingId] = useState<string | null>(null);
+  const playStartedRef = useRef<string | null>(null);
 
   // Theme management state
   const [themes, setThemes] = useState<Theme[]>([]);
@@ -309,6 +316,34 @@ export default function Dashboard() {
   return (
     <TooltipProvider>
       <div className="flex min-h-screen bg-background">
+        {/* Video Player Modal */}
+        <Dialog open={!!playingVideo} onOpenChange={() => setPlayingVideo(null)}>
+          <DialogContent className="max-w-md p-0 overflow-hidden">
+            <DialogHeader className="p-4 pb-0">
+              <DialogTitle>{playingVideo?.theme?.name || playingVideo?.topic}</DialogTitle>
+            </DialogHeader>
+            <div className="relative aspect-[9/16] bg-black">
+              {playingVideo && (
+                <video
+                  controls
+                  autoPlay
+                  className="h-full w-full"
+                >
+                  <source src={`/api/videos/${playingVideo.id}/stream`} type="video/mp4" />
+                </video>
+              )}
+            </div>
+            <div className="p-4 pt-2 flex gap-2">
+              <Button size="sm" variant="outline" asChild className="flex-1 gap-1">
+                <a href={playingVideo ? `/api/videos/${playingVideo.id}/download` : '#'}>
+                  <Download className="h-4 w-4" />
+                  Download
+                </a>
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Sidebar */}
         <aside
           className={cn(
@@ -431,7 +466,7 @@ export default function Dashboard() {
 
           {/* Page Content */}
           <div className="p-6">
-            {/* Dashboard View */}
+            {/* Dashboard View - List style with pipeline steps */}
             {currentPage === 'dashboard' && (
               <div className="space-y-6">
                 {/* Stats Cards */}
@@ -486,37 +521,139 @@ export default function Dashboard() {
                   </Card>
                 </div>
 
-                {/* Recent Videos */}
+                {/* Video List with Pipeline Steps */}
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Recent Videos</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Video className="h-5 w-5" />
+                      Generated Videos
+                    </CardTitle>
                     <Button variant="ghost" size="sm" onClick={() => setCurrentPage('videos')}>
                       View All
                     </Button>
                   </CardHeader>
                   <CardContent>
                     {loading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                       </div>
                     ) : videos.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
                         <Video className="mb-4 h-12 w-12 text-muted-foreground/50" />
-                        <p className="font-medium">No videos yet</p>
+                        <p className="text-lg font-medium">No videos yet</p>
                         <p className="text-sm text-muted-foreground">
-                          Click "Generate Video" to create your first video
+                          Create your first video above to get started
                         </p>
                       </div>
                     ) : (
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {videos.slice(0, 6).map((video) => (
-                          <VideoCard
+                      <div className="space-y-4">
+                        {videos.map((video) => (
+                          <div
                             key={video.id}
-                            video={video}
-                            playingVideoId={playingVideoId}
-                            setPlayingVideoId={setPlayingVideoId}
-                            formatDate={formatDate}
-                          />
+                            className={cn(
+                              'rounded-lg border p-4 transition-colors',
+                              video.status === 'FAILED' && 'border-red-500/50 bg-red-500/5'
+                            )}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold mb-2 truncate">{video.theme?.name || video.topic}</h3>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge
+                                    variant={statusConfig[video.status]?.variant || 'secondary'}
+                                    className={cn(
+                                      'gap-1',
+                                      isProcessing(video.status) && 'animate-pulse'
+                                    )}
+                                  >
+                                    {isProcessing(video.status) && (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    )}
+                                    {statusConfig[video.status]?.label || video.status}
+                                  </Badge>
+                                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Clock className="h-3 w-3" />
+                                    {formatDate(video.createdAt)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Pipeline Progress with Icons */}
+                            <div className="mt-4 flex items-center gap-1 rounded-lg bg-muted/50 p-3">
+                              {pipelineSteps.map((step, index, arr) => {
+                                const state = getStepState(video, step);
+                                const Icon = step.icon;
+                                return (
+                                  <div key={step.key} className="flex items-center">
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <div
+                                          className={cn(
+                                            'flex flex-col items-center rounded-md px-2 py-1.5 transition-colors',
+                                            state === 'active' &&
+                                              'bg-primary text-primary-foreground animate-pulse',
+                                            state === 'completed' &&
+                                              'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+                                            state === 'pending' && 'text-muted-foreground'
+                                          )}
+                                        >
+                                          {state === 'completed' ? (
+                                            <CheckCircle2 className="h-5 w-5" />
+                                          ) : state === 'active' ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                          ) : (
+                                            <Icon className="h-5 w-5" />
+                                          )}
+                                          <span className="mt-0.5 text-[10px] font-medium">
+                                            {step.label}
+                                          </span>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{step.label}</TooltipContent>
+                                    </Tooltip>
+                                    {index < arr.length - 1 && (
+                                      <div
+                                        className={cn(
+                                          'mx-0.5 h-0.5 w-4 rounded-full',
+                                          state === 'completed' ? 'bg-emerald-500' : 'bg-muted'
+                                        )}
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {/* Error Message */}
+                            {video.errorMessage && (
+                              <div className="mt-3 rounded-lg border border-red-500/50 bg-red-500/10 p-3">
+                                <p className="text-sm text-red-600 dark:text-red-400">
+                                  {video.errorMessage}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Video Actions */}
+                            {video.outputPath && (
+                              <div className="mt-4 flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => setPlayingVideo(video)}
+                                  className="gap-2"
+                                >
+                                  <Play className="h-4 w-4" />
+                                  Play Video
+                                </Button>
+                                <Button size="sm" variant="outline" asChild className="gap-2">
+                                  <a href={`/api/videos/${video.id}/download`}>
+                                    <Download className="h-4 w-4" />
+                                    Download
+                                  </a>
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
                     )}
@@ -525,7 +662,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Videos View */}
+            {/* Videos View - Card grid with 9:16 aspect ratio */}
             {currentPage === 'videos' && (
               <div>
                 {loading ? (
@@ -541,16 +678,129 @@ export default function Dashboard() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {videos.map((video) => (
-                      <VideoCard
-                        key={video.id}
-                        video={video}
-                        playingVideoId={playingVideoId}
-                        setPlayingVideoId={setPlayingVideoId}
-                        formatDate={formatDate}
-                      />
-                    ))}
+                  <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {videos.map((video) => {
+                      const isPlaying = inlinePlayingId === video.id;
+                      return (
+                        <Card
+                          key={video.id}
+                          className={cn(
+                            'overflow-hidden transition-all hover:shadow-lg group',
+                            video.status === 'FAILED' && 'border-red-500/50',
+                            isPlaying && 'ring-2 ring-primary'
+                          )}
+                        >
+                          {/* 9:16 Aspect Ratio Container */}
+                          <div className="relative aspect-[9/16] bg-muted overflow-hidden">
+                            {/* Video Element - plays inline or shows thumbnail */}
+                            {video.outputPath && (
+                              <video
+                                ref={(el) => {
+                                  if (el && isPlaying && playStartedRef.current !== video.id) {
+                                    playStartedRef.current = video.id;
+                                    el.currentTime = 0;
+                                    el.play().catch(() => {});
+                                  }
+                                }}
+                                src={`/api/videos/${video.id}/stream`}
+                                className="absolute inset-0 h-full w-full object-cover"
+                                muted={!isPlaying}
+                                controls={isPlaying}
+                                preload="metadata"
+                                onLoadedMetadata={(e) => {
+                                  const videoEl = e.target as HTMLVideoElement;
+                                  if (!isPlaying) {
+                                    videoEl.currentTime = 1;
+                                  }
+                                }}
+                                onEnded={() => {
+                                  playStartedRef.current = null;
+                                  setInlinePlayingId(null);
+                                }}
+                              />
+                            )}
+
+                            {/* Overlay for play button and processing states - hidden when playing */}
+                            {!isPlaying && (
+                              <div
+                                className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors cursor-pointer"
+                                onClick={() => video.outputPath && setInlinePlayingId(video.id)}
+                              >
+                                {video.outputPath ? (
+                                  <div className="flex flex-col items-center gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50 text-white">
+                                      <Play className="h-7 w-7" />
+                                    </div>
+                                  </div>
+                                ) : isProcessing(video.status) ? (
+                                  <div className="flex flex-col items-center gap-2">
+                                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                                    <span className="text-xs text-muted-foreground font-medium">
+                                      {statusConfig[video.status]?.label}
+                                    </span>
+                                  </div>
+                                ) : video.status === 'FAILED' ? (
+                                  <XCircle className="h-10 w-10 text-red-500" />
+                                ) : (
+                                  <Video className="h-10 w-10 text-muted-foreground" />
+                                )}
+                              </div>
+                            )}
+
+                            {/* Close button when playing */}
+                            {isPlaying && (
+                              <button
+                                className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-10"
+                                onClick={() => {
+                                  playStartedRef.current = null;
+                                  setInlinePlayingId(null);
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            )}
+
+                            {/* Status Badge - hidden when playing */}
+                            {!isPlaying && (
+                              <div className="absolute top-2 left-2">
+                                <Badge
+                                  variant={statusConfig[video.status]?.variant || 'secondary'}
+                                  className="text-[10px] px-1.5 py-0.5"
+                                >
+                                  {statusConfig[video.status]?.label || video.status}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+
+                          <CardContent className="p-3">
+                            <h3 className="font-medium text-sm truncate">
+                              {video.theme?.name || video.topic}
+                            </h3>
+                            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5" />
+                              {formatDate(video.createdAt)}
+                            </p>
+
+                            {/* Download button for completed videos */}
+                            {video.outputPath && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full mt-2 h-7 text-xs gap-1"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.location.href = `/api/videos/${video.id}/download`;
+                                }}
+                              >
+                                <Download className="h-3 w-3" />
+                                Download
+                              </Button>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -748,137 +998,5 @@ export default function Dashboard() {
         </main>
       </div>
     </TooltipProvider>
-  );
-}
-
-// Video Card Component
-function VideoCard({
-  video,
-  playingVideoId,
-  setPlayingVideoId,
-  formatDate,
-}: {
-  video: VideoItem;
-  playingVideoId: string | null;
-  setPlayingVideoId: (id: string | null) => void;
-  formatDate: (date: string) => string;
-}) {
-  return (
-    <Card
-      className={cn(
-        'overflow-hidden transition-all hover:shadow-lg',
-        video.status === 'FAILED' && 'border-red-500/50'
-      )}
-    >
-      {/* Video Preview / Thumbnail Area */}
-      <div className="relative aspect-[9/16] max-h-48 bg-muted">
-        {video.outputPath && playingVideoId === video.id ? (
-          <video
-            controls
-            autoPlay
-            className="h-full w-full object-cover"
-          >
-            <source src={`/api/videos/${video.id}/stream`} type="video/mp4" />
-          </video>
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            {video.outputPath ? (
-              <Button
-                size="icon"
-                variant="secondary"
-                className="h-12 w-12 rounded-full"
-                onClick={() => setPlayingVideoId(video.id)}
-              >
-                <Play className="h-6 w-6" />
-              </Button>
-            ) : isProcessing(video.status) ? (
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="text-xs text-muted-foreground">
-                  {statusConfig[video.status]?.label}
-                </span>
-              </div>
-            ) : video.status === 'FAILED' ? (
-              <XCircle className="h-8 w-8 text-red-500" />
-            ) : (
-              <Video className="h-8 w-8 text-muted-foreground" />
-            )}
-          </div>
-        )}
-
-        {/* Close button when playing */}
-        {playingVideoId === video.id && (
-          <Button
-            size="icon"
-            variant="secondary"
-            className="absolute right-2 top-2 h-8 w-8"
-            onClick={() => setPlayingVideoId(null)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      <CardContent className="p-4">
-        {/* Theme name as title */}
-        <h3 className="font-semibold truncate mb-2">
-          {video.theme?.name || video.topic}
-        </h3>
-
-        {/* Status & Meta */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge
-            variant={statusConfig[video.status]?.variant || 'secondary'}
-            className={cn('gap-1', isProcessing(video.status) && 'animate-pulse')}
-          >
-            {isProcessing(video.status) && <Loader2 className="h-3 w-3 animate-spin" />}
-            {statusConfig[video.status]?.label || video.status}
-          </Badge>
-        </div>
-
-        {/* Pipeline Progress */}
-        <div className="flex items-center gap-0.5 mb-3">
-          {pipelineSteps.map((step, index) => {
-            const state = getStepState(video, step);
-            return (
-              <div key={step.key} className="flex items-center">
-                <div
-                  className={cn(
-                    'h-1.5 w-full rounded-full transition-colors',
-                    state === 'completed' && 'bg-emerald-500',
-                    state === 'active' && 'bg-primary animate-pulse',
-                    state === 'pending' && 'bg-muted'
-                  )}
-                  style={{ width: `${100 / pipelineSteps.length}%` }}
-                />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Date */}
-        <p className="text-xs text-muted-foreground flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          {formatDate(video.createdAt)}
-        </p>
-
-        {/* Error Message */}
-        {video.errorMessage && (
-          <p className="mt-2 text-xs text-red-500 line-clamp-2">{video.errorMessage}</p>
-        )}
-
-        {/* Actions */}
-        {video.outputPath && (
-          <div className="mt-3 flex gap-2">
-            <Button size="sm" variant="outline" asChild className="flex-1 gap-1">
-              <a href={`/api/videos/${video.id}/download`}>
-                <Download className="h-3 w-3" />
-                Download
-              </a>
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }

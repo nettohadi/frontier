@@ -80,6 +80,12 @@ body {
   color: hsl(var(--foreground));
 }
 
+/* Ensure all buttons have pointer cursor */
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
 /* Custom scrollbar for dark mode */
 .dark ::-webkit-scrollbar {
   width: 8px;

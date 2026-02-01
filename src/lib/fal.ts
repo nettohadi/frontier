@@ -13,8 +13,8 @@ export interface GenerateImageResult {
 }
 
 /**
- * Generate an image using Fal.ai Flux Schnell model
- * Resolution: 1080x1920 (vertical 9:16)
+ * Generate an image using Fal.ai FLUX.2 [dev] model
+ * Resolution: 720x1280 (vertical 9:16) - optimized for YouTube Shorts
  */
 export async function generateImage(
   prompt: string,
@@ -25,16 +25,17 @@ export async function generateImage(
 
   console.log(`[Fal.ai] Generating image ${imageIndex + 1} for ${videoId}`);
 
-  const result = await fal.subscribe('fal-ai/flux/schnell', {
+  const result = await fal.subscribe('fal-ai/flux/dev', {
     input: {
       prompt,
       image_size: {
-        width: 1080,
-        height: 1920,
+        width: 720,
+        height: 1280,
       },
-      num_inference_steps: 4,
+      num_inference_steps: 28,
       num_images: 1,
       enable_safety_checker: false,
+      guidance_scale: 3.5,
     },
     logs: true,
     onQueueUpdate: (update) => {

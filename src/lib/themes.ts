@@ -2,33 +2,49 @@ import { prisma } from './prisma';
 import type { Theme } from '@prisma/client';
 
 /**
- * Get the next theme for video generation using round-robin rotation.
- * Prioritizes themes that haven't been used or were used longest ago.
+ * Get the next theme for video generation using sequential rotation.
+ * Goes through themes in order of creation (oldest first), cycling back to the start.
  */
 export async function getNextTheme(): Promise<Theme> {
-  // Find the least recently used active theme
-  const theme = await prisma.theme.findFirst({
+  // Get all active themes ordered by creation date
+  const allThemes = await prisma.theme.findMany({
     where: { isActive: true },
-    orderBy: [
-      { lastUsedAt: { sort: 'asc', nulls: 'first' } }, // Unused themes first
-      { usageCount: 'asc' }, // Then by usage count
-    ],
+    orderBy: { createdAt: 'asc' },
   });
 
-  if (!theme) {
+  if (allThemes.length === 0) {
     throw new Error('No active themes found in database');
+  }
+
+  // Find the last used theme
+  const lastUsed = await prisma.theme.findFirst({
+    where: { isActive: true, lastUsedAt: { not: null } },
+    orderBy: { lastUsedAt: 'desc' },
+  });
+
+  let nextTheme: Theme;
+
+  if (!lastUsed) {
+    // No theme has been used yet, start with the first one
+    nextTheme = allThemes[0];
+  } else {
+    // Find the index of the last used theme
+    const lastIndex = allThemes.findIndex((t) => t.id === lastUsed.id);
+    // Get the next theme in sequence (cycle back to 0 if at the end)
+    const nextIndex = (lastIndex + 1) % allThemes.length;
+    nextTheme = allThemes[nextIndex];
   }
 
   // Update usage tracking
   await prisma.theme.update({
-    where: { id: theme.id },
+    where: { id: nextTheme.id },
     data: {
       usageCount: { increment: 1 },
       lastUsedAt: new Date(),
     },
   });
 
-  return theme;
+  return nextTheme;
 }
 
 /**
