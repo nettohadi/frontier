@@ -188,17 +188,13 @@ export class PublerService {
     }
 
     // Build request body using Publer's correct format for YouTube Shorts
-    // - type must be "video", not "short"
-    // - isShort: true marks it as a YouTube Short
-    // - media array with {id, type} objects instead of media_ids
-    // - text field at post level for description fallback
+    // Per Publer API docs: description goes inside youtube network object only
     const body = {
       bulk: {
         state,
         posts: [
           {
             accounts: [accountObj],
-            text: descriptionWithTags,
             networks: {
               youtube: {
                 type: params.isShort !== false ? 'short' : 'video',
