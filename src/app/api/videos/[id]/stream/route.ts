@@ -36,12 +36,29 @@ export async function GET(
         const chunkSize = end - start + 1;
 
         const fileStream = createReadStream(filePath, { start, end });
+        let isClosed = false;
 
         const webStream = new ReadableStream({
           start(controller) {
-            fileStream.on('data', (chunk) => controller.enqueue(chunk));
-            fileStream.on('end', () => controller.close());
-            fileStream.on('error', (err) => controller.error(err));
+            fileStream.on('data', (chunk) => {
+              if (!isClosed) controller.enqueue(chunk);
+            });
+            fileStream.on('end', () => {
+              if (!isClosed) {
+                isClosed = true;
+                controller.close();
+              }
+            });
+            fileStream.on('error', (err) => {
+              if (!isClosed) {
+                isClosed = true;
+                controller.error(err);
+              }
+            });
+          },
+          cancel() {
+            isClosed = true;
+            fileStream.destroy();
           },
         });
 
@@ -57,12 +74,29 @@ export async function GET(
       } else {
         // No range, return full file
         const fileStream = createReadStream(filePath);
+        let isClosed = false;
 
         const webStream = new ReadableStream({
           start(controller) {
-            fileStream.on('data', (chunk) => controller.enqueue(chunk));
-            fileStream.on('end', () => controller.close());
-            fileStream.on('error', (err) => controller.error(err));
+            fileStream.on('data', (chunk) => {
+              if (!isClosed) controller.enqueue(chunk);
+            });
+            fileStream.on('end', () => {
+              if (!isClosed) {
+                isClosed = true;
+                controller.close();
+              }
+            });
+            fileStream.on('error', (err) => {
+              if (!isClosed) {
+                isClosed = true;
+                controller.error(err);
+              }
+            });
+          },
+          cancel() {
+            isClosed = true;
+            fileStream.destroy();
           },
         });
 
