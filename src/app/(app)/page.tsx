@@ -285,52 +285,52 @@ export default function DashboardPage() {
       <div className="p-4 md:p-6">
         <div className="space-y-4 md:space-y-6">
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          <div className="grid grid-cols-4 gap-2 md:gap-4">
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 md:h-12 md:w-12">
-                  <Video className="h-5 w-5 text-primary md:h-6 md:w-6" />
+              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 md:h-12 md:w-12">
+                  <Video className="h-4 w-4 text-primary md:h-6 md:w-6" />
                 </div>
-                <div>
-                  <p className="text-xl font-bold md:text-2xl">{videos.length}</p>
-                  <p className="text-xs text-muted-foreground md:text-sm">Total Videos</p>
+                <div className="mt-1 text-center md:mt-0 md:text-left">
+                  <p className="text-lg font-bold md:text-2xl">{videos.length}</p>
+                  <p className="text-[10px] text-muted-foreground md:text-sm">Total</p>
                 </div>
               </CardContent>
             </Card>
             <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10">
-              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 md:h-12 md:w-12">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500 md:h-6 md:w-6" />
+              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 md:h-12 md:w-12">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 md:h-6 md:w-6" />
                 </div>
-                <div>
-                  <p className="text-xl font-bold md:text-2xl">{completedVideos}</p>
-                  <p className="text-xs text-muted-foreground md:text-sm">Completed</p>
+                <div className="mt-1 text-center md:mt-0 md:text-left">
+                  <p className="text-lg font-bold md:text-2xl">{completedVideos}</p>
+                  <p className="text-[10px] text-muted-foreground md:text-sm">Done</p>
                 </div>
               </CardContent>
             </Card>
             <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10">
-              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20 md:h-12 md:w-12">
+              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/20 md:h-12 md:w-12">
                   {processingVideos > 0 ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-orange-500 md:h-6 md:w-6" />
+                    <Loader2 className="h-4 w-4 animate-spin text-orange-500 md:h-6 md:w-6" />
                   ) : (
-                    <Clock className="h-5 w-5 text-orange-500 md:h-6 md:w-6" />
+                    <Clock className="h-4 w-4 text-orange-500 md:h-6 md:w-6" />
                   )}
                 </div>
-                <div>
-                  <p className="text-xl font-bold md:text-2xl">{processingVideos}</p>
-                  <p className="text-xs text-muted-foreground md:text-sm">Processing</p>
+                <div className="mt-1 text-center md:mt-0 md:text-left">
+                  <p className="text-lg font-bold md:text-2xl">{processingVideos}</p>
+                  <p className="text-[10px] text-muted-foreground md:text-sm">Active</p>
                 </div>
               </CardContent>
             </Card>
             <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-red-500/10">
-              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20 md:h-12 md:w-12">
-                  <XCircle className="h-5 w-5 text-red-500 md:h-6 md:w-6" />
+              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20 md:h-12 md:w-12">
+                  <XCircle className="h-4 w-4 text-red-500 md:h-6 md:w-6" />
                 </div>
-                <div>
-                  <p className="text-xl font-bold md:text-2xl">{failedVideos}</p>
-                  <p className="text-xs text-muted-foreground md:text-sm">Failed</p>
+                <div className="mt-1 text-center md:mt-0 md:text-left">
+                  <p className="text-lg font-bold md:text-2xl">{failedVideos}</p>
+                  <p className="text-[10px] text-muted-foreground md:text-sm">Failed</p>
                 </div>
               </CardContent>
             </Card>
@@ -400,12 +400,13 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Pipeline Progress */}
-                      <div className="mt-3 flex items-center justify-between gap-0.5 overflow-x-auto rounded-lg bg-muted/50 p-2 md:mt-4 md:gap-1 md:p-3">
+                      <div className="mt-3 flex items-center overflow-x-auto rounded-lg bg-muted/50 p-2 md:mt-4 md:p-3">
                         {pipelineSteps.map((step, index, arr) => {
                           const state = getStepState(video, step);
+                          const nextState = index < arr.length - 1 ? getStepState(video, arr[index + 1]) : null;
                           const Icon = step.icon;
                           return (
-                            <div key={step.key} className="flex flex-1 items-center justify-center">
+                            <div key={step.key} className="flex flex-1 items-center">
                               <Tooltip>
                                 <TooltipTrigger>
                                   <div
@@ -435,8 +436,12 @@ export default function DashboardPage() {
                               {index < arr.length - 1 && (
                                 <div
                                   className={cn(
-                                    'mx-0.5 h-0.5 w-2 shrink-0 rounded-full md:w-4',
-                                    state === 'completed' ? 'bg-emerald-500' : 'bg-muted'
+                                    'mx-1 h-0.5 flex-1 rounded-full md:mx-2',
+                                    state === 'completed' && nextState === 'completed'
+                                      ? 'bg-emerald-500'
+                                      : state === 'completed'
+                                      ? 'bg-gradient-to-r from-emerald-500 to-muted'
+                                      : 'bg-muted'
                                   )}
                                 />
                               )}
@@ -456,26 +461,25 @@ export default function DashboardPage() {
 
                       {/* Video Actions */}
                       {video.outputPath && (
-                        <div className="mt-3 flex flex-wrap gap-2 md:mt-4">
+                        <div className="mt-3 flex items-center gap-2 md:mt-4">
                           <Button
                             size="sm"
                             onClick={() => setPlayingVideo(video)}
-                            className="gap-1.5 text-xs md:gap-2 md:text-sm"
+                            className="gap-1.5 h-8 px-3 text-xs md:gap-2 md:text-sm"
                           >
                             <Play className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                            <span className="hidden xs:inline">Play</span>
-                            <span className="xs:hidden">Play</span>
+                            Play
                           </Button>
-                          <Button size="sm" variant="outline" asChild className="gap-1.5 text-xs md:gap-2 md:text-sm">
+                          <Button size="sm" variant="outline" asChild className="gap-1.5 h-8 px-3 text-xs md:gap-2 md:text-sm">
                             <a href={`/api/videos/${video.id}/download`}>
                               <Download className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               <span className="hidden sm:inline">Download</span>
                             </a>
                           </Button>
                           {video.uploadedToYouTube ? (
-                            <Badge variant="success" className="gap-1 h-7 px-2 text-xs md:h-8 md:px-3">
+                            <Badge variant="success" className="gap-1 h-8 px-2.5 text-xs">
                               <Youtube className="h-3 w-3" />
-                              <span className="hidden sm:inline">Uploaded</span>
+                              Uploaded
                             </Badge>
                           ) : video.uploadSchedule ? (
                             <Badge
@@ -486,22 +490,20 @@ export default function DashboardPage() {
                                   ? 'destructive'
                                   : 'info'
                               }
-                              className="gap-1 h-7 px-2 text-xs md:h-8 md:px-3"
+                              className="gap-1 h-8 px-2.5 text-xs"
                             >
                               <Upload className="h-3 w-3" />
-                              <span className="hidden sm:inline">
-                                {video.uploadSchedule.status === 'SCHEDULED'
-                                  ? 'Scheduled'
-                                  : video.uploadSchedule.status === 'UPLOADING'
-                                  ? `${video.uploadSchedule.progress}%`
-                                  : video.uploadSchedule.status}
-                              </span>
+                              {video.uploadSchedule.status === 'SCHEDULED'
+                                ? 'Scheduled'
+                                : video.uploadSchedule.status === 'UPLOADING'
+                                ? `${video.uploadSchedule.progress}%`
+                                : video.uploadSchedule.status}
                             </Badge>
                           ) : (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-1.5 text-xs md:gap-2 md:text-sm"
+                              className="gap-1.5 h-8 px-3 text-xs md:gap-2 md:text-sm"
                               onClick={() => scheduleUpload(video.id)}
                               disabled={uploadingVideoId === video.id}
                             >
