@@ -117,7 +117,7 @@ export function GenerateModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[95vh] flex flex-col">
+      <DialogContent className="sm:max-w-md h-[95vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Generate Videos</DialogTitle>
           <DialogDescription>
@@ -202,7 +202,7 @@ export function GenerateModal({
 
           {/* Schedule Preview - Scrollable */}
           {showSlotPreview && (
-            <div className="flex-1 min-h-0 max-h-[200px] rounded-md border flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 rounded-md border flex flex-col overflow-hidden">
               <div className="flex-shrink-0 p-3 border-b">
                 <div className="text-sm font-medium">Schedule Preview</div>
               </div>
