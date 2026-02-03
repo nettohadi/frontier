@@ -35,12 +35,26 @@ export async function processUpload(scheduleId: string): Promise<void> {
   console.log(`[Upload] ${scheduleId}: Starting media upload`);
 
   try {
-    // Step 1: Upload media (0-40%)
+    // Step 1: Upload video media (0-30%)
     const mediaId = await publer.uploadMedia(schedule.video.outputPath);
-    await updateProgress(scheduleId, 'UPLOADING', 40);
-    console.log(`[Upload] ${scheduleId}: Media uploaded, ID: ${mediaId}`);
+    await updateProgress(scheduleId, 'UPLOADING', 30);
+    console.log(`[Upload] ${scheduleId}: Video uploaded, ID: ${mediaId}`);
 
-    // Step 2: Create YouTube Short post (40-60%)
+    // Step 2: Upload thumbnail if available (30-40%)
+    let thumbnailId: string | undefined;
+    const imagePaths = schedule.video.imagePaths as string[] | null;
+    if (imagePaths && imagePaths.length > 0) {
+      try {
+        console.log(`[Upload] ${scheduleId}: Uploading thumbnail: ${imagePaths[0]}`);
+        thumbnailId = await publer.uploadMedia(imagePaths[0]);
+        console.log(`[Upload] ${scheduleId}: Thumbnail uploaded, ID: ${thumbnailId}`);
+      } catch (err) {
+        console.warn(`[Upload] ${scheduleId}: Thumbnail upload failed, continuing without:`, err);
+      }
+    }
+    await updateProgress(scheduleId, 'UPLOADING', 40);
+
+    // Step 3: Create YouTube Short post (40-60%)
     const { jobId } = await publer.createYouTubeShort({
       accountId: schedule.youtubeChannelId,
       mediaIds: [mediaId],
@@ -49,6 +63,7 @@ export async function processUpload(scheduleId: string): Promise<void> {
         schedule.youtubeDescription || schedule.video.description || '',
       scheduleAt: schedule.scheduledAt,
       isShort: true,
+      thumbnailId,
     });
 
     await prisma.uploadSchedule.update({

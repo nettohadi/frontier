@@ -28,6 +28,7 @@ export interface CreatePostParams {
   isShort?: boolean;
   isDraft?: boolean; // For testing - creates draft instead of scheduled
   madeForKids?: boolean; // YouTube COPPA compliance - defaults to false
+  thumbnailId?: string; // Publer media ID for custom thumbnail
 }
 
 /**
@@ -93,6 +94,24 @@ export class PublerService {
   }
 
   /**
+   * Get MIME type from file extension
+   */
+  private getMimeType(filePath: string): string {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes: Record<string, string> = {
+      '.mp4': 'video/mp4',
+      '.mov': 'video/quicktime',
+      '.avi': 'video/x-msvideo',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+  }
+
+  /**
    * Upload media file to Publer
    * Returns the media ID for use in posts
    */
@@ -103,9 +122,10 @@ export class PublerService {
 
     const fileBuffer = await readFile(absolutePath);
     const fileName = path.basename(filePath);
+    const mimeType = this.getMimeType(filePath);
 
     // Use native FormData and Blob (Node.js 18+)
-    const blob = new Blob([fileBuffer], { type: 'video/mp4' });
+    const blob = new Blob([fileBuffer], { type: mimeType });
     const formData = new FormData();
     formData.append('file', blob, fileName);
 
@@ -184,6 +204,7 @@ export class PublerService {
                 privacy: 'public',
                 tags: uniqueTags.map((t) => t.replace('#', '')),
                 madeForKids: params.madeForKids ?? false,
+                ...(params.thumbnailId && { thumbnail: { id: params.thumbnailId } }),
               },
             },
           },
