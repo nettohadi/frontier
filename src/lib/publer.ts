@@ -28,7 +28,6 @@ export interface CreatePostParams {
   isShort?: boolean;
   isDraft?: boolean; // For testing - creates draft instead of scheduled
   madeForKids?: boolean; // YouTube COPPA compliance - defaults to false
-  thumbnailId?: string; // Publer media ID for custom thumbnail
 }
 
 /**
@@ -155,8 +154,15 @@ export class PublerService {
    * Create a YouTube Short post
    */
   async createYouTubeShort(params: CreatePostParams): Promise<{ jobId: string }> {
-    // Always include #sohibulhikayat tag
-    const baseTags = ['#sohibulhikayat', '#shorts'];
+    // Always include channel tags
+    const baseTags = [
+      '#sohibulhikayat',
+      '#renunganmakrifat',
+      '#renungansufi',
+      '#hakikatmakrifat',
+      '#jalaluddinrumi',
+      '#shorts',
+    ];
     const allTags = [...baseTags, ...(params.tags || [])];
     const uniqueTags = Array.from(new Set(allTags));
 
@@ -204,7 +210,6 @@ export class PublerService {
                 privacy: 'public',
                 tags: uniqueTags.map((t) => t.replace('#', '')),
                 madeForKids: params.madeForKids ?? false,
-                ...(params.thumbnailId && { thumbnail: { id: params.thumbnailId } }),
               },
             },
           },
@@ -243,8 +248,15 @@ export class PublerService {
     scheduledAt: Date;
     isDraft?: boolean;
   }): Promise<{ jobId: string }> {
-    // Always include #sohibulhikayat tag
-    const baseTags = ['#sohibulhikayat', '#shorts'];
+    // Always include channel tags
+    const baseTags = [
+      '#sohibulhikayat',
+      '#renunganmakrifat',
+      '#renungansufi',
+      '#hakikatmakrifat',
+      '#jalaluddinrumi',
+      '#shorts',
+    ];
     const allTags = [...baseTags, ...(params.tags || [])];
     const uniqueTags = Array.from(new Set(allTags));
 
@@ -350,8 +362,15 @@ export class PublerService {
    * Publish a post immediately
    */
   async publishNow(params: CreatePostParams): Promise<{ jobId: string }> {
-    // Always include #sohibulhikayat tag
-    const baseTags = ['#sohibulhikayat', '#shorts'];
+    // Always include channel tags
+    const baseTags = [
+      '#sohibulhikayat',
+      '#renunganmakrifat',
+      '#renungansufi',
+      '#hakikatmakrifat',
+      '#jalaluddinrumi',
+      '#shorts',
+    ];
     const allTags = [...baseTags, ...(params.tags || [])];
     const uniqueTags = Array.from(new Set(allTags));
 
