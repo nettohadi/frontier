@@ -27,7 +27,6 @@ export interface CreatePostParams {
   scheduleAt?: Date;
   isShort?: boolean;
   isDraft?: boolean; // For testing - creates draft instead of scheduled
-  madeForKids?: boolean; // YouTube COPPA compliance - defaults to false
 }
 
 /**
@@ -202,14 +201,12 @@ export class PublerService {
             text: descriptionWithTags,
             networks: {
               youtube: {
-                type: 'video',
-                isShort: params.isShort !== false,
+                type: params.isShort !== false ? 'short' : 'video',
                 media: params.mediaIds.map((id) => ({ id, type: 'video' })),
                 title: params.title,
                 description: descriptionWithTags,
                 privacy: 'public',
                 tags: uniqueTags.map((t) => t.replace('#', '')),
-                madeForKids: params.madeForKids ?? false,
               },
             },
           },
