@@ -88,7 +88,19 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
-        include: { background: true, theme: true },
+        include: {
+          background: true,
+          topicRelation: true,
+          uploadSchedule: {
+            select: {
+              id: true,
+              status: true,
+              scheduledAt: true,
+              youtubeUrl: true,
+              progress: true,
+            },
+          },
+        },
       }),
       prisma.video.count({ where }),
     ]);

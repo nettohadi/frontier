@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { getNextColorSchemeIndex } from './rotation';
 
 const client = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -63,12 +64,11 @@ const COLOR_SCHEMES = [
   },
 ];
 
-// Track which color scheme was last used (rotates sequentially)
-let colorSchemeIndex = 0;
-
-function getNextColorScheme() {
-  const scheme = COLOR_SCHEMES[colorSchemeIndex];
-  colorSchemeIndex = (colorSchemeIndex + 1) % COLOR_SCHEMES.length;
+// Get next color scheme using database-persisted rotation
+async function getNextColorScheme() {
+  const index = await getNextColorSchemeIndex(COLOR_SCHEMES.length);
+  const scheme = COLOR_SCHEMES[index];
+  console.log(`[ColorScheme] Selected (${index + 1}/${COLOR_SCHEMES.length}): ${scheme.name}`);
   return scheme;
 }
 
@@ -165,13 +165,13 @@ HANYA output JSON array dengan 1 item, tanpa penjelasan tambahan.`;
  */
 export async function generateImagePrompts(
   script: string,
-  themeName: string
+  topicName: string
 ): Promise<ImagePrompt[]> {
   // Get next color scheme in rotation
-  const colorScheme = getNextColorScheme();
-  console.log(`[ImagePrompts] Generating prompts for theme: ${themeName}, color scheme: ${colorScheme.name}`);
+  const colorScheme = await getNextColorScheme();
+  console.log(`[ImagePrompts] Generating prompts for topic: ${topicName}, color scheme: ${colorScheme.name}`);
 
-  const userPrompt = `Tema: ${themeName}
+  const userPrompt = `Topik: ${topicName}
 
 Narasi spiritual:
 ${script}

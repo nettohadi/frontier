@@ -24,6 +24,13 @@ enum RenderMode {
   AI_IMAGES
 }
 
+enum UploadStatus {
+  SCHEDULED
+  UPLOADING
+  COMPLETED
+  FAILED
+}
+
 model Video {
   id              String       @id @default(uuid())
 
@@ -32,6 +39,8 @@ model Video {
   style           String?      @default("educational")
 
   // Generated content
+  title           String?
+  description     String?      @db.Text
   script          String?      @db.Text
   scriptWordCount Int?
 
@@ -49,9 +58,9 @@ model Video {
   backgroundId    String?
   background      BackgroundVideo? @relation(fields: [backgroundId], references: [id])
 
-  // Theme relation (for Hakikat/Sufi style)
-  themeId         String?
-  theme           Theme?       @relation(fields: [themeId], references: [id])
+  // Topic relation (for Hakikat/Sufi style)
+  topicId         String?
+  topicRelation   Topic?       @relation(fields: [topicId], references: [id])
 
   // Render mode selection
   renderMode      RenderMode   @default(BACKGROUND_VIDEO)
@@ -71,6 +80,10 @@ model Video {
   // Job tracking
   currentJobId    String?
 
+  // YouTube upload tracking
+  uploadedToYouTube Boolean         @default(false)
+  uploadSchedule    UploadSchedule?
+
   @@index([status])
   @@index([createdAt])
 }
@@ -88,7 +101,7 @@ model BackgroundVideo {
   @@index([category])
 }
 
-model Theme {
+model Topic {
   id          String    @id @default(uuid())
   name        String    @unique
   description String    @db.Text
@@ -102,4 +115,58 @@ model Theme {
   updatedAt   DateTime  @updatedAt
 
   @@index([isActive, lastUsedAt])
+}
+
+// Single table to track rotation counters for sequential asset selection
+model RotationCounter {
+  id          String   @id @default("singleton")
+  music       Int      @default(0)
+  overlay     Int      @default(0)
+  colorScheme Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+// Publer settings for YouTube upload (singleton pattern)
+model PublerSettings {
+  id               String   @id @default("singleton")
+  apiKey           String?  @db.Text
+  workspaceId      String?
+  defaultChannelId String?
+  autoUpload       Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+}
+
+// YouTube upload scheduling
+model UploadSchedule {
+  id               String       @id @default(uuid())
+
+  // Video relation
+  videoId          String       @unique
+  video            Video        @relation(fields: [videoId], references: [id])
+
+  // YouTube details
+  youtubeChannelId String
+  youtubeTitle     String?
+  youtubeDescription String?    @db.Text
+
+  // Scheduling (GMT+8 timezone)
+  scheduledSlot    Int          // 0-9 (10:00-19:00)
+  scheduledDate    DateTime     // Date portion (midnight UTC)
+  scheduledAt      DateTime     // Full datetime for upload
+
+  // Upload tracking
+  status           UploadStatus @default(SCHEDULED)
+  publerJobId      String?
+  youtubeUrl       String?
+  errorMessage     String?      @db.Text
+  progress         Int          @default(0)
+
+  // Timestamps
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  completedAt      DateTime?
+
+  @@unique([scheduledDate, scheduledSlot])
+  @@index([status])
+  @@index([scheduledDate])
 }

@@ -2,7 +2,7 @@ import { unlink } from 'fs/promises';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { RenderMode } from '@prisma/client';
-import { renderVideo, renderImageBasedVideo, getRandomMusic } from '@/lib/ffmpeg';
+import { renderVideo, renderImageBasedVideo, getNextMusic } from '@/lib/ffmpeg';
 import { getNextOverlay } from '@/lib/overlays';
 
 export async function processRender(videoId: string): Promise<void> {
@@ -19,8 +19,8 @@ export async function processRender(videoId: string): Promise<void> {
     throw new Error('Missing audio or SRT file');
   }
 
-  // Get random background music (if available)
-  const musicPath = getRandomMusic();
+  // Get next background music using sequential rotation (if available)
+  const musicPath = await getNextMusic();
   if (musicPath) {
     console.log(`[${videoId}] Using background music: ${path.basename(musicPath)}`);
   }
@@ -85,7 +85,7 @@ async function renderWithAiImages(
   console.log(`[${video.id}] Rendering video with ${video.imagePaths.length} AI images`);
 
   // Get an overlay (optional)
-  const overlayPath = getNextOverlay();
+  const overlayPath = await getNextOverlay();
   if (overlayPath) {
     console.log(`[${video.id}] Using overlay: ${path.basename(overlayPath)}`);
   }

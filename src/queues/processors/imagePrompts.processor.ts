@@ -5,17 +5,17 @@ import type { Prisma } from '@prisma/client';
 export async function processImagePrompts(videoId: string): Promise<void> {
   const video = await prisma.video.findUniqueOrThrow({
     where: { id: videoId },
-    include: { theme: true },
+    include: { topicRelation: true },
   });
 
   if (!video.script) {
     throw new Error('Script not generated yet');
   }
 
-  const themeName = video.theme?.name || 'Unknown';
-  console.log(`[${videoId}] Generating image prompts for theme: ${themeName}`);
+  const topicName = video.topicRelation?.name || 'Unknown';
+  console.log(`[${videoId}] Generating image prompts for topic: ${topicName}`);
 
-  const prompts = await generateImagePrompts(video.script, themeName);
+  const prompts = await generateImagePrompts(video.script, topicName);
 
   console.log(`[${videoId}] Generated ${prompts.length} image prompts`);
 

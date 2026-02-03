@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import { readdirSync, existsSync } from 'fs';
 import path from 'path';
 import { generateKenBurnsFilter, getVariedEffects } from './kenBurns';
+import { getNextMusicIndex } from './rotation';
 
 // Use local FFmpeg binary with libass support if available
 const PROJECT_ROOT = process.cwd();
@@ -33,19 +34,29 @@ export interface RenderOptions {
   burnSubtitles?: boolean; // Whether to burn subtitles (default: true)
 }
 
-// Get a random music file from assets/musics
-export function getRandomMusic(): string | null {
+// List all available music files (sorted alphabetically for consistent ordering)
+export function listMusic(): string[] {
   const musicsPath = process.env.MUSICS_PATH || 'assets/musics';
   try {
-    const files = readdirSync(musicsPath).filter(
-      (f) => f.endsWith('.mp3') || f.endsWith('.m4a') || f.endsWith('.wav')
-    );
-    if (files.length === 0) return null;
-    const randomIndex = Math.floor(Math.random() * files.length);
-    return path.join(musicsPath, files[randomIndex]);
+    const files = readdirSync(musicsPath)
+      .filter((f) => f.endsWith('.mp3') || f.endsWith('.m4a') || f.endsWith('.wav'))
+      .sort();
+    return files.map((f) => path.join(musicsPath, f));
   } catch {
-    return null;
+    return [];
   }
+}
+
+// Get the next music file using database-persisted round-robin rotation
+export async function getNextMusic(): Promise<string | null> {
+  const musicFiles = listMusic();
+  if (musicFiles.length === 0) return null;
+
+  const index = await getNextMusicIndex(musicFiles.length);
+  const music = musicFiles[index];
+
+  console.log(`[Music] Selected (${index + 1}/${musicFiles.length}): ${path.basename(music)}`);
+  return music;
 }
 
 export async function renderVideo(options: RenderOptions): Promise<void> {

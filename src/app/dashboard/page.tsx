@@ -13,7 +13,6 @@ import {
   Subtitles,
   Film,
   Sparkles,
-  Moon,
   Pencil,
   Trash2,
   Pause,
@@ -27,6 +26,16 @@ import {
   Home,
   ChevronLeft,
   ChevronRight,
+  BookOpen,
+  RefreshCw,
+  Music,
+  Layers,
+  Palette,
+  Settings,
+  Calendar,
+  Upload,
+  Youtube,
+  ExternalLink,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -48,10 +57,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
 
-interface Theme {
+interface Topic {
   id: string;
   name: string;
   description: string;
@@ -66,6 +84,8 @@ interface Theme {
 interface VideoItem {
   id: string;
   topic: string;
+  title: string | null;
+  description: string | null;
   style: string;
   status: string;
   script: string | null;
@@ -76,16 +96,52 @@ interface VideoItem {
   createdAt: string;
   updatedAt: string;
   renderMode: 'BACKGROUND_VIDEO' | 'AI_IMAGES';
+  uploadedToYouTube: boolean;
   background: {
     name: string;
     filename: string;
   } | null;
-  theme: {
+  topicRelation: {
     name: string;
+  } | null;
+  uploadSchedule: {
+    id: string;
+    status: string;
+    scheduledAt: string;
+    youtubeUrl: string | null;
+    progress: number;
   } | null;
 }
 
-type PageView = 'dashboard' | 'videos' | 'themes';
+interface PublerSettings {
+  apiKey: string | null;
+  workspaceId: string | null;
+  defaultChannelId: string | null;
+  autoUpload: boolean;
+}
+
+interface YouTubeChannel {
+  id: string;
+  name: string;
+  picture: string | null;
+}
+
+interface ScheduleSlot {
+  slot: number;
+  hour: number;
+  time: string;
+  scheduledAt: string;
+  schedule: {
+    id: string;
+    videoId: string;
+    status: string;
+    youtubeTitle: string | null;
+  } | null;
+  available: boolean;
+  isPast: boolean;
+}
+
+type PageView = 'dashboard' | 'videos' | 'topics' | 'settings' | 'schedule';
 
 const statusConfig: Record<
   string,
@@ -165,99 +221,122 @@ export default function Dashboard() {
   const [inlinePlayingId, setInlinePlayingId] = useState<string | null>(null);
   const playStartedRef = useRef<string | null>(null);
 
-  // Theme management state
-  const [themes, setThemes] = useState<Theme[]>([]);
-  const [themesLoading, setThemesLoading] = useState(true);
-  const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
-  const [newTheme, setNewTheme] = useState({ name: '', description: '' });
-  const [themeSaving, setThemeSaving] = useState(false);
+  // Topic management state
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
+  const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
+  const [newTopic, setNewTopic] = useState({ name: '', description: '' });
+  const [topicSaving, setTopicSaving] = useState(false);
 
-  const fetchThemes = async () => {
+  // Settings state
+  const [publerSettings, setPublerSettings] = useState<PublerSettings>({
+    apiKey: null,
+    workspaceId: null,
+    defaultChannelId: null,
+    autoUpload: false,
+  });
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [youtubeChannels, setYoutubeChannels] = useState<YouTubeChannel[]>([]);
+  const [channelsLoading, setChannelsLoading] = useState(false);
+
+  // Schedule state
+  const [scheduleDate, setScheduleDate] = useState(new Date());
+  const [scheduleSlots, setScheduleSlots] = useState<ScheduleSlot[]>([]);
+  const [scheduleSlotsLoading, setScheduleSlotsLoading] = useState(true);
+
+  // Upload state
+  const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ scheduleId: string; progress: number; status: string } | null>(null);
+
+  const fetchTopics = async () => {
     try {
-      const res = await fetch('/api/themes');
+      const res = await fetch('/api/topics');
       const data = await res.json();
-      setThemes(data.themes || []);
+      setTopics(data.topics || []);
     } catch (err) {
-      console.error('Failed to fetch themes:', err);
+      console.error('Failed to fetch topics:', err);
     } finally {
-      setThemesLoading(false);
+      setTopicsLoading(false);
     }
   };
 
-  const createTheme = async () => {
-    if (!newTheme.name.trim() || !newTheme.description.trim()) return;
-    setThemeSaving(true);
+  const createTopic = async () => {
+    if (!newTopic.name.trim() || !newTopic.description.trim()) return;
+    setTopicSaving(true);
     try {
-      const res = await fetch('/api/themes', {
+      const res = await fetch('/api/topics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTheme),
+        body: JSON.stringify(newTopic),
       });
       if (res.ok) {
-        setNewTheme({ name: '', description: '' });
-        fetchThemes();
+        setNewTopic({ name: '', description: '' });
+        fetchTopics();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to create theme');
+        alert(data.error || 'Failed to create topic');
       }
     } catch (err) {
-      console.error('Failed to create theme:', err);
+      console.error('Failed to create topic:', err);
     } finally {
-      setThemeSaving(false);
+      setTopicSaving(false);
     }
   };
 
-  const updateTheme = async (theme: Theme) => {
-    setThemeSaving(true);
+  const updateTopic = async (topic: Topic) => {
+    setTopicSaving(true);
     try {
-      const res = await fetch(`/api/themes/${theme.id}`, {
+      const res = await fetch(`/api/topics/${topic.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: theme.name,
-          description: theme.description,
-          isActive: theme.isActive,
+          name: topic.name,
+          description: topic.description,
+          isActive: topic.isActive,
         }),
       });
       if (res.ok) {
-        setEditingTheme(null);
-        fetchThemes();
+        setEditingTopic(null);
+        fetchTopics();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to update theme');
+        alert(data.error || 'Failed to update topic');
       }
     } catch (err) {
-      console.error('Failed to update theme:', err);
+      console.error('Failed to update topic:', err);
     } finally {
-      setThemeSaving(false);
+      setTopicSaving(false);
     }
   };
 
-  const toggleThemeActive = async (theme: Theme) => {
+  const toggleTopicActive = async (topic: Topic) => {
     try {
-      await fetch(`/api/themes/${theme.id}`, {
+      await fetch(`/api/topics/${topic.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !theme.isActive }),
+        body: JSON.stringify({ isActive: !topic.isActive }),
       });
-      fetchThemes();
+      fetchTopics();
     } catch (err) {
-      console.error('Failed to toggle theme:', err);
+      console.error('Failed to toggle topic:', err);
     }
   };
 
-  const deleteTheme = async (theme: Theme) => {
-    if (!confirm(`Delete theme "${theme.name}"? This cannot be undone.`)) return;
+  const deleteTopic = async (topic: Topic) => {
+    if (!confirm(`Delete topic "${topic.name}"? This cannot be undone.`)) return;
     try {
-      const res = await fetch(`/api/themes/${theme.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/topics/${topic.id}`, { method: 'DELETE' });
       if (res.ok) {
-        fetchThemes();
+        fetchTopics();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to delete theme');
+        alert(data.error || 'Failed to delete topic');
       }
     } catch (err) {
-      console.error('Failed to delete theme:', err);
+      console.error('Failed to delete topic:', err);
     }
   };
 
@@ -273,12 +352,159 @@ export default function Dashboard() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/settings/publer');
+      const data = await res.json();
+      setPublerSettings({
+        apiKey: data.apiKey || null,
+        workspaceId: data.workspaceId || null,
+        defaultChannelId: data.defaultChannelId || null,
+        autoUpload: data.autoUpload || false,
+      });
+    } catch (err) {
+      console.error('Failed to fetch settings:', err);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const fetchChannels = async () => {
+    setChannelsLoading(true);
+    try {
+      const res = await fetch('/api/settings/publer/channels');
+      const data = await res.json();
+      if (data.channels) {
+        setYoutubeChannels(data.channels);
+      }
+    } catch (err) {
+      console.error('Failed to fetch channels:', err);
+    } finally {
+      setChannelsLoading(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    setSettingsSaving(true);
+    try {
+      const res = await fetch('/api/settings/publer', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(publerSettings),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to save settings');
+      }
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const testConnection = async () => {
+    setTestingConnection(true);
+    setConnectionStatus('idle');
+    try {
+      const res = await fetch('/api/settings/publer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: publerSettings.apiKey,
+          workspaceId: publerSettings.workspaceId,
+        }),
+      });
+      if (res.ok) {
+        setConnectionStatus('success');
+        fetchChannels();
+      } else {
+        setConnectionStatus('error');
+      }
+    } catch (err) {
+      setConnectionStatus('error');
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const fetchScheduleSlots = async (date: Date) => {
+    setScheduleSlotsLoading(true);
+    try {
+      const dateStr = date.toISOString().split('T')[0];
+      const res = await fetch(`/api/upload/schedules/date?date=${dateStr}`);
+      const data = await res.json();
+      if (data.slots) {
+        setScheduleSlots(data.slots);
+      }
+    } catch (err) {
+      console.error('Failed to fetch schedule slots:', err);
+    } finally {
+      setScheduleSlotsLoading(false);
+    }
+  };
+
+  const scheduleUpload = async (videoId: string) => {
+    setUploadingVideoId(videoId);
+    try {
+      const res = await fetch('/api/upload/youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        fetchVideos();
+        if (currentPage === 'schedule') {
+          fetchScheduleSlots(scheduleDate);
+        }
+      } else {
+        alert(data.error || 'Failed to schedule upload');
+      }
+    } catch (err) {
+      console.error('Failed to schedule upload:', err);
+    } finally {
+      setUploadingVideoId(null);
+    }
+  };
+
+  const cancelSchedule = async (scheduleId: string) => {
+    if (!confirm('Cancel this scheduled upload?')) return;
+    try {
+      const res = await fetch(`/api/upload/schedules/${scheduleId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchVideos();
+        fetchScheduleSlots(scheduleDate);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to cancel schedule');
+      }
+    } catch (err) {
+      console.error('Failed to cancel schedule:', err);
+    }
+  };
+
   useEffect(() => {
     fetchVideos();
-    fetchThemes();
-    const interval = setInterval(fetchVideos, 3000);
+    fetchTopics();
+    fetchSettings();
+    const interval = setInterval(fetchVideos, 10000); // Poll every 10 seconds
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (currentPage === 'schedule') {
+      fetchScheduleSlots(scheduleDate);
+    }
+  }, [currentPage, scheduleDate]);
+
+  useEffect(() => {
+    if (currentPage === 'settings' && publerSettings.apiKey && publerSettings.workspaceId) {
+      fetchChannels();
+    }
+  }, [currentPage]);
 
   const createVideo = async () => {
     setCreating(true);
@@ -302,7 +528,7 @@ export default function Dashboard() {
     return new Date(dateStr).toLocaleString();
   };
 
-  const activeThemeCount = themes.filter((t) => t.isActive).length;
+  const activeTopicCount = topics.filter((t) => t.isActive).length;
   const completedVideos = videos.filter((v) => v.status === 'COMPLETED').length;
   const processingVideos = videos.filter((v) => isProcessing(v.status)).length;
   const failedVideos = videos.filter((v) => v.status === 'FAILED').length;
@@ -310,7 +536,9 @@ export default function Dashboard() {
   const menuItems = [
     { id: 'dashboard' as PageView, label: 'Dashboard', icon: Home },
     { id: 'videos' as PageView, label: 'All Videos', icon: LayoutGrid },
-    { id: 'themes' as PageView, label: 'Manage Themes', icon: Moon },
+    { id: 'topics' as PageView, label: 'Manage Topics', icon: BookOpen },
+    { id: 'schedule' as PageView, label: 'Upload Schedule', icon: Calendar },
+    { id: 'settings' as PageView, label: 'Settings', icon: Settings },
   ];
 
   return (
@@ -320,7 +548,10 @@ export default function Dashboard() {
         <Dialog open={!!playingVideo} onOpenChange={() => setPlayingVideo(null)}>
           <DialogContent className="max-w-md p-0 overflow-hidden">
             <DialogHeader className="p-4 pb-0">
-              <DialogTitle>{playingVideo?.theme?.name || playingVideo?.topic}</DialogTitle>
+              <DialogTitle>{playingVideo?.title || playingVideo?.topicRelation?.name || playingVideo?.topic}</DialogTitle>
+              {playingVideo?.title && (
+                <p className="text-sm text-muted-foreground">{playingVideo?.topicRelation?.name || playingVideo?.topic}</p>
+              )}
             </DialogHeader>
             <div className="relative aspect-[9/16] bg-black">
               {playingVideo && (
@@ -387,9 +618,9 @@ export default function Dashboard() {
                     >
                       <Icon className="h-5 w-5 shrink-0" />
                       {!sidebarCollapsed && <span>{item.label}</span>}
-                      {!sidebarCollapsed && item.id === 'themes' && (
+                      {!sidebarCollapsed && item.id === 'topics' && (
                         <Badge variant="secondary" className="ml-auto text-xs">
-                          {activeThemeCount}
+                          {activeTopicCount}
                         </Badge>
                       )}
                       {!sidebarCollapsed && item.id === 'videos' && (
@@ -440,7 +671,9 @@ export default function Dashboard() {
             <h1 className="text-xl font-semibold">
               {currentPage === 'dashboard' && 'Dashboard'}
               {currentPage === 'videos' && 'All Videos'}
-              {currentPage === 'themes' && 'Manage Themes'}
+              {currentPage === 'topics' && 'Manage Topics'}
+              {currentPage === 'schedule' && 'Upload Schedule'}
+              {currentPage === 'settings' && 'Settings'}
             </h1>
             <div className="flex items-center gap-3">
               {sidebarCollapsed && <ThemeToggle />}
@@ -557,7 +790,12 @@ export default function Dashboard() {
                           >
                             <div className="flex flex-wrap items-start justify-between gap-4">
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold mb-2 truncate">{video.theme?.name || video.topic}</h3>
+                                <h3 className="font-semibold mb-1 truncate">{video.title || video.topicRelation?.name || video.topic}</h3>
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    {video.topicRelation?.name || video.topic}
+                                  </span>
+                                </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                   <Badge
                                     variant={statusConfig[video.status]?.variant || 'secondary'}
@@ -636,7 +874,7 @@ export default function Dashboard() {
 
                             {/* Video Actions */}
                             {video.outputPath && (
-                              <div className="mt-4 flex gap-2">
+                              <div className="mt-4 flex flex-wrap gap-2">
                                 <Button
                                   size="sm"
                                   onClick={() => setPlayingVideo(video)}
@@ -651,6 +889,45 @@ export default function Dashboard() {
                                     Download
                                   </a>
                                 </Button>
+                                {video.uploadedToYouTube ? (
+                                  <Badge variant="success" className="gap-1 h-8 px-3">
+                                    <Youtube className="h-3 w-3" />
+                                    Uploaded
+                                  </Badge>
+                                ) : video.uploadSchedule ? (
+                                  <Badge
+                                    variant={
+                                      video.uploadSchedule.status === 'UPLOADING'
+                                        ? 'warning'
+                                        : video.uploadSchedule.status === 'FAILED'
+                                        ? 'destructive'
+                                        : 'info'
+                                    }
+                                    className="gap-1 h-8 px-3"
+                                  >
+                                    <Upload className="h-3 w-3" />
+                                    {video.uploadSchedule.status === 'SCHEDULED'
+                                      ? 'Scheduled'
+                                      : video.uploadSchedule.status === 'UPLOADING'
+                                      ? `Uploading ${video.uploadSchedule.progress}%`
+                                      : video.uploadSchedule.status}
+                                  </Badge>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="gap-2"
+                                    onClick={() => scheduleUpload(video.id)}
+                                    disabled={uploadingVideoId === video.id}
+                                  >
+                                    {uploadingVideoId === video.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Youtube className="h-4 w-4" />
+                                    )}
+                                    Upload to YouTube
+                                  </Button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -775,27 +1052,74 @@ export default function Dashboard() {
 
                           <CardContent className="p-3">
                             <h3 className="font-medium text-sm truncate">
-                              {video.theme?.name || video.topic}
+                              {video.title || video.topicRelation?.name || video.topic}
                             </h3>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                              {video.topicRelation?.name || video.topic}
+                            </p>
                             <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                               <Clock className="h-2.5 w-2.5" />
                               {formatDate(video.createdAt)}
                             </p>
 
-                            {/* Download button for completed videos */}
+                            {/* Buttons for completed videos */}
                             {video.outputPath && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full mt-2 h-7 text-xs gap-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  window.location.href = `/api/videos/${video.id}/download`;
-                                }}
-                              >
-                                <Download className="h-3 w-3" />
-                                Download
-                              </Button>
+                              <div className="space-y-1.5 mt-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-full h-7 text-xs gap-1"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.location.href = `/api/videos/${video.id}/download`;
+                                  }}
+                                >
+                                  <Download className="h-3 w-3" />
+                                  Download
+                                </Button>
+                                {video.uploadedToYouTube ? (
+                                  <Badge variant="success" className="w-full justify-center gap-1 h-7">
+                                    <Youtube className="h-3 w-3" />
+                                    Uploaded
+                                  </Badge>
+                                ) : video.uploadSchedule ? (
+                                  <Badge
+                                    variant={
+                                      video.uploadSchedule.status === 'UPLOADING'
+                                        ? 'warning'
+                                        : video.uploadSchedule.status === 'FAILED'
+                                        ? 'destructive'
+                                        : 'info'
+                                    }
+                                    className="w-full justify-center gap-1 h-7"
+                                  >
+                                    <Upload className="h-3 w-3" />
+                                    {video.uploadSchedule.status === 'SCHEDULED'
+                                      ? 'Scheduled'
+                                      : video.uploadSchedule.status === 'UPLOADING'
+                                      ? `${video.uploadSchedule.progress}%`
+                                      : video.uploadSchedule.status}
+                                  </Badge>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="w-full h-7 text-xs gap-1"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      scheduleUpload(video.id);
+                                    }}
+                                    disabled={uploadingVideoId === video.id}
+                                  >
+                                    {uploadingVideoId === video.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <Youtube className="h-3 w-3" />
+                                    )}
+                                    YouTube
+                                  </Button>
+                                )}
+                              </div>
                             )}
                           </CardContent>
                         </Card>
@@ -806,97 +1130,97 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Themes View */}
-            {currentPage === 'themes' && (
+            {/* Topics View */}
+            {currentPage === 'topics' && (
               <div className="space-y-6">
-                {/* Add new theme */}
+                {/* Add new topic */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Plus className="h-5 w-5" />
-                      Add New Theme
+                      Add New Topic
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-3">
                       <Input
-                        placeholder="Theme name (e.g., Mahabbah)"
-                        value={newTheme.name}
-                        onChange={(e) => setNewTheme({ ...newTheme, name: e.target.value })}
+                        placeholder="Topic name (e.g., Mahabbah)"
+                        value={newTopic.name}
+                        onChange={(e) => setNewTopic({ ...newTopic, name: e.target.value })}
                         className="w-48"
                       />
                       <Input
                         placeholder="Description in Indonesian"
-                        value={newTheme.description}
-                        onChange={(e) => setNewTheme({ ...newTheme, description: e.target.value })}
+                        value={newTopic.description}
+                        onChange={(e) => setNewTopic({ ...newTopic, description: e.target.value })}
                         className="min-w-[300px] flex-1"
                       />
                       <Button
-                        onClick={createTheme}
-                        disabled={themeSaving || !newTheme.name.trim() || !newTheme.description.trim()}
+                        onClick={createTopic}
+                        disabled={topicSaving || !newTopic.name.trim() || !newTopic.description.trim()}
                         className="gap-2"
                       >
-                        {themeSaving ? (
+                        {topicSaving ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Plus className="h-4 w-4" />
                         )}
-                        Add Theme
+                        Add Topic
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Theme list */}
+                {/* Topic list */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>All Themes ({themes.length})</CardTitle>
+                    <CardTitle>All Topics ({topics.length})</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {themesLoading ? (
+                    {topicsLoading ? (
                       <div className="flex items-center justify-center py-8">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                       </div>
-                    ) : themes.length === 0 ? (
+                    ) : topics.length === 0 ? (
                       <p className="py-8 text-center text-muted-foreground">
-                        No themes yet. Add one above!
+                        No topics yet. Add one above!
                       </p>
                     ) : (
                       <ScrollArea className="h-[600px] pr-4">
                         <div className="space-y-2">
-                          {themes.map((theme) => (
+                          {topics.map((topic) => (
                             <div
-                              key={theme.id}
+                              key={topic.id}
                               className={cn(
                                 'rounded-lg border p-4 transition-colors',
-                                theme.isActive
+                                topic.isActive
                                   ? 'border-emerald-500/50 bg-emerald-500/5'
                                   : 'border-border bg-muted/30 opacity-60'
                               )}
                             >
-                              {editingTheme?.id === theme.id ? (
+                              {editingTopic?.id === topic.id ? (
                                 <div className="space-y-3">
                                   <Input
-                                    value={editingTheme.name}
+                                    value={editingTopic.name}
                                     onChange={(e) =>
-                                      setEditingTheme({ ...editingTheme, name: e.target.value })
+                                      setEditingTopic({ ...editingTopic, name: e.target.value })
                                     }
                                     className="font-medium"
                                   />
                                   <Textarea
-                                    value={editingTheme.description}
+                                    value={editingTopic.description}
                                     onChange={(e) =>
-                                      setEditingTheme({ ...editingTheme, description: e.target.value })
+                                      setEditingTopic({ ...editingTopic, description: e.target.value })
                                     }
                                     rows={3}
                                   />
                                   <div className="flex gap-2">
                                     <Button
                                       size="sm"
-                                      onClick={() => updateTheme(editingTheme)}
-                                      disabled={themeSaving}
+                                      onClick={() => updateTopic(editingTopic)}
+                                      disabled={topicSaving}
                                     >
-                                      {themeSaving ? (
+                                      {topicSaving ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                       ) : (
                                         'Save'
@@ -905,7 +1229,7 @@ export default function Dashboard() {
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => setEditingTheme(null)}
+                                      onClick={() => setEditingTopic(null)}
                                     >
                                       Cancel
                                     </Button>
@@ -915,22 +1239,22 @@ export default function Dashboard() {
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex-1 min-w-0">
                                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                                      <span className="font-medium">{theme.name}</span>
-                                      <Badge variant={theme.isActive ? 'success' : 'secondary'}>
-                                        {theme.isActive ? 'Active' : 'Inactive'}
+                                      <span className="font-medium">{topic.name}</span>
+                                      <Badge variant={topic.isActive ? 'success' : 'secondary'}>
+                                        {topic.isActive ? 'Active' : 'Inactive'}
                                       </Badge>
                                       <span className="text-xs text-muted-foreground">
-                                        Used: {theme.usageCount}x
+                                        Used: {topic.usageCount}x
                                       </span>
-                                      {theme._count.videos > 0 && (
+                                      {topic._count.videos > 0 && (
                                         <span className="text-xs text-muted-foreground">
-                                          • {theme._count.videos} video
-                                          {theme._count.videos > 1 ? 's' : ''}
+                                          • {topic._count.videos} video
+                                          {topic._count.videos > 1 ? 's' : ''}
                                         </span>
                                       )}
                                     </div>
                                     <p className="text-sm text-muted-foreground line-clamp-2">
-                                      {theme.description}
+                                      {topic.description}
                                     </p>
                                   </div>
                                   <div className="flex shrink-0 gap-1">
@@ -940,9 +1264,9 @@ export default function Dashboard() {
                                           size="icon"
                                           variant="ghost"
                                           className="h-8 w-8"
-                                          onClick={() => toggleThemeActive(theme)}
+                                          onClick={() => toggleTopicActive(topic)}
                                         >
-                                          {theme.isActive ? (
+                                          {topic.isActive ? (
                                             <Pause className="h-4 w-4" />
                                           ) : (
                                             <PlayCircle className="h-4 w-4" />
@@ -950,7 +1274,7 @@ export default function Dashboard() {
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent>
-                                        {theme.isActive ? 'Deactivate' : 'Activate'}
+                                        {topic.isActive ? 'Deactivate' : 'Activate'}
                                       </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
@@ -959,7 +1283,7 @@ export default function Dashboard() {
                                           size="icon"
                                           variant="ghost"
                                           className="h-8 w-8"
-                                          onClick={() => setEditingTheme(theme)}
+                                          onClick={() => setEditingTopic(topic)}
                                         >
                                           <Pencil className="h-4 w-4" />
                                         </Button>
@@ -972,14 +1296,14 @@ export default function Dashboard() {
                                           size="icon"
                                           variant="ghost"
                                           className="h-8 w-8 text-destructive hover:text-destructive"
-                                          onClick={() => deleteTheme(theme)}
-                                          disabled={theme._count.videos > 0}
+                                          onClick={() => deleteTopic(topic)}
+                                          disabled={topic._count.videos > 0}
                                         >
                                           <Trash2 className="h-4 w-4" />
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent>
-                                        {theme._count.videos > 0 ? 'Cannot delete (has videos)' : 'Delete'}
+                                        {topic._count.videos > 0 ? 'Cannot delete (has videos)' : 'Delete'}
                                       </TooltipContent>
                                     </Tooltip>
                                   </div>
@@ -989,6 +1313,274 @@ export default function Dashboard() {
                           ))}
                         </div>
                       </ScrollArea>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Settings View */}
+            {currentPage === 'settings' && (
+              <div className="space-y-6 max-w-2xl">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="h-5 w-5" />
+                      Publer API Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {settingsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">API Key</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter your Publer API key"
+                            value={publerSettings.apiKey || ''}
+                            onChange={(e) =>
+                              setPublerSettings({ ...publerSettings, apiKey: e.target.value })
+                            }
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Get your API key from Publer Settings &gt; Integrations &gt; API
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Workspace ID</label>
+                          <Input
+                            placeholder="Enter your Workspace ID"
+                            value={publerSettings.workspaceId || ''}
+                            onChange={(e) =>
+                              setPublerSettings({ ...publerSettings, workspaceId: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={testConnection}
+                            disabled={testingConnection || !publerSettings.apiKey || !publerSettings.workspaceId}
+                            variant="outline"
+                            className="gap-2"
+                          >
+                            {testingConnection ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : connectionStatus === 'success' ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                            ) : connectionStatus === 'error' ? (
+                              <XCircle className="h-4 w-4 text-red-500" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4" />
+                            )}
+                            Test Connection
+                          </Button>
+                          {connectionStatus === 'success' && (
+                            <span className="text-sm text-emerald-500 flex items-center">Connected!</span>
+                          )}
+                          {connectionStatus === 'error' && (
+                            <span className="text-sm text-red-500 flex items-center">Connection failed</span>
+                          )}
+                        </div>
+
+                        <Separator />
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">YouTube Channel</label>
+                          {channelsLoading ? (
+                            <div className="flex items-center gap-2 py-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span className="text-sm text-muted-foreground">Loading channels...</span>
+                            </div>
+                          ) : youtubeChannels.length > 0 ? (
+                            <Select
+                              value={publerSettings.defaultChannelId || ''}
+                              onValueChange={(value) =>
+                                setPublerSettings({ ...publerSettings, defaultChannelId: value })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a YouTube channel" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {youtubeChannels.map((channel) => (
+                                  <SelectItem key={channel.id} value={channel.id}>
+                                    {channel.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <p className="text-sm text-muted-foreground py-2">
+                              Test connection first to load channels
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <label className="text-sm font-medium">Auto-upload</label>
+                            <p className="text-xs text-muted-foreground">
+                              Automatically schedule uploads when videos are completed
+                            </p>
+                          </div>
+                          <Switch
+                            checked={publerSettings.autoUpload}
+                            onCheckedChange={(checked) =>
+                              setPublerSettings({ ...publerSettings, autoUpload: checked })
+                            }
+                          />
+                        </div>
+
+                        <Button
+                          onClick={saveSettings}
+                          disabled={settingsSaving}
+                          className="w-full gap-2"
+                        >
+                          {settingsSaving ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4" />
+                          )}
+                          Save Settings
+                        </Button>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Schedule View */}
+            {currentPage === 'schedule' && (
+              <div className="space-y-6">
+                {/* Date Navigation */}
+                <Card>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const newDate = new Date(scheduleDate);
+                        newDate.setDate(newDate.getDate() - 1);
+                        setScheduleDate(newDate);
+                      }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="flex items-center gap-4">
+                      <h2 className="text-lg font-semibold">
+                        {scheduleDate.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </h2>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setScheduleDate(new Date())}
+                      >
+                        Today
+                      </Button>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const newDate = new Date(scheduleDate);
+                        newDate.setDate(newDate.getDate() + 1);
+                        setScheduleDate(newDate);
+                      }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Time Slots */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Upload Slots (GMT+8)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {scheduleSlotsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {scheduleSlots.map((slot) => (
+                          <div
+                            key={slot.slot}
+                            className={cn(
+                              'rounded-lg border p-4 transition-colors',
+                              slot.isPast && 'opacity-50',
+                              slot.schedule?.status === 'COMPLETED' && 'border-emerald-500/50 bg-emerald-500/5',
+                              slot.schedule?.status === 'UPLOADING' && 'border-orange-500/50 bg-orange-500/5',
+                              slot.schedule?.status === 'SCHEDULED' && 'border-blue-500/50 bg-blue-500/5',
+                              slot.schedule?.status === 'FAILED' && 'border-red-500/50 bg-red-500/5',
+                              slot.available && 'border-dashed'
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                                  <Clock className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <div>
+                                  <p className="font-semibold">{slot.time}</p>
+                                  {slot.schedule ? (
+                                    <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                      {slot.schedule.youtubeTitle || 'Untitled'}
+                                    </p>
+                                  ) : slot.isPast ? (
+                                    <p className="text-sm text-muted-foreground">Slot passed</p>
+                                  ) : (
+                                    <p className="text-sm text-muted-foreground">Available</p>
+                                  )}
+                                </div>
+                              </div>
+                              {slot.schedule && (
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant={
+                                      slot.schedule.status === 'COMPLETED'
+                                        ? 'success'
+                                        : slot.schedule.status === 'UPLOADING'
+                                        ? 'warning'
+                                        : slot.schedule.status === 'FAILED'
+                                        ? 'destructive'
+                                        : 'info'
+                                    }
+                                  >
+                                    {slot.schedule.status}
+                                  </Badge>
+                                  {slot.schedule.status === 'SCHEDULED' && (
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8 text-destructive hover:text-destructive"
+                                      onClick={() => cancelSchedule(slot.schedule!.id)}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </CardContent>
                 </Card>

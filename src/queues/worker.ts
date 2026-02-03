@@ -104,6 +104,7 @@ export const videoWorker = new Worker<VideoJobData>(
         data: {
           status: VideoStatus.COMPLETED,
           completedAt: new Date(),
+          errorMessage: null,
         },
       });
     }

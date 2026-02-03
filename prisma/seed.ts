@@ -2,8 +2,8 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// 44 Hakikat/Sufi themes for spiritual video generation
-const themes = [
+// 44 Hakikat/Sufi topics for spiritual video generation
+const topics = [
   { name: 'Kembali', description: 'Kembali kepada Tuhan setelah tersesat. Bukan sekadar menyesali dosa, tapi melupakan segala yang menghalangi jiwa dari cinta-Nya. Pintu yang tak pernah tertutup.' },
   { name: 'Kehati-hatian Batin', description: 'Menjaga diri bukan hanya dari yang terlarang, tapi dari segala yang mengaburkan pandangan batin. Hidup dengan penuh kesadaran di setiap langkah.' },
   { name: 'Melepas Dunia', description: 'Melepaskan ketergantungan pada dunia. Bukan membenci dunia, tapi membebaskan hati dari genggamannya. Memiliki tanpa dimiliki.' },
@@ -64,39 +64,39 @@ const backgrounds = [
 ];
 
 async function main() {
-  // Delete existing themes that have no videos
-  console.log('Cleaning up existing themes...');
-  const existingThemes = await prisma.theme.findMany({
+  // Delete existing topics that have no videos
+  console.log('Cleaning up existing topics...');
+  const existingTopics = await prisma.topic.findMany({
     include: { _count: { select: { videos: true } } },
   });
 
-  for (const theme of existingThemes) {
-    if (theme._count.videos === 0) {
-      await prisma.theme.delete({ where: { id: theme.id } });
-      console.log(`  - Deleted: ${theme.name}`);
+  for (const topic of existingTopics) {
+    if (topic._count.videos === 0) {
+      await prisma.topic.delete({ where: { id: topic.id } });
+      console.log(`  - Deleted: ${topic.name}`);
     } else {
-      // Deactivate themes with videos instead of deleting
-      await prisma.theme.update({
-        where: { id: theme.id },
+      // Deactivate topics with videos instead of deleting
+      await prisma.topic.update({
+        where: { id: topic.id },
         data: { isActive: false },
       });
-      console.log(`  - Deactivated (has ${theme._count.videos} videos): ${theme.name}`);
+      console.log(`  - Deactivated (has ${topic._count.videos} videos): ${topic.name}`);
     }
   }
 
-  console.log('\nSeeding new themes...');
+  console.log('\nSeeding new topics...');
 
-  for (const theme of themes) {
-    await prisma.theme.upsert({
-      where: { name: theme.name },
-      update: { description: theme.description, isActive: true },
+  for (const topic of topics) {
+    await prisma.topic.upsert({
+      where: { name: topic.name },
+      update: { description: topic.description, isActive: true },
       create: {
-        name: theme.name,
-        description: theme.description,
+        name: topic.name,
+        description: topic.description,
         isActive: true,
       },
     });
-    console.log(`  - ${theme.name}`);
+    console.log(`  - ${topic.name}`);
   }
 
   console.log('\nSeeding background videos...');

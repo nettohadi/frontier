@@ -42,6 +42,8 @@ export interface BatchCreateRequest {
 }
 
 export interface ScriptGenerationResult {
+  title: string;
+  description: string;
   script: string;
   wordCount: number;
 }

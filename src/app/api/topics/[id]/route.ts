@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/themes/:id - Get a single theme
+// GET /api/topics/:id - Get a single topic
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const theme = await prisma.theme.findUnique({
+    const topic = await prisma.topic.findUnique({
       where: { id },
       include: {
         _count: {
@@ -18,16 +18,16 @@ export async function GET(
       },
     });
 
-    if (!theme) {
+    if (!topic) {
       return NextResponse.json(
-        { error: 'Theme not found' },
+        { error: 'Topic not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(theme);
+    return NextResponse.json(topic);
   } catch (error) {
-    console.error('Error getting theme:', error);
+    console.error('Error getting topic:', error);
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { error: 'Internal server error', message },
@@ -36,8 +36,8 @@ export async function GET(
   }
 }
 
-// PUT /api/themes/:id - Update a theme
-const UpdateThemeSchema = z.object({
+// PUT /api/topics/:id - Update a topic
+const UpdateTopicSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   description: z.string().min(10).max(1000).optional(),
   isActive: z.boolean().optional(),
@@ -50,39 +50,39 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const data = UpdateThemeSchema.parse(body);
+    const data = UpdateTopicSchema.parse(body);
 
-    // Check if theme exists
-    const existing = await prisma.theme.findUnique({
+    // Check if topic exists
+    const existing = await prisma.topic.findUnique({
       where: { id },
     });
 
     if (!existing) {
       return NextResponse.json(
-        { error: 'Theme not found' },
+        { error: 'Topic not found' },
         { status: 404 }
       );
     }
 
     // If name is being changed, check for duplicates
     if (data.name && data.name !== existing.name) {
-      const duplicate = await prisma.theme.findUnique({
+      const duplicate = await prisma.topic.findUnique({
         where: { name: data.name },
       });
       if (duplicate) {
         return NextResponse.json(
-          { error: 'Theme with this name already exists' },
+          { error: 'Topic with this name already exists' },
           { status: 400 }
         );
       }
     }
 
-    const theme = await prisma.theme.update({
+    const topic = await prisma.topic.update({
       where: { id },
       data,
     });
 
-    return NextResponse.json(theme);
+    return NextResponse.json(topic);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -90,7 +90,7 @@ export async function PUT(
         { status: 400 }
       );
     }
-    console.error('Error updating theme:', error);
+    console.error('Error updating topic:', error);
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { error: 'Internal server error', message },
@@ -99,7 +99,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/themes/:id - Delete a theme
+// DELETE /api/topics/:id - Delete a topic
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -107,8 +107,8 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Check if theme exists and has videos
-    const theme = await prisma.theme.findUnique({
+    // Check if topic exists and has videos
+    const topic = await prisma.topic.findUnique({
       where: { id },
       include: {
         _count: {
@@ -117,27 +117,27 @@ export async function DELETE(
       },
     });
 
-    if (!theme) {
+    if (!topic) {
       return NextResponse.json(
-        { error: 'Theme not found' },
+        { error: 'Topic not found' },
         { status: 404 }
       );
     }
 
-    if (theme._count.videos > 0) {
+    if (topic._count.videos > 0) {
       return NextResponse.json(
-        { error: 'Cannot delete theme with associated videos. Deactivate it instead.' },
+        { error: 'Cannot delete topic with associated videos. Deactivate it instead.' },
         { status: 400 }
       );
     }
 
-    await prisma.theme.delete({
+    await prisma.topic.delete({
       where: { id },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting theme:', error);
+    console.error('Error deleting topic:', error);
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { error: 'Internal server error', message },

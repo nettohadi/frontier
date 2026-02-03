@@ -7,7 +7,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { renderVideo, getRandomMusic } from '../src/lib/ffmpeg';
+import { renderVideo, getNextMusic } from '../src/lib/ffmpeg';
 import { generateAssWithHighlight } from '../src/lib/srt';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -89,8 +89,8 @@ async function rerender(videoId: string) {
   console.log(`\nOutput: ${outputPath}`);
   console.log('\nStarting render with subtitles...\n');
 
-  // Get random music
-  const musicPath = getRandomMusic();
+  // Get next music
+  const musicPath = await getNextMusic();
   if (musicPath) {
     console.log(`Music: ${musicPath}`);
   }
