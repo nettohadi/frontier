@@ -1,11 +1,86 @@
 import OpenAI from 'openai';
 import type { Topic } from '@prisma/client';
 import type { ScriptGenerationResult } from '@/types';
+import { getNextOpeningHookIndex } from './rotation';
 
 const client = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   baseURL: 'https://openrouter.ai/api/v1',
 });
+
+// Opening hook styles for rotation - ensures variety across videos
+const OPENING_HOOK_STYLES = [
+  {
+    id: 'poetic',
+    name: 'Pernyataan Puitis',
+    instruction:
+      'Gunakan pernyataan puitis yang misterius — kalimat pembuka yang indah, penuh misteri. Contoh: "Ada sesuatu yang bergerak dalam keheningan malam ini..."',
+  },
+  {
+    id: 'metaphor',
+    name: 'Metafora Pembuka',
+    instruction:
+      'Gunakan metafora pembuka yang langsung menarik — perbandingan atau kiasan yang kuat. Contoh: "Seperti air yang selalu mencari jalan ke laut..."',
+  },
+  {
+    id: 'paradox',
+    name: 'Pernyataan Paradoks',
+    instruction:
+      'Gunakan pernyataan paradoks yang membuat berpikir — kontradiksi yang mengandung kebenaran. Contoh: "Dalam kekosongan itulah kesempurnaan bersemayam..."',
+  },
+  {
+    id: 'imaginative',
+    name: 'Ajakan Imajinatif',
+    instruction:
+      'Gunakan ajakan imajinatif — "Bayangkan...", "Coba rasakan...". Contoh: "Bayangkan sebuah cahaya yang tak pernah padam di dalam dadamu..."',
+  },
+  {
+    id: 'simple-profound',
+    name: 'Pengamatan Sederhana',
+    instruction:
+      'Gunakan pengamatan sederhana yang dalam — observasi harian yang mengandung makna spiritual. Contoh: "Daun yang jatuh tidak pernah mengeluh ke mana ia akan mendarat..."',
+  },
+  {
+    id: 'mini-story',
+    name: 'Kisah Mini',
+    instruction:
+      'Gunakan kisah mini atau anekdot singkat — cerita pendek 1-2 kalimat. Contoh: "Seorang pengelana berhenti di tepi sungai dan bertanya kepada airnya..."',
+  },
+  {
+    id: 'inner-location',
+    name: 'Lokasi Batin',
+    instruction:
+      'Gunakan rujukan lokasi dalam diri — menunjuk ke tempat di dalam jiwa. Contoh: "Di suatu tempat dalam dirimu, ada ruang yang tak pernah disentuh kebisingan..."',
+  },
+  {
+    id: 'temporal',
+    name: 'Pembuka Temporal',
+    instruction:
+      'Gunakan penanda waktu yang menciptakan suasana — "Malam ini...", "Pagi ini...", "Di senja ini...". Contoh: "Malam ini, ketika dunia tertidur, ada yang tetap terjaga dalam dadamu..."',
+  },
+  {
+    id: 'direct-invitation',
+    name: 'Undangan Langsung',
+    instruction:
+      'Gunakan ajakan langsung yang lembut — "Lihatlah...", "Dengarkan...", "Rasakanlah...". Contoh: "Lihatlah bagaimana langit tidak pernah menolak awan yang datang..."',
+  },
+  {
+    id: 'reflective-search',
+    name: 'Pencarian Reflektif',
+    instruction:
+      'Gunakan pembuka yang merenungkan pencarian — "Mungkin yang kita cari...", "Barangkali selama ini...". Contoh: "Mungkin yang kita cari selama ini bukan di luar sana, tapi di sini, dalam diam..."',
+  },
+];
+
+// Get next opening hook using database-persisted rotation
+async function getNextOpeningHook() {
+  const index = await getNextOpeningHookIndex(OPENING_HOOK_STYLES.length);
+  const hook = OPENING_HOOK_STYLES[index];
+  console.log(
+    `[ScriptGen] Opening hook (${index + 1}/${OPENING_HOOK_STYLES.length}): ${hook.name}`
+  );
+  return hook;
+}
 
 // Full Hakikat/Sufi prompt for spiritual video generation
 const HAKIKAT_SYSTEM_PROMPT = `Kamu adalah seorang penyair spiritual kontemporer yang menulis renungan mendalam bertema tasawuf Islam untuk narasi video pendek berdurasi 1 menit 30 detik. Gaya tulisanmu terinspirasi dari tradisi sufi — Rumi, Ibn Arabi, Al-Ghazali, Rabiatul Adawiyah, Abu Yazid al-Bustami, Hafidz asy-Syirazi, Nizami Ganjavi, Abdul Qadir Jailani, dan Bahauddin an-Naqsabandi — namun disampaikan dengan bahasa yang segar, puitis, dan membumi untuk muslim masa kini.
@@ -19,18 +94,10 @@ Gaya Bahasa:
 - Berbicara KEPADA pendengar muslim, bukan TENTANG pendengar
 - Mengajak merenungkan, bukan memberikan jawaban final
 - Membuka pintu kesadaran, bukan memaksakan kesimpulan
-- Gunakan istilah-istilah tasawuf dan Islam: dzikir, qalbu, ruh, nafs, tawakkal, ridho, fana, baqa, muraqabah, taubat, syukur, sabar, mahabbah, ma'rifat, dll.
 - Gunakan kata "Tuhan", "Sang Pencipta", "Sang Kekasih", "Yang Maha", "Dia" — JANGAN gunakan kata "Allah" atau "Robb"
 
 Struktur:
-1. Opening Hook — VARIASIKAN cara membuka, pilih salah satu secara acak:
-   - Pernyataan puitis yang misterius (PALING DIREKOMENDASIKAN)
-   - Metafora pembuka yang langsung menarik
-   - Pernyataan paradoks yang membuat berpikir
-   - Ajakan imajinatif ("Bayangkan...", "Coba rasakan...")
-   - Pengamatan sederhana yang dalam
-   - Kisah mini atau anekdot singkat
-   - JANGAN PERNAH memulai dengan pertanyaan
+1. Opening Hook — Gunakan gaya pembuka yang ditentukan dalam instruksi pengguna. JANGAN PERNAH memulai dengan pertanyaan.
 2. 2-3 Bagian Inti — Singkat dan padat, masing-masing menggunakan metafora dari alam, kehidupan sehari-hari, atau kisah para sufi
 3. Closing (SANGAT PENTING untuk tone akhir):
    - Bukan kesimpulan, melainkan pertanyaan, undangan, atau keheningan yang meninggalkan jejak di hati
@@ -83,18 +150,6 @@ HINDARI:
 - JANGAN PERNAH memulai dengan pertanyaan (seperti "Pernahkah...", "Bagaimana jika...", "Siapa yang...")
 - Kalimat pembuka yang berakhir dengan tanda tanya (?)
 
-GUNAKAN:
-- "Ada sesuatu yang..." (pembuka misterius)
-- "Di suatu tempat dalam dirimu..."
-- "Malam ini..." atau "Pagi ini..."
-- "Lihatlah..."
-- "Dengarkan..."
-- "Mungkin yang kita cari..."
-- "Seperti..." (metafora langsung)
-- Kalimat pernyataan yang puitis dan menggugah
-- Nada yang menemani, bukan mengarahkan
-- Mengundang cinta kepada Tuhan, bukan ketakutan semata
-
 PRINSIP:
 Kamu bukan ustadz yang berceramah. Kamu adalah teman seperjalanan di jalan Tuhan yang berbisik di malam sunyi — menunjuk ke arah Sang Kekasih, bukan menjelaskan siapa Dia. Seperti Rumi yang membuat orang jatuh cinta kepada Tuhan melalui puisinya.
 
@@ -137,12 +192,20 @@ export interface GenerateScriptParams {
 export async function generateScript({
   theme,
 }: GenerateScriptParams): Promise<ScriptGenerationResult> {
+  // Get next opening hook in rotation
+  const openingHook = await getNextOpeningHook();
+
   const userPrompt = `Topik yang dipilih: ${theme.name}
 Deskripsi topik: ${theme.description}
 
+=== GAYA PEMBUKA YANG WAJIB DIGUNAKAN ===
+${openingHook.name}: ${openingHook.instruction}
+
+PENTING: Kamu WAJIB menggunakan gaya pembuka "${openingHook.name}" di atas. Jangan gunakan gaya pembuka lain.
+
 Tulis renungan spiritual berdasarkan topik di atas.`;
 
-  console.log(`[ScriptGen] Generating script for topic: ${theme.name}`);
+  console.log(`[ScriptGen] Generating for topic: ${theme.name}, hook: ${openingHook.name}`);
 
   const response = await client.chat.completions.create({
     model: 'google/gemini-2.5-flash',

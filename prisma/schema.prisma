@@ -84,6 +84,11 @@ model Video {
   uploadedToYouTube Boolean         @default(false)
   uploadSchedule    UploadSchedule?
 
+  // Auto-upload settings
+  autoUpload        Boolean         @default(false)  // Should auto-upload when complete
+  uploadMode        String?         // 'immediate' | 'scheduled' | null
+  uploadError       String?         @db.Text  // Error message if auto-upload failed
+
   @@index([status])
   @@index([createdAt])
 }
@@ -123,6 +128,7 @@ model RotationCounter {
   music       Int      @default(0)
   overlay     Int      @default(0)
   colorScheme Int      @default(0)
+  openingHook Int      @default(0)
   updatedAt   DateTime @updatedAt
 }
 
