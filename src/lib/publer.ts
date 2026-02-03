@@ -197,7 +197,8 @@ export class PublerService {
             accounts: [accountObj],
             networks: {
               youtube: {
-                type: params.isShort !== false ? 'short' : 'video',
+                type: 'video',
+                isShort: params.isShort !== false,
                 media: params.mediaIds.map((id) => ({ id, type: 'video' })),
                 title: params.title,
                 description: descriptionWithTags,
