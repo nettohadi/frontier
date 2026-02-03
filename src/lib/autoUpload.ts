@@ -31,13 +31,28 @@ export async function triggerAutoUpload(
       throw new Error('Video has no output file');
     }
 
-    // Check if already has upload schedule
+    // Check if already has upload schedule (e.g., from regenerate)
     const existingSchedule = await prisma.uploadSchedule.findUnique({
       where: { videoId },
     });
 
     if (existingSchedule) {
-      console.log(`[AutoUpload] Video ${videoId} already has upload schedule, skipping`);
+      console.log(
+        `[AutoUpload] Video ${videoId} already has upload schedule ${existingSchedule.id}, triggering upload`
+      );
+      // Update the schedule with video title/description if not set
+      if (!existingSchedule.youtubeTitle || !existingSchedule.youtubeDescription) {
+        await prisma.uploadSchedule.update({
+          where: { id: existingSchedule.id },
+          data: {
+            youtubeTitle: existingSchedule.youtubeTitle || video.title,
+            youtubeDescription: existingSchedule.youtubeDescription || video.description,
+          },
+        });
+      }
+      // Trigger the upload for the existing schedule
+      await processUpload(existingSchedule.id);
+      console.log(`[AutoUpload] Completed for video ${videoId} (existing schedule)`);
       return;
     }
 
@@ -60,10 +75,20 @@ export async function triggerAutoUpload(
 
     if (mode === 'immediate') {
       // Immediate upload - schedule for now
-      scheduleId = await createImmediateSchedule(videoId, settings.defaultChannelId, video.title, video.description);
+      scheduleId = await createImmediateSchedule(
+        videoId,
+        settings.defaultChannelId,
+        video.title,
+        video.description
+      );
     } else {
       // Scheduled upload - find next available slot
-      scheduleId = await assignSlotWithRetry(videoId, settings.defaultChannelId, video.title, video.description);
+      scheduleId = await assignSlotWithRetry(
+        videoId,
+        settings.defaultChannelId,
+        video.title,
+        video.description
+      );
     }
 
     console.log(`[AutoUpload] Created schedule ${scheduleId} for video ${videoId}`);
@@ -136,7 +161,9 @@ async function assignSlotWithRetry(
       // Get next available slot
       const slot = await getNextAvailableSlot();
 
-      console.log(`[AutoUpload] Attempt ${attempt}: Trying slot ${slot.slot} on ${slot.displayTime}`);
+      console.log(
+        `[AutoUpload] Attempt ${attempt}: Trying slot ${slot.slot} on ${slot.displayTime}`
+      );
 
       // Try to create schedule atomically
       const schedule = await prisma.uploadSchedule.create({
@@ -157,10 +184,7 @@ async function assignSlotWithRetry(
       lastError = error as Error;
 
       // Check if it's a unique constraint violation (race condition)
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         console.warn(`[AutoUpload] Slot taken (attempt ${attempt}), retrying...`);
         // Small delay before retry
         await sleep(100 * attempt);
@@ -226,16 +250,21 @@ export async function previewUpcomingSlots(count: number): Promise<
 /**
  * Get next available slot, excluding already "previewed" slots
  */
-async function getNextAvailableSlotWithExclusions(
-  exclusions: Map<string, Set<number>>
-): Promise<{
+async function getNextAvailableSlotWithExclusions(exclusions: Map<string, Set<number>>): Promise<{
   date: Date;
   slot: number;
   displayTime: string;
   scheduledAt: Date;
 } | null> {
-  const { getNowInTimezone, SCHEDULE_CONFIG, slotToHour, formatDateOnly, hourToSlot, getDateForSchedule, createScheduledAt } =
-    await import('./scheduling');
+  const {
+    getNowInTimezone,
+    SCHEDULE_CONFIG,
+    slotToHour,
+    formatDateOnly,
+    hourToSlot,
+    getDateForSchedule,
+    createScheduledAt,
+  } = await import('./scheduling');
   const { startOfDay, addDays } = await import('date-fns');
 
   const nowInGMT8 = getNowInTimezone();

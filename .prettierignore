@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+
+# Database
+prisma/dev.db
+prisma/migrations/
+
+# Generated files
+*.generated.*
+
+# Cache
+.cache/
+
+# Misc
+*.log
+.DS_Store

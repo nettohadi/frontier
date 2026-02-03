@@ -24,17 +24,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -73,7 +64,10 @@ interface VideoItem {
 
 const statusConfig: Record<
   string,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' }
+  {
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info';
+  }
 > = {
   PENDING: { label: 'Pending', variant: 'secondary' },
   GENERATING_SCRIPT: { label: 'Generating Script', variant: 'info' },
@@ -149,7 +143,7 @@ export default function DashboardPage() {
 
   const fetchVideos = async () => {
     try {
-      const res = await fetch('/api/videos?limit=50');
+      const res = await fetch('/api/videos?limit=20');
       const data = await res.json();
       setVideos(data.videos || []);
     } catch (err) {
@@ -212,6 +206,27 @@ export default function DashboardPage() {
     }
   };
 
+  const triggerUploadNow = async (scheduleId: string) => {
+    setUploadingVideoId(scheduleId);
+    try {
+      const res = await fetch('/api/upload/youtube/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scheduleId }),
+      });
+      if (res.ok) {
+        fetchVideos();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to start upload');
+      }
+    } catch (err) {
+      console.error('Failed to start upload:', err);
+    } finally {
+      setUploadingVideoId(null);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString();
   };
@@ -224,21 +239,25 @@ export default function DashboardPage() {
     <>
       {/* Video Player Modal */}
       <Dialog open={!!playingVideo} onOpenChange={() => setPlayingVideo(null)}>
-        <DialogContent className="max-w-md p-0 overflow-hidden">
-          <DialogHeader className="p-4 pb-0">
-            <DialogTitle>{playingVideo?.title || playingVideo?.topicRelation?.name || playingVideo?.topic}</DialogTitle>
+        <DialogContent className="flex h-[90dvh] max-w-md flex-col overflow-hidden p-0">
+          <DialogHeader className="shrink-0 p-4 pb-2">
+            <DialogTitle>
+              {playingVideo?.title || playingVideo?.topicRelation?.name || playingVideo?.topic}
+            </DialogTitle>
             {playingVideo?.title && (
-              <p className="text-sm text-muted-foreground">{playingVideo?.topicRelation?.name || playingVideo?.topic}</p>
+              <p className="text-muted-foreground text-sm">
+                {playingVideo?.topicRelation?.name || playingVideo?.topic}
+              </p>
             )}
           </DialogHeader>
-          <div className="relative aspect-[9/16] bg-black">
+          <div className="relative min-h-0 flex-1 bg-black">
             {playingVideo && (
-              <video controls autoPlay className="h-full w-full">
+              <video controls autoPlay className="h-full w-full object-contain">
                 <source src={`/api/videos/${playingVideo.id}/stream`} type="video/mp4" />
               </video>
             )}
           </div>
-          <div className="p-4 pt-2 flex gap-2">
+          <div className="flex shrink-0 gap-2 p-4 pt-2">
             <Button size="sm" variant="outline" asChild className="flex-1 gap-1">
               <a href={playingVideo ? `/api/videos/${playingVideo.id}/download` : '#'}>
                 <Download className="h-4 w-4" />
@@ -258,13 +277,13 @@ export default function DashboardPage() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:h-16 md:px-6">
+      <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
         <h1 className="text-lg font-semibold md:text-xl">Dashboard</h1>
         <Button
           onClick={() => setGenerateModalOpen(true)}
           disabled={creating}
           size="sm"
-          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 md:size-default"
+          className="from-primary hover:from-primary/90 md:size-default gap-2 bg-gradient-to-r to-violet-600 hover:to-violet-600/90"
         >
           {creating ? (
             <>
@@ -282,18 +301,18 @@ export default function DashboardPage() {
       </header>
 
       {/* Page Content */}
-      <div className="p-4 md:p-6">
+      <div className="overflow-x-hidden p-4 md:p-6">
         <div className="space-y-4 md:space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-4 gap-2 md:gap-4">
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <Card className="border-primary/20 from-primary/5 to-primary/10 bg-gradient-to-br">
               <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 md:h-12 md:w-12">
-                  <Video className="h-4 w-4 text-primary md:h-6 md:w-6" />
+                <div className="bg-primary/20 flex h-8 w-8 items-center justify-center rounded-full md:h-12 md:w-12">
+                  <Video className="text-primary h-4 w-4 md:h-6 md:w-6" />
                 </div>
                 <div className="mt-1 text-center md:mt-0 md:text-left">
                   <p className="text-lg font-bold md:text-2xl">{videos.length}</p>
-                  <p className="text-[10px] text-muted-foreground md:text-sm">Total</p>
+                  <p className="text-muted-foreground text-[10px] md:text-sm">Total</p>
                 </div>
               </CardContent>
             </Card>
@@ -304,7 +323,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-1 text-center md:mt-0 md:text-left">
                   <p className="text-lg font-bold md:text-2xl">{completedVideos}</p>
-                  <p className="text-[10px] text-muted-foreground md:text-sm">Done</p>
+                  <p className="text-muted-foreground text-[10px] md:text-sm">Done</p>
                 </div>
               </CardContent>
             </Card>
@@ -319,7 +338,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-1 text-center md:mt-0 md:text-left">
                   <p className="text-lg font-bold md:text-2xl">{processingVideos}</p>
-                  <p className="text-[10px] text-muted-foreground md:text-sm">Active</p>
+                  <p className="text-muted-foreground text-[10px] md:text-sm">Active</p>
                 </div>
               </CardContent>
             </Card>
@@ -330,7 +349,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-1 text-center md:mt-0 md:text-left">
                   <p className="text-lg font-bold md:text-2xl">{failedVideos}</p>
-                  <p className="text-[10px] text-muted-foreground md:text-sm">Failed</p>
+                  <p className="text-muted-foreground text-[10px] md:text-sm">Failed</p>
                 </div>
               </CardContent>
             </Card>
@@ -350,13 +369,13 @@ export default function DashboardPage() {
             <CardContent>
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
                 </div>
               ) : videos.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Video className="mb-4 h-12 w-12 text-muted-foreground/50" />
+                  <Video className="text-muted-foreground/50 mb-4 h-12 w-12" />
                   <p className="text-lg font-medium">No videos yet</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Create your first video above to get started
                   </p>
                 </div>
@@ -371,27 +390,26 @@ export default function DashboardPage() {
                       )}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold mb-1 truncate">{video.title || video.topicRelation?.name || video.topic}</h3>
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className="text-xs text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="mb-1 truncate font-semibold">
+                            {video.title || video.topicRelation?.name || video.topic}
+                          </h3>
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <span className="text-muted-foreground text-xs">
                               {video.topicRelation?.name || video.topic}
                             </span>
                           </div>
                           <div className="flex flex-wrap items-center gap-2">
                             <Badge
                               variant={statusConfig[video.status]?.variant || 'secondary'}
-                              className={cn(
-                                'gap-1',
-                                isProcessing(video.status) && 'animate-pulse'
-                              )}
+                              className={cn('gap-1', isProcessing(video.status) && 'animate-pulse')}
                             >
                               {isProcessing(video.status) && (
                                 <Loader2 className="h-3 w-3 animate-spin" />
                               )}
                               {statusConfig[video.status]?.label || video.status}
                             </Badge>
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <span className="text-muted-foreground flex items-center gap-1 text-xs">
                               <Clock className="h-3 w-3" />
                               {formatDate(video.createdAt)}
                             </span>
@@ -400,10 +418,11 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Pipeline Progress */}
-                      <div className="mt-3 flex items-center overflow-x-auto rounded-lg bg-muted/50 p-2 md:mt-4 md:p-3">
+                      <div className="bg-muted/50 mt-3 flex max-w-3xl items-center rounded-lg p-1.5 md:mt-4 md:p-3">
                         {pipelineSteps.map((step, index, arr) => {
                           const state = getStepState(video, step);
-                          const nextState = index < arr.length - 1 ? getStepState(video, arr[index + 1]) : null;
+                          const nextState =
+                            index < arr.length - 1 ? getStepState(video, arr[index + 1]) : null;
                           const Icon = step.icon;
                           return (
                             <div key={step.key} className="flex flex-1 items-center">
@@ -420,13 +439,13 @@ export default function DashboardPage() {
                                     )}
                                   >
                                     {state === 'completed' ? (
-                                      <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
+                                      <CheckCircle2 className="h-3.5 w-3.5 md:h-5 md:w-5" />
                                     ) : state === 'active' ? (
-                                      <Loader2 className="h-4 w-4 animate-spin md:h-5 md:w-5" />
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin md:h-5 md:w-5" />
                                     ) : (
-                                      <Icon className="h-4 w-4 md:h-5 md:w-5" />
+                                      <Icon className="h-3.5 w-3.5 md:h-5 md:w-5" />
                                     )}
-                                    <span className="mt-0.5 text-[9px] font-medium md:text-[10px]">
+                                    <span className="mt-0.5 hidden text-[10px] font-medium sm:block">
                                       {step.label}
                                     </span>
                                   </div>
@@ -440,8 +459,8 @@ export default function DashboardPage() {
                                     state === 'completed' && nextState === 'completed'
                                       ? 'bg-emerald-500'
                                       : state === 'completed'
-                                      ? 'bg-gradient-to-r from-emerald-500 to-muted'
-                                      : 'bg-muted'
+                                        ? 'to-muted bg-gradient-to-r from-emerald-500'
+                                        : 'bg-muted'
                                   )}
                                 />
                               )}
@@ -453,7 +472,7 @@ export default function DashboardPage() {
                       {/* Error Message */}
                       {video.errorMessage && (
                         <div className="mt-2 rounded-lg border border-red-500/50 bg-red-500/10 p-2 md:mt-3 md:p-3">
-                          <p className="text-xs text-red-600 dark:text-red-400 md:text-sm">
+                          <p className="text-xs text-red-600 md:text-sm dark:text-red-400">
                             {video.errorMessage}
                           </p>
                         </div>
@@ -461,49 +480,75 @@ export default function DashboardPage() {
 
                       {/* Video Actions */}
                       {video.outputPath && (
-                        <div className="mt-3 flex items-center gap-2 md:mt-4">
+                        <div className="mt-3 flex flex-wrap items-center gap-1.5 md:mt-4 md:gap-2">
                           <Button
                             size="sm"
                             onClick={() => setPlayingVideo(video)}
-                            className="gap-1.5 h-8 px-3 text-xs md:gap-2 md:text-sm"
+                            className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
                           >
                             <Play className="h-3.5 w-3.5 md:h-4 md:w-4" />
                             Play
                           </Button>
-                          <Button size="sm" variant="outline" asChild className="gap-1.5 h-8 px-3 text-xs md:gap-2 md:text-sm">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            asChild
+                            className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
+                          >
                             <a href={`/api/videos/${video.id}/download`}>
                               <Download className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               <span className="hidden sm:inline">Download</span>
                             </a>
                           </Button>
                           {video.uploadedToYouTube ? (
-                            <Badge variant="success" className="gap-1 h-8 px-2.5 text-xs">
+                            <Badge variant="success" className="h-8 gap-1 px-2.5 text-xs">
                               <Youtube className="h-3 w-3" />
                               Uploaded
                             </Badge>
                           ) : video.uploadSchedule ? (
-                            <Badge
-                              variant={
-                                video.uploadSchedule.status === 'UPLOADING'
-                                  ? 'warning'
-                                  : video.uploadSchedule.status === 'FAILED'
-                                  ? 'destructive'
-                                  : 'info'
-                              }
-                              className="gap-1 h-8 px-2.5 text-xs"
-                            >
-                              <Upload className="h-3 w-3" />
-                              {video.uploadSchedule.status === 'SCHEDULED'
-                                ? 'Scheduled'
-                                : video.uploadSchedule.status === 'UPLOADING'
-                                ? `${video.uploadSchedule.progress}%`
-                                : video.uploadSchedule.status}
-                            </Badge>
+                            <>
+                              <Badge
+                                variant={
+                                  video.uploadSchedule.status === 'UPLOADING'
+                                    ? 'warning'
+                                    : video.uploadSchedule.status === 'FAILED'
+                                      ? 'destructive'
+                                      : 'info'
+                                }
+                                className="h-8 gap-1 px-2.5 text-xs"
+                              >
+                                <Upload className="h-3 w-3" />
+                                {video.uploadSchedule.status === 'SCHEDULED'
+                                  ? 'Scheduled'
+                                  : video.uploadSchedule.status === 'UPLOADING'
+                                    ? `${video.uploadSchedule.progress}%`
+                                    : video.uploadSchedule.status}
+                              </Badge>
+                              {(video.uploadSchedule.status === 'SCHEDULED' ||
+                                video.uploadSchedule.status === 'FAILED') && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
+                                  onClick={() => triggerUploadNow(video.uploadSchedule!.id)}
+                                  disabled={uploadingVideoId === video.uploadSchedule.id}
+                                >
+                                  {uploadingVideoId === video.uploadSchedule.id ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" />
+                                  ) : (
+                                    <Youtube className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                                  )}
+                                  <span className="hidden sm:inline">
+                                    {video.uploadSchedule.status === 'FAILED' ? 'Retry' : 'Upload Now'}
+                                  </span>
+                                </Button>
+                              )}
+                            </>
                           ) : (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-1.5 h-8 px-3 text-xs md:gap-2 md:text-sm"
+                              className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
                               onClick={() => scheduleUpload(video.id)}
                               disabled={uploadingVideoId === video.id}
                             >

@@ -45,8 +45,7 @@ export async function processUpload(scheduleId: string): Promise<void> {
       accountId: schedule.youtubeChannelId,
       mediaIds: [mediaId],
       title: schedule.youtubeTitle || schedule.video.title || 'Untitled Video',
-      description:
-        schedule.youtubeDescription || schedule.video.description || '',
+      description: schedule.youtubeDescription || schedule.video.description || '',
       scheduleAt: schedule.scheduledAt,
       isShort: true,
     });
@@ -78,6 +77,8 @@ export async function processUpload(scheduleId: string): Promise<void> {
           data: {
             status: 'COMPLETED',
             progress: 100,
+            // Store post_id if available (needed for Publer deletion)
+            publerJobId: jobStatus.result?.post_id || jobId,
             completedAt: new Date(),
           },
         });
@@ -101,16 +102,20 @@ export async function processUpload(scheduleId: string): Promise<void> {
       attempts++;
 
       const status = await publer.getJobStatus(jobId);
-      console.log(`[Upload] ${scheduleId}: Poll ${attempts}/${maxAttempts}, status: ${status.status}`);
+      console.log(
+        `[Upload] ${scheduleId}: Poll ${attempts}/${maxAttempts}, status: ${status.status}`
+      );
 
       if (status.status === 'completed') {
-        // Success!
+        // Success! Store the post_id for future deletion if needed
         await prisma.uploadSchedule.update({
           where: { id: scheduleId },
           data: {
             status: 'COMPLETED',
             progress: 100,
             youtubeUrl: status.result?.url || null,
+            // Store post_id if available (needed for Publer deletion)
+            publerJobId: status.result?.post_id || jobId,
             completedAt: new Date(),
           },
         });

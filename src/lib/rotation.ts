@@ -9,7 +9,7 @@ async function getNextIndex(type: RotationType, totalItems: number): Promise<num
   // Upsert to ensure row exists, then increment and get new value
   const counter = await prisma.rotationCounter.upsert({
     where: { id: 'singleton' },
-    create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0 },
+    create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
     update: {
       [type]: {
         increment: 1,

@@ -114,9 +114,7 @@ export class PublerService {
    * Returns the media ID for use in posts
    */
   async uploadMedia(filePath: string): Promise<string> {
-    const absolutePath = path.isAbsolute(filePath)
-      ? filePath
-      : path.join(process.cwd(), filePath);
+    const absolutePath = path.isAbsolute(filePath) ? filePath : path.join(process.cwd(), filePath);
 
     const fileBuffer = await readFile(absolutePath);
     const fileName = path.basename(filePath);
@@ -171,12 +169,13 @@ export class PublerService {
     // Determine post state and endpoint:
     // - draft_private: for testing (saves as draft), uses /posts/schedule
     // - scheduled: for publishing, uses /posts/schedule/publish (immediate) or /posts/schedule (future)
-    const useDraft = params.isDraft ?? (process.env.PUBLER_DRAFT_MODE === 'true');
+    const useDraft = params.isDraft ?? process.env.PUBLER_DRAFT_MODE === 'true';
     const state = useDraft ? 'draft_private' : 'scheduled';
 
     // Determine if we're doing immediate or future scheduled publishing
     const minFutureTime = new Date(Date.now() + 60 * 1000); // 1 minute from now
-    const isFutureScheduled = params.scheduleAt && params.scheduleAt.getTime() > minFutureTime.getTime();
+    const isFutureScheduled =
+      params.scheduleAt && params.scheduleAt.getTime() > minFutureTime.getTime();
 
     // Use /publish endpoint for immediate publishing, /schedule for drafts and future scheduled
     const usePublishEndpoint = !useDraft && !isFutureScheduled;
@@ -213,7 +212,9 @@ export class PublerService {
 
     const endpoint = usePublishEndpoint ? '/posts/schedule/publish' : '/posts/schedule';
     console.log('[Publer] Creating YouTube post:', JSON.stringify(body, null, 2));
-    console.log(`[Publer] Mode: ${state}, Endpoint: ${endpoint}${isFutureScheduled ? ` (scheduled for ${params.scheduleAt?.toISOString()})` : ' (immediate)'}, Tags: ${uniqueTags.join(', ')}`);
+    console.log(
+      `[Publer] Mode: ${state}, Endpoint: ${endpoint}${isFutureScheduled ? ` (scheduled for ${params.scheduleAt?.toISOString()})` : ' (immediate)'}, Tags: ${uniqueTags.join(', ')}`
+    );
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
@@ -258,7 +259,7 @@ export class PublerService {
     const descriptionWithTags = `${params.description}\n\n${uniqueTags.join(' ')}`;
 
     // Determine post state: draft for testing, scheduled for production
-    const useDraft = params.isDraft ?? (process.env.PUBLER_DRAFT_MODE === 'true');
+    const useDraft = params.isDraft ?? process.env.PUBLER_DRAFT_MODE === 'true';
 
     const body = {
       bulk: {
@@ -275,7 +276,7 @@ export class PublerService {
                 description: descriptionWithTags,
                 privacy: 'public',
                 type: 'short',
-                tags: uniqueTags.map(t => t.replace('#', '')),
+                tags: uniqueTags.map((t) => t.replace('#', '')),
               },
             },
           },
@@ -283,7 +284,9 @@ export class PublerService {
       },
     };
 
-    console.log(`[Publer] Scheduling post - Mode: ${useDraft ? 'draft' : 'scheduled'}, Tags: ${uniqueTags.join(', ')}`);
+    console.log(
+      `[Publer] Scheduling post - Mode: ${useDraft ? 'draft' : 'scheduled'}, Tags: ${uniqueTags.join(', ')}`
+    );
 
     const response = await fetch(`${this.baseUrl}/posts/schedule`, {
       method: 'POST',
@@ -333,7 +336,11 @@ export class PublerService {
     if (errorMessage) {
       // If there are failures, mark as failed even if status is "complete"
       status = 'failed';
-    } else if (result.status === 'complete' || result.status === 'completed' || result.state === 'published_posted') {
+    } else if (
+      result.status === 'complete' ||
+      result.status === 'completed' ||
+      result.state === 'published_posted'
+    ) {
       status = 'completed';
     } else if (result.status === 'failed' || result.state?.includes('failed')) {
       status = 'failed';
@@ -350,6 +357,40 @@ export class PublerService {
       },
       error: errorMessage || result.error || result.message,
     };
+  }
+
+  /**
+   * Delete a scheduled post from Publer
+   * @param postId The Publer post/job ID to delete
+   * @returns true if deleted successfully, false if not found or already deleted
+   */
+  async deletePost(postId: string): Promise<boolean> {
+    try {
+      console.log(`[Publer] Deleting post: ${postId}`);
+
+      const response = await fetch(`${this.baseUrl}/posts/${postId}`, {
+        method: 'DELETE',
+        headers: this.getHeaders(),
+      });
+
+      if (response.ok) {
+        console.log(`[Publer] Post ${postId} deleted successfully`);
+        return true;
+      }
+
+      // 404 means post not found (already deleted or never existed)
+      if (response.status === 404) {
+        console.log(`[Publer] Post ${postId} not found (may already be deleted)`);
+        return true;
+      }
+
+      const error = await response.text();
+      console.error(`[Publer] Failed to delete post ${postId}: ${error}`);
+      return false;
+    } catch (error) {
+      console.error(`[Publer] Error deleting post ${postId}:`, error);
+      return false;
+    }
   }
 
   /**
@@ -372,7 +413,7 @@ export class PublerService {
     const descriptionWithTags = `${params.description}\n\n${uniqueTags.join(' ')}`;
 
     // Check if draft mode is enabled
-    const useDraft = params.isDraft ?? (process.env.PUBLER_DRAFT_MODE === 'true');
+    const useDraft = params.isDraft ?? process.env.PUBLER_DRAFT_MODE === 'true';
 
     if (useDraft) {
       // In draft mode, create a draft instead of publishing
@@ -389,7 +430,7 @@ export class PublerService {
           description: descriptionWithTags,
           privacy: 'public',
           type: 'short',
-          tags: uniqueTags.map(t => t.replace('#', '')),
+          tags: uniqueTags.map((t) => t.replace('#', '')),
         },
       },
     };
