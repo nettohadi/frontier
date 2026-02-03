@@ -201,7 +201,7 @@ export class PublerService {
                 isShort: params.isShort !== false,
                 media: params.mediaIds.map((id) => ({ id, type: 'video' })),
                 title: params.title,
-                description: descriptionWithTags,
+                text: descriptionWithTags,
                 privacy: 'public',
                 tags: uniqueTags.map((t) => t.replace('#', '')),
               },
