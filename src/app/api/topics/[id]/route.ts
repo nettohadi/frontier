@@ -3,10 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/topics/:id - Get a single topic
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const topic = await prisma.topic.findUnique({
@@ -19,20 +16,14 @@ export async function GET(
     });
 
     if (!topic) {
-      return NextResponse.json(
-        { error: 'Topic not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
     }
 
     return NextResponse.json(topic);
   } catch (error) {
     console.error('Error getting topic:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Internal server error', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error', message }, { status: 500 });
   }
 }
 
@@ -43,10 +34,7 @@ const UpdateTopicSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -58,10 +46,7 @@ export async function PUT(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { error: 'Topic not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
     }
 
     // If name is being changed, check for duplicates
@@ -70,10 +55,7 @@ export async function PUT(
         where: { name: data.name },
       });
       if (duplicate) {
-        return NextResponse.json(
-          { error: 'Topic with this name already exists' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Topic with this name already exists' }, { status: 400 });
       }
     }
 
@@ -92,10 +74,7 @@ export async function PUT(
     }
     console.error('Error updating topic:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Internal server error', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error', message }, { status: 500 });
   }
 }
 
@@ -118,10 +97,7 @@ export async function DELETE(
     });
 
     if (!topic) {
-      return NextResponse.json(
-        { error: 'Topic not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
     }
 
     if (topic._count.videos > 0) {
@@ -139,9 +115,6 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting topic:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Internal server error', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error', message }, { status: 500 });
   }
 }

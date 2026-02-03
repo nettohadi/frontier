@@ -6,10 +6,7 @@ import { triggerAutoUpload } from '@/lib/autoUpload';
  * POST /api/videos/[id]/retry-upload
  * Retry a failed auto-upload for a video
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -24,17 +21,11 @@ export async function POST(
     }
 
     if (video.status !== 'COMPLETED') {
-      return NextResponse.json(
-        { error: 'Video is not ready for upload' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Video is not ready for upload' }, { status: 400 });
     }
 
     if (!video.outputPath) {
-      return NextResponse.json(
-        { error: 'Video has no output file' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Video has no output file' }, { status: 400 });
     }
 
     // Check if there's an existing upload schedule that's not failed
@@ -76,9 +67,6 @@ export async function POST(
   } catch (error) {
     console.error('Error retrying upload:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Failed to retry upload', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to retry upload', message }, { status: 500 });
   }
 }

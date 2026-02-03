@@ -68,7 +68,9 @@ export async function POST(request: NextRequest) {
       await prisma.uploadSchedule.delete({
         where: { id: existingSchedule.id },
       });
-      console.log(`[Upload] Deleted previous ${existingSchedule.status} schedule for retry: ${existingSchedule.id}`);
+      console.log(
+        `[Upload] Deleted previous ${existingSchedule.status} schedule for retry: ${existingSchedule.id}`
+      );
     }
 
     // Get Publer settings for channel
@@ -80,7 +82,10 @@ export async function POST(request: NextRequest) {
     const credentials = getPublerCredentials(settings || undefined);
     if (!credentials) {
       return NextResponse.json(
-        { error: 'Publer not configured. Set PUBLER_KEY and PUBLER_WORKSPACE_ID in .env or configure in Settings.' },
+        {
+          error:
+            'Publer not configured. Set PUBLER_KEY and PUBLER_WORKSPACE_ID in .env or configure in Settings.',
+        },
         { status: 400 }
       );
     }

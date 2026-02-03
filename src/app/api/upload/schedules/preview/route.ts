@@ -29,9 +29,6 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error previewing slots:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Failed to preview slots', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to preview slots', message }, { status: 500 });
   }
 }

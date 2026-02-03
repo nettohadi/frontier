@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, AlertCircle, Calendar, Upload, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface GenerateConfig {
   count: number;
@@ -117,17 +118,17 @@ export function GenerateModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md h-[95vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="flex h-[90dvh] w-[95%] max-w-md flex-col p-0">
+        <DialogHeader className="flex-shrink-0 border-b p-4">
           <DialogTitle>Generate Videos</DialogTitle>
           <DialogDescription>
             Generate one or more videos with optional automatic YouTube upload.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0 space-y-4 py-4">
+        <div className={cn('flex min-h-0 flex-1 flex-col space-y-4', 'h-[80%] overflow-auto p-4')}>
           {/* Video Count */}
-          <div className="flex-shrink-0 space-y-2">
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">How many videos?</label>
             <div className="flex items-center gap-3">
               <Button
@@ -140,13 +141,11 @@ export function GenerateModal({
                 -
               </Button>
               <Input
-                type="number"
+                type="text"
                 min={1}
                 max={10}
                 value={count}
-                onChange={(e) =>
-                  setCount(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))
-                }
+                onChange={(e) => setCount(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))}
                 className="w-20 text-center"
               />
               <Button
@@ -158,12 +157,12 @@ export function GenerateModal({
               >
                 +
               </Button>
-              <span className="text-sm text-muted-foreground">Max 10</span>
+              <span className="text-muted-foreground text-sm">Max 10</span>
             </div>
           </div>
 
           {/* Upload Mode */}
-          <div className="flex-shrink-0 space-y-3">
+          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">After generation:</label>
             <div className="space-y-2">
               <UploadOption
@@ -194,7 +193,7 @@ export function GenerateModal({
             {/* Config Error */}
             {configError && uploadMode !== 'none' && (
               <div className="flex items-start gap-2 rounded-md bg-yellow-500/10 p-3 text-sm text-yellow-600">
-                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>{configError}</span>
               </div>
             )}
@@ -202,24 +201,24 @@ export function GenerateModal({
 
           {/* Schedule Preview - Scrollable */}
           {showSlotPreview && (
-            <div className="flex-1 min-h-0 rounded-md border flex flex-col overflow-hidden">
-              <div className="flex-shrink-0 p-3 border-b">
+            <div className="flex min-h-[200px] flex-1 flex-col overflow-hidden rounded-md border">
+              <div className="flex-shrink-0 border-b p-3">
                 <div className="text-sm font-medium">Schedule Preview</div>
               </div>
-              <ScrollArea className="flex-1 h-full">
+              <ScrollArea className="h-full flex-1">
                 <div className="p-3">
                   {loadingSlots ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Loading available slots...
                     </div>
                   ) : slotsError ? (
                     <div className="flex items-start gap-2 text-sm text-yellow-600">
-                      <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                       <span>{slotsError}</span>
                     </div>
                   ) : previewSlots.length > 0 ? (
-                    <ul className="space-y-1 text-sm text-muted-foreground">
+                    <ul className="text-muted-foreground space-y-1 text-sm">
                       {previewSlots.map((slot, i) => (
                         <li key={i} className="flex items-center gap-2">
                           <span className="w-4 text-center">{i + 1}.</span>
@@ -234,7 +233,7 @@ export function GenerateModal({
           )}
         </div>
 
-        <DialogFooter className="flex-shrink-0">
+        <DialogFooter className="flex-shrink-0 border-t p-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
@@ -279,19 +278,17 @@ function UploadOption({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`w-full flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
+      className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
         selected
           ? 'border-primary bg-primary/5'
           : disabled
-          ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
-          : 'border-border hover:border-primary/50 hover:bg-accent/50'
+            ? 'border-muted bg-muted/50 cursor-not-allowed opacity-50'
+            : 'border-border hover:border-primary/50 hover:bg-accent/50'
       }`}
     >
       <div
         className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border ${
-          selected
-            ? 'border-primary bg-primary text-primary-foreground'
-            : 'border-muted-foreground'
+          selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground'
         }`}
       >
         {selected && <div className="h-2 w-2 rounded-full bg-current" />}
@@ -301,7 +298,7 @@ function UploadOption({
           {icon}
           <span className="font-medium">{title}</span>
         </div>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-muted-foreground text-sm">{description}</p>
       </div>
     </button>
   );

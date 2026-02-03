@@ -113,16 +113,20 @@ export async function renderVideo(options: RenderOptions): Promise<void> {
       args.push(
         '-filter_complex',
         `[0:v]${videoFilter}[vout];[1:a]volume=${voiceVol}[voice];[2:a]volume=${musicVol}[music];[voice][music]amix=inputs=2:duration=first:dropout_transition=2:normalize=0[aout]`,
-        '-map', '[vout]',
-        '-map', '[aout]'
+        '-map',
+        '[vout]',
+        '-map',
+        '[aout]'
       );
     } else {
       // Audio mixing only
       args.push(
         '-filter_complex',
         `[1:a]volume=${voiceVol}[voice];[2:a]volume=${musicVol}[music];[voice][music]amix=inputs=2:duration=first:dropout_transition=2:normalize=0[aout]`,
-        '-map', '0:v',
-        '-map', '[aout]'
+        '-map',
+        '0:v',
+        '-map',
+        '[aout]'
       );
     }
   } else {
@@ -298,11 +302,16 @@ export async function extractThumbnail(
   const ffmpegPath = getFFmpegPath();
   return new Promise((resolve, reject) => {
     const args = [
-      '-i', videoPath,
-      '-ss', String(timeInSeconds),
-      '-vframes', '1',
-      '-vf', 'scale=720:-2',
-      '-q:v', '3',
+      '-i',
+      videoPath,
+      '-ss',
+      String(timeInSeconds),
+      '-vframes',
+      '1',
+      '-vf',
+      'scale=720:-2',
+      '-q:v',
+      '3',
       outputPath,
       '-y',
     ];
@@ -328,9 +337,7 @@ export async function extractThumbnail(
   });
 }
 
-export async function renderImageBasedVideo(
-  options: ImageBasedRenderOptions
-): Promise<void> {
+export async function renderImageBasedVideo(options: ImageBasedRenderOptions): Promise<void> {
   const {
     imagePaths,
     audioPath,

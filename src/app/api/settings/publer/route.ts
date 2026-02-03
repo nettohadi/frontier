@@ -83,7 +83,9 @@ export async function POST() {
 
     if (!credentials) {
       return NextResponse.json(
-        { error: 'Publer API key and workspace ID are required. Please configure them in Settings.' },
+        {
+          error: 'Publer API key and workspace ID are required. Please configure them in Settings.',
+        },
         { status: 400 }
       );
     }

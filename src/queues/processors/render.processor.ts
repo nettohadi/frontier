@@ -64,7 +64,12 @@ export async function processRender(videoId: string): Promise<void> {
 }
 
 async function renderWithBackgroundVideo(
-  video: { id: string; audioPath: string | null; srtPath: string | null; background: { name: string; filename: string } | null },
+  video: {
+    id: string;
+    audioPath: string | null;
+    srtPath: string | null;
+    background: { name: string; filename: string } | null;
+  },
   finalOutputPath: string,
   assetsPath: string,
   musicPath: string | null

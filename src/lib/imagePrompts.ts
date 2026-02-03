@@ -169,7 +169,9 @@ export async function generateImagePrompts(
 ): Promise<ImagePrompt[]> {
   // Get next color scheme in rotation
   const colorScheme = await getNextColorScheme();
-  console.log(`[ImagePrompts] Generating prompts for topic: ${topicName}, color scheme: ${colorScheme.name}`);
+  console.log(
+    `[ImagePrompts] Generating prompts for topic: ${topicName}, color scheme: ${colorScheme.name}`
+  );
 
   const userPrompt = `Topik: ${topicName}
 

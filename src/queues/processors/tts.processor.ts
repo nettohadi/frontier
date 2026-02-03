@@ -12,14 +12,9 @@ export async function processTts(videoId: string): Promise<void> {
 
   console.log(`[${videoId}] Generating TTS audio...`);
 
-  const { audioPath, durationMs } = await generateSpeechWithTimestamps(
-    video.script,
-    videoId
-  );
+  const { audioPath, durationMs } = await generateSpeechWithTimestamps(video.script, videoId);
 
-  console.log(
-    `[${videoId}] Audio generated: ${audioPath} (${(durationMs / 1000).toFixed(1)}s)`
-  );
+  console.log(`[${videoId}] Audio generated: ${audioPath} (${(durationMs / 1000).toFixed(1)}s)`);
 
   await prisma.video.update({
     where: { id: videoId },

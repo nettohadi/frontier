@@ -166,21 +166,25 @@ export default function SettingsPage() {
         isGenerating={creating}
       />
 
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:h-16 md:px-6">
+      <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
         <h1 className="text-lg font-semibold md:text-xl">Settings</h1>
         <Button
           onClick={() => setGenerateModalOpen(true)}
           disabled={creating}
           size="sm"
-          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 md:size-default"
+          className="from-primary hover:from-primary/90 md:size-default gap-2 bg-gradient-to-r to-violet-600 hover:to-violet-600/90"
         >
-          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {creating ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
           <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
           <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
         </Button>
       </header>
 
-      <div className="p-4 space-y-4 max-w-2xl md:p-6 md:space-y-6">
+      <div className="max-w-2xl space-y-4 p-4 md:space-y-6 md:p-6">
         <Card>
           <CardHeader className="pb-3 md:pb-6">
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
@@ -191,7 +195,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4 md:space-y-6">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
               </div>
             ) : (
               <>
@@ -209,17 +213,17 @@ export default function SettingsPage() {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      className="absolute top-0 right-0 h-full px-3 hover:bg-transparent"
                       onClick={() => setShowApiKey(!showApiKey)}
                     >
                       {showApiKey ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        <EyeOff className="text-muted-foreground h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <Eye className="text-muted-foreground h-4 w-4" />
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Get your API key from Publer Settings &gt; Integrations &gt; API
                   </p>
                 </div>
@@ -239,7 +243,7 @@ export default function SettingsPage() {
                     disabled={testingConnection || !settings.apiKey || !settings.workspaceId}
                     variant="outline"
                     size="sm"
-                    className="gap-2 md:size-default"
+                    className="md:size-default gap-2"
                   >
                     {testingConnection ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -254,10 +258,14 @@ export default function SettingsPage() {
                     <span className="sm:hidden">Test</span>
                   </Button>
                   {connectionStatus === 'success' && (
-                    <span className="text-xs text-emerald-500 flex items-center md:text-sm">Connected!</span>
+                    <span className="flex items-center text-xs text-emerald-500 md:text-sm">
+                      Connected!
+                    </span>
                   )}
                   {connectionStatus === 'error' && (
-                    <span className="text-xs text-red-500 flex items-center md:text-sm">Failed</span>
+                    <span className="flex items-center text-xs text-red-500 md:text-sm">
+                      Failed
+                    </span>
                   )}
                 </div>
 
@@ -268,14 +276,16 @@ export default function SettingsPage() {
                   {channelsLoading ? (
                     <div className="flex items-center gap-2 py-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm text-muted-foreground">Loading channels...</span>
+                      <span className="text-muted-foreground text-sm">Loading channels...</span>
                     </div>
                   ) : channels.length > 0 ? (
                     <>
                       {settings.defaultChannelId && (
                         <div className="flex items-center gap-2 rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-2 md:gap-3 md:p-3">
                           {(() => {
-                            const selectedChannel = channels.find(c => c.id === settings.defaultChannelId);
+                            const selectedChannel = channels.find(
+                              (c) => c.id === settings.defaultChannelId
+                            );
                             return selectedChannel ? (
                               <>
                                 {selectedChannel.avatar ? (
@@ -289,11 +299,18 @@ export default function SettingsPage() {
                                     <Youtube className="h-4 w-4 text-white md:h-5 md:w-5" />
                                   </div>
                                 )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm truncate md:text-base">{selectedChannel.name}</p>
-                                  <p className="text-[10px] text-muted-foreground md:text-xs">Active channel</p>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium md:text-base">
+                                    {selectedChannel.name}
+                                  </p>
+                                  <p className="text-muted-foreground text-[10px] md:text-xs">
+                                    Active channel
+                                  </p>
                                 </div>
-                                <Badge variant="success" className="gap-1 text-[10px] px-1.5 md:text-xs md:px-2">
+                                <Badge
+                                  variant="success"
+                                  className="gap-1 px-1.5 text-[10px] md:px-2 md:text-xs"
+                                >
                                   <CheckCircle2 className="h-2.5 w-2.5 md:h-3 md:w-3" />
                                   <span className="hidden sm:inline">Connected</span>
                                 </Badge>
@@ -304,7 +321,9 @@ export default function SettingsPage() {
                       )}
                       <Select
                         value={settings.defaultChannelId || ''}
-                        onValueChange={(value) => setSettings({ ...settings, defaultChannelId: value })}
+                        onValueChange={(value) =>
+                          setSettings({ ...settings, defaultChannelId: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a YouTube channel" />
@@ -314,7 +333,11 @@ export default function SettingsPage() {
                             <SelectItem key={channel.id} value={channel.id}>
                               <div className="flex items-center gap-2">
                                 {channel.avatar ? (
-                                  <img src={channel.avatar} alt={channel.name} className="h-5 w-5 rounded-full" />
+                                  <img
+                                    src={channel.avatar}
+                                    alt={channel.name}
+                                    className="h-5 w-5 rounded-full"
+                                  />
                                 ) : (
                                   <Youtube className="h-5 w-5 text-red-500" />
                                 )}
@@ -326,12 +349,18 @@ export default function SettingsPage() {
                       </Select>
                     </>
                   ) : (
-                    <p className="text-sm text-muted-foreground py-2">Test connection first to load channels</p>
+                    <p className="text-muted-foreground py-2 text-sm">
+                      Test connection first to load channels
+                    </p>
                   )}
                 </div>
 
                 <Button onClick={saveSettings} disabled={saving} className="w-full gap-2">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4" />
+                  )}
                   Save Settings
                 </Button>
               </>

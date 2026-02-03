@@ -274,13 +274,21 @@ Tulis renungan spiritual berdasarkan topik di atas.`;
     script = parsed.script || '';
 
     // Safety check: ensure script doesn't contain JSON artifacts
-    if (script.includes('```') || script.includes('"title"') || script.includes('"script"') || script.includes('{"')) {
+    if (
+      script.includes('```') ||
+      script.includes('"title"') ||
+      script.includes('"script"') ||
+      script.includes('{"')
+    ) {
       console.warn('[ScriptGen] Script contains JSON artifacts, cleaning up');
       script = cleanScriptContent(script);
     }
   } catch (error) {
     // Fallback if JSON parsing fails - extract script content manually
-    console.warn('[ScriptGen] Failed to parse JSON response, using fallback. Raw content starts with:', content.substring(0, 100));
+    console.warn(
+      '[ScriptGen] Failed to parse JSON response, using fallback. Raw content starts with:',
+      content.substring(0, 100)
+    );
 
     title = `Renungan: ${theme.name}`;
     description = `Sebuah renungan spiritual tentang ${theme.name.toLowerCase()}.`;
@@ -288,10 +296,7 @@ Tulis renungan spiritual berdasarkan topik di atas.`;
     // Try to extract script from the "script" field if it exists
     const scriptMatch = content.match(/"script"\s*:\s*"([\s\S]*?)(?:"\s*\}|"$)/);
     if (scriptMatch) {
-      script = scriptMatch[1]
-        .replace(/\\n/g, '\n')
-        .replace(/\\"/g, '"')
-        .trim();
+      script = scriptMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').trim();
     } else {
       // Last resort: clean up the entire content
       script = cleanScriptContent(content);
@@ -307,7 +312,9 @@ Tulis renungan spiritual berdasarkan topik di atas.`;
   }
 
   if (wordCount > 150) {
-    console.warn(`[ScriptGen] WARNING: Script has ${wordCount} words, exceeds 150 word limit! Video may be too long.`);
+    console.warn(
+      `[ScriptGen] WARNING: Script has ${wordCount} words, exceeds 150 word limit! Video may be too long.`
+    );
   }
 
   console.log(`[ScriptGen] Generated "${title}" with ${wordCount} words for topic: ${theme.name}`);

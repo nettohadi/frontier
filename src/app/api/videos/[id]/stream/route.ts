@@ -3,10 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const video = await prisma.video.findUnique({
@@ -113,9 +110,6 @@ export async function GET(
     }
   } catch (error) {
     console.error('Error streaming video:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

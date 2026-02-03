@@ -113,8 +113,9 @@ export const videoWorker = new Worker<VideoJobData>(
       if (video.autoUpload && video.uploadMode) {
         console.log(`[${videoId}] Triggering auto-upload (mode: ${video.uploadMode})`);
         // Run async - don't await to avoid blocking the worker
-        triggerAutoUpload(videoId, video.uploadMode as 'immediate' | 'scheduled')
-          .catch((err) => console.error(`[${videoId}] Auto-upload error:`, err));
+        triggerAutoUpload(videoId, video.uploadMode as 'immediate' | 'scheduled').catch((err) =>
+          console.error(`[${videoId}] Auto-upload error:`, err)
+        );
       }
     }
   },

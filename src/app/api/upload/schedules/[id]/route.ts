@@ -3,10 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { formatScheduleTime } from '@/lib/scheduling';
 
 // GET /api/upload/schedules/[id] - Get a specific schedule
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -65,10 +62,7 @@ export async function DELETE(
     }
 
     if (schedule.status === 'COMPLETED') {
-      return NextResponse.json(
-        { error: 'Cannot cancel a completed upload' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Cannot cancel a completed upload' }, { status: 400 });
     }
 
     // Delete the schedule

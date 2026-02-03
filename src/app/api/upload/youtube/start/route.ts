@@ -23,10 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (schedule.status === 'UPLOADING') {
-      return NextResponse.json(
-        { error: 'Upload is already in progress' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Upload is already in progress' }, { status: 400 });
     }
 
     if (schedule.status === 'COMPLETED') {

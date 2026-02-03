@@ -18,12 +18,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
@@ -36,11 +31,7 @@ const menuItems = [
   { id: 'settings', href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -83,9 +74,9 @@ export default function AppLayout({
 
   return (
     <TooltipProvider>
-      <div className="flex min-h-screen bg-background">
+      <div className="bg-background flex min-h-screen">
         {/* Mobile Header */}
-        <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
+        <header className="bg-background/95 fixed top-0 right-0 left-0 z-50 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -95,10 +86,10 @@ export default function AppLayout({
             <Menu className="h-5 w-5" />
           </Button>
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <div className="bg-primary/10 flex h-7 w-7 items-center justify-center rounded-lg">
+              <Sparkles className="text-primary h-3.5 w-3.5" />
             </div>
-            <span className="font-bold text-sm">Frontier</span>
+            <span className="text-sm font-bold">Frontier</span>
           </Link>
           <ThemeToggle />
         </header>
@@ -114,7 +105,7 @@ export default function AppLayout({
         {/* Sidebar */}
         <aside
           className={cn(
-            'fixed left-0 top-0 z-50 h-screen border-r bg-card transition-all duration-300',
+            'bg-card fixed top-0 left-0 z-50 h-screen border-r transition-all duration-300',
             // Desktop: always visible, can be collapsed
             'hidden md:block',
             sidebarCollapsed ? 'md:w-16' : 'md:w-64',
@@ -126,15 +117,18 @@ export default function AppLayout({
           <div className="flex h-14 items-center justify-between border-b px-4 md:h-16">
             {(!sidebarCollapsed || mobileMenuOpen) && (
               <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-lg">
+                  <Sparkles className="text-primary h-4 w-4" />
                 </div>
                 <span className="font-bold">Frontier</span>
               </Link>
             )}
             {sidebarCollapsed && !mobileMenuOpen && (
-              <Link href="/" className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Sparkles className="h-4 w-4 text-primary" />
+              <Link
+                href="/"
+                className="bg-primary/10 mx-auto flex h-8 w-8 items-center justify-center rounded-lg"
+              >
+                <Sparkles className="text-primary h-4 w-4" />
               </Link>
             )}
             {/* Mobile close button */}
@@ -181,7 +175,7 @@ export default function AppLayout({
           </nav>
 
           {/* Collapse button (desktop only) */}
-          <div className="absolute bottom-4 left-0 right-0 hidden px-2 md:block">
+          <div className="absolute right-0 bottom-4 left-0 hidden px-2 md:block">
             <Separator className="mb-4" />
             <div className="flex items-center justify-between px-2">
               {!sidebarCollapsed && <ThemeToggle />}
@@ -201,7 +195,7 @@ export default function AppLayout({
           </div>
 
           {/* Mobile bottom section */}
-          <div className="absolute bottom-4 left-0 right-0 px-2 md:hidden">
+          <div className="absolute right-0 bottom-4 left-0 px-2 md:hidden">
             <Separator className="mb-4" />
             <div className="flex items-center justify-center px-2">
               <ThemeToggle />

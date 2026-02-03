@@ -50,9 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Queue all jobs
-    await Promise.all(
-      createdVideos.map((video) => addVideoJob(video.id, 'generate-script'))
-    );
+    await Promise.all(createdVideos.map((video) => addVideoJob(video.id, 'generate-script')));
 
     return NextResponse.json(
       {
@@ -77,9 +75,6 @@ export async function POST(request: NextRequest) {
     }
     console.error('Error creating batch:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Internal server error', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error', message }, { status: 500 });
   }
 }

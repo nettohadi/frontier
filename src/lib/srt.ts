@@ -4,7 +4,8 @@ import type { WordAlignment } from '@/types';
 
 // Regex pattern for ElevenLabs v3 audio tags (without flags for reuse)
 // Matches: [whispers], [laughs], [thoughtful], [sighs], [pause], [clears throat], etc.
-const AUDIO_TAG_PATTERN = '\\[(?:whispers?|laughs?|thoughtful|sighs?|pause|clears?\\s*throat|gasps?|sobs?|giggles?|cries|yells?|shouts?|screams?)\\]';
+const AUDIO_TAG_PATTERN =
+  '\\[(?:whispers?|laughs?|thoughtful|sighs?|pause|clears?\\s*throat|gasps?|sobs?|giggles?|cries|yells?|shouts?|screams?)\\]';
 
 /**
  * Strip ElevenLabs v3 audio tags and ellipses from text
@@ -138,8 +139,7 @@ export async function generateSrt(
       word.word.endsWith('?') ||
       word.word.endsWith(',');
 
-    const shouldBreak =
-      chunkWords.length >= wordsPerChunk || endsWithPunctuation;
+    const shouldBreak = chunkWords.length >= wordsPerChunk || endsWithPunctuation;
 
     if (shouldBreak && chunkWords.length > 0) {
       entries.push({
@@ -219,9 +219,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     currentLine.push({ ...word, word: cleanWord });
 
     const endsWithPunctuation =
-      cleanWord.endsWith('.') ||
-      cleanWord.endsWith('!') ||
-      cleanWord.endsWith('?');
+      cleanWord.endsWith('.') || cleanWord.endsWith('!') || cleanWord.endsWith('?');
 
     if (currentLine.length >= wordsPerLine || endsWithPunctuation) {
       lines.push(currentLine);
@@ -256,9 +254,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     // Build plain text (no karaoke effect)
     const lineText = line.map((w) => w.word).join(' ');
-    dialogueLines.push(
-      `Dialogue: 0,${startTime},${endTime},Default,,0,0,0,,${lineText}`
-    );
+    dialogueLines.push(`Dialogue: 0,${startTime},${endTime},Default,,0,0,0,,${lineText}`);
   }
 
   const assContent = assHeader + dialogueLines.join('\n') + '\n';

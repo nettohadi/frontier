@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-background: hsl(222.2 84% 4.9%);
@@ -82,7 +82,7 @@ body {
 
 /* Ensure all buttons have pointer cursor */
 button,
-[role="button"] {
+[role='button'] {
   cursor: pointer;
 }
 
@@ -108,7 +108,8 @@ button,
 
 /* Status animations */
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
   }
   50% {

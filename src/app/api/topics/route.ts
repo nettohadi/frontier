@@ -6,10 +6,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const topics = await prisma.topic.findMany({
-      orderBy: [
-        { isActive: 'desc' },
-        { name: 'asc' },
-      ],
+      orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
       include: {
         _count: {
           select: { videos: true },
@@ -21,10 +18,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error listing topics:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Internal server error', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error', message }, { status: 500 });
   }
 }
 
@@ -46,10 +40,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
-      return NextResponse.json(
-        { error: 'Topic with this name already exists' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Topic with this name already exists' }, { status: 400 });
     }
 
     const topic = await prisma.topic.create({
@@ -70,9 +61,6 @@ export async function POST(request: NextRequest) {
     }
     console.error('Error creating topic:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json(
-      { error: 'Internal server error', message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error', message }, { status: 500 });
   }
 }
