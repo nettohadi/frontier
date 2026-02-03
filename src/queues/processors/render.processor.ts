@@ -2,8 +2,9 @@ import { unlink } from 'fs/promises';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { RenderMode } from '@prisma/client';
-import { renderVideo, renderImageBasedVideo, getNextMusic } from '@/lib/ffmpeg';
+import { renderVideo, renderImageBasedVideo, getNextMusic, extractThumbnail } from '@/lib/ffmpeg';
 import { getNextOverlay } from '@/lib/overlays';
+import { cleanupOldVideos } from '@/lib/cleanup';
 
 export async function processRender(videoId: string): Promise<void> {
   const assetsPath = process.env.ASSETS_PATH || 'assets/backgrounds';
@@ -36,6 +37,16 @@ export async function processRender(videoId: string): Promise<void> {
 
   console.log(`[${videoId}] Video rendered: ${finalOutputPath}`);
 
+  // Generate thumbnail
+  const thumbnailPath = finalOutputPath.replace('.mp4', '.jpg');
+  try {
+    await extractThumbnail(finalOutputPath, thumbnailPath, 1);
+    console.log(`[${videoId}] Thumbnail generated: ${thumbnailPath}`);
+  } catch (err) {
+    console.error(`[${videoId}] Failed to generate thumbnail:`, err);
+    // Continue even if thumbnail fails - it's not critical
+  }
+
   // Update database
   await prisma.video.update({
     where: { id: videoId },
@@ -44,6 +55,12 @@ export async function processRender(videoId: string): Promise<void> {
 
   // Cleanup temp files
   await cleanup(videoId, tempPath, video.renderMode, video.imagePaths);
+
+  // Cleanup old videos if we have more than 50
+  const deletedCount = await cleanupOldVideos();
+  if (deletedCount > 0) {
+    console.log(`[Cleanup] Removed ${deletedCount} old videos`);
+  }
 }
 
 async function renderWithBackgroundVideo(

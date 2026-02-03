@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -12,6 +12,8 @@ import {
   BookOpen,
   Settings,
   Calendar,
+  Menu,
+  X,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -41,6 +43,33 @@ export default function AppLayout({
 }) {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Close mobile menu on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const getCurrentPage = () => {
     if (pathname === '/') return 'dashboard';
@@ -50,20 +79,52 @@ export default function AppLayout({
   };
 
   const currentPage = getCurrentPage();
+  const currentPageLabel = menuItems.find((item) => item.id === currentPage)?.label || 'Dashboard';
 
   return (
     <TooltipProvider>
       <div className="flex min-h-screen bg-background">
+        {/* Mobile Header */}
+        <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(true)}
+            className="h-9 w-9"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <span className="font-bold text-sm">Frontier</span>
+          </Link>
+          <ThemeToggle />
+        </header>
+
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/50 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
         <aside
           className={cn(
-            'fixed left-0 top-0 z-40 h-screen border-r bg-card transition-all duration-300',
-            sidebarCollapsed ? 'w-16' : 'w-64'
+            'fixed left-0 top-0 z-50 h-screen border-r bg-card transition-all duration-300',
+            // Desktop: always visible, can be collapsed
+            'hidden md:block',
+            sidebarCollapsed ? 'md:w-16' : 'md:w-64',
+            // Mobile: slide in from left
+            mobileMenuOpen && 'block w-64 shadow-xl'
           )}
         >
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between border-b px-4">
-            {!sidebarCollapsed && (
+          <div className="flex h-14 items-center justify-between border-b px-4 md:h-16">
+            {(!sidebarCollapsed || mobileMenuOpen) && (
               <Link href="/" className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                   <Sparkles className="h-4 w-4 text-primary" />
@@ -71,10 +132,21 @@ export default function AppLayout({
                 <span className="font-bold">Frontier</span>
               </Link>
             )}
-            {sidebarCollapsed && (
+            {sidebarCollapsed && !mobileMenuOpen && (
               <Link href="/" className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <Sparkles className="h-4 w-4 text-primary" />
               </Link>
+            )}
+            {/* Mobile close button */}
+            {mobileMenuOpen && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileMenuOpen(false)}
+                className="h-8 w-8 md:hidden"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             )}
           </div>
 
@@ -88,6 +160,7 @@ export default function AppLayout({
                   <TooltipTrigger asChild>
                     <Link
                       href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                         isActive
@@ -96,10 +169,10 @@ export default function AppLayout({
                       )}
                     >
                       <Icon className="h-5 w-5 shrink-0" />
-                      {!sidebarCollapsed && <span>{item.label}</span>}
+                      {(!sidebarCollapsed || mobileMenuOpen) && <span>{item.label}</span>}
                     </Link>
                   </TooltipTrigger>
-                  {sidebarCollapsed && (
+                  {sidebarCollapsed && !mobileMenuOpen && (
                     <TooltipContent side="right">{item.label}</TooltipContent>
                   )}
                 </Tooltip>
@@ -107,8 +180,8 @@ export default function AppLayout({
             })}
           </nav>
 
-          {/* Collapse button */}
-          <div className="absolute bottom-4 left-0 right-0 px-2">
+          {/* Collapse button (desktop only) */}
+          <div className="absolute bottom-4 left-0 right-0 hidden px-2 md:block">
             <Separator className="mb-4" />
             <div className="flex items-center justify-between px-2">
               {!sidebarCollapsed && <ThemeToggle />}
@@ -126,13 +199,24 @@ export default function AppLayout({
               </Button>
             </div>
           </div>
+
+          {/* Mobile bottom section */}
+          <div className="absolute bottom-4 left-0 right-0 px-2 md:hidden">
+            <Separator className="mb-4" />
+            <div className="flex items-center justify-center px-2">
+              <ThemeToggle />
+            </div>
+          </div>
         </aside>
 
         {/* Main Content */}
         <main
           className={cn(
             'flex-1 transition-all duration-300',
-            sidebarCollapsed ? 'ml-16' : 'ml-64'
+            // Mobile: no margin, add top padding for header
+            'mt-14 md:mt-0',
+            // Desktop: margin based on sidebar state
+            sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
           )}
         >
           {children}

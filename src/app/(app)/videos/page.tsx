@@ -65,7 +65,7 @@ export default function VideosPage() {
 
   const fetchVideos = async () => {
     try {
-      const res = await fetch('/api/videos?limit=50');
+      const res = await fetch('/api/videos?limit=20');
       const data = await res.json();
       setVideos(data.videos || []);
     } catch (err) {
@@ -133,19 +133,21 @@ export default function VideosPage() {
         isGenerating={creating}
       />
 
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur">
-        <h1 className="text-xl font-semibold">All Videos</h1>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:h-16 md:px-6">
+        <h1 className="text-lg font-semibold md:text-xl">All Videos</h1>
         <Button
           onClick={() => setGenerateModalOpen(true)}
           disabled={creating}
-          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90"
+          size="sm"
+          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 md:size-default"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          {creating ? 'Generating...' : 'Generate Video'}
+          <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
+          <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
         </Button>
       </header>
 
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -157,7 +159,7 @@ export default function VideosPage() {
             <p className="text-muted-foreground">Click "Generate Video" to create your first video</p>
           </div>
         ) : (
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-4">
             {videos.map((video) => {
               const isPlaying = inlinePlayingId === video.id;
               return (
@@ -179,15 +181,12 @@ export default function VideosPage() {
                             el.play().catch(() => {});
                           }
                         }}
+                        poster={`/api/videos/${video.id}/thumbnail`}
                         src={`/api/videos/${video.id}/stream`}
                         className="absolute inset-0 h-full w-full object-cover"
                         muted={!isPlaying}
                         controls={isPlaying}
-                        preload="metadata"
-                        onLoadedMetadata={(e) => {
-                          const videoEl = e.target as HTMLVideoElement;
-                          if (!isPlaying) videoEl.currentTime = 1;
-                        }}
+                        preload="none"
                         onEnded={() => {
                           playStartedRef.current = null;
                           setInlinePlayingId(null);

@@ -287,6 +287,47 @@ function generateLightRaysFilter(fps: number = 30): string {
  * - Layer 2: Animated Overlay (optional, blended with screen mode)
  * - Layer 3: Subtitles
  */
+/**
+ * Extract a thumbnail frame from a video file
+ */
+export async function extractThumbnail(
+  videoPath: string,
+  outputPath: string,
+  timeInSeconds: number = 1
+): Promise<void> {
+  const ffmpegPath = getFFmpegPath();
+  return new Promise((resolve, reject) => {
+    const args = [
+      '-i', videoPath,
+      '-ss', String(timeInSeconds),
+      '-vframes', '1',
+      '-vf', 'scale=720:-2',
+      '-q:v', '3',
+      outputPath,
+      '-y',
+    ];
+
+    const ffmpeg = spawn(ffmpegPath, args);
+    let stderr = '';
+    ffmpeg.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    ffmpeg.on('close', (code) => {
+      if (code === 0) {
+        console.log(`[FFmpeg] Thumbnail extracted: ${outputPath}`);
+        resolve();
+      } else {
+        reject(new Error(`FFmpeg thumbnail extraction failed: ${stderr.slice(-300)}`));
+      }
+    });
+
+    ffmpeg.on('error', (err) => {
+      reject(new Error(`FFmpeg spawn error: ${err.message}`));
+    });
+  });
+}
+
 export async function renderImageBasedVideo(
   options: ImageBasedRenderOptions
 ): Promise<void> {

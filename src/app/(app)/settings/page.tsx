@@ -166,27 +166,29 @@ export default function SettingsPage() {
         isGenerating={creating}
       />
 
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur">
-        <h1 className="text-xl font-semibold">Settings</h1>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:h-16 md:px-6">
+        <h1 className="text-lg font-semibold md:text-xl">Settings</h1>
         <Button
           onClick={() => setGenerateModalOpen(true)}
           disabled={creating}
-          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90"
+          size="sm"
+          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 md:size-default"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          {creating ? 'Generating...' : 'Generate Video'}
+          <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
+          <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
         </Button>
       </header>
 
-      <div className="p-6 space-y-6 max-w-2xl">
+      <div className="p-4 space-y-4 max-w-2xl md:p-6 md:space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Settings className="h-4 w-4 md:h-5 md:w-5" />
               Publer API Settings
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 md:space-y-6">
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -231,12 +233,13 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     onClick={testConnection}
                     disabled={testingConnection || !settings.apiKey || !settings.workspaceId}
                     variant="outline"
-                    className="gap-2"
+                    size="sm"
+                    className="gap-2 md:size-default"
                   >
                     {testingConnection ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -247,13 +250,14 @@ export default function SettingsPage() {
                     ) : (
                       <RefreshCw className="h-4 w-4" />
                     )}
-                    Test Connection
+                    <span className="hidden sm:inline">Test Connection</span>
+                    <span className="sm:hidden">Test</span>
                   </Button>
                   {connectionStatus === 'success' && (
-                    <span className="text-sm text-emerald-500 flex items-center">Connected!</span>
+                    <span className="text-xs text-emerald-500 flex items-center md:text-sm">Connected!</span>
                   )}
                   {connectionStatus === 'error' && (
-                    <span className="text-sm text-red-500 flex items-center">Connection failed</span>
+                    <span className="text-xs text-red-500 flex items-center md:text-sm">Failed</span>
                   )}
                 </div>
 
@@ -269,7 +273,7 @@ export default function SettingsPage() {
                   ) : channels.length > 0 ? (
                     <>
                       {settings.defaultChannelId && (
-                        <div className="flex items-center gap-3 rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-3">
+                        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-2 md:gap-3 md:p-3">
                           {(() => {
                             const selectedChannel = channels.find(c => c.id === settings.defaultChannelId);
                             return selectedChannel ? (
@@ -278,20 +282,20 @@ export default function SettingsPage() {
                                   <img
                                     src={selectedChannel.avatar}
                                     alt={selectedChannel.name}
-                                    className="h-10 w-10 rounded-full"
+                                    className="h-8 w-8 rounded-full md:h-10 md:w-10"
                                   />
                                 ) : (
-                                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500">
-                                    <Youtube className="h-5 w-5 text-white" />
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 md:h-10 md:w-10">
+                                    <Youtube className="h-4 w-4 text-white md:h-5 md:w-5" />
                                   </div>
                                 )}
-                                <div className="flex-1">
-                                  <p className="font-medium">{selectedChannel.name}</p>
-                                  <p className="text-xs text-muted-foreground">Active channel</p>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm truncate md:text-base">{selectedChannel.name}</p>
+                                  <p className="text-[10px] text-muted-foreground md:text-xs">Active channel</p>
                                 </div>
-                                <Badge variant="success" className="gap-1">
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Connected
+                                <Badge variant="success" className="gap-1 text-[10px] px-1.5 md:text-xs md:px-2">
+                                  <CheckCircle2 className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                                  <span className="hidden sm:inline">Connected</span>
                                 </Badge>
                               </>
                             ) : null;

@@ -9,6 +9,9 @@ const CreateVideoSchema = z.object({
   style: z.string().optional(),
   backgroundId: z.string().uuid().optional(),
   renderMode: z.nativeEnum(RenderMode).optional().default(RenderMode.BACKGROUND_VIDEO),
+  // Auto-upload settings
+  autoUpload: z.boolean().optional().default(false),
+  uploadMode: z.enum(['immediate', 'scheduled']).nullable().optional(),
 });
 
 // POST /api/videos - Create a new video job
@@ -38,6 +41,8 @@ export async function POST(request: NextRequest) {
         style: data.style,
         backgroundId,
         renderMode: data.renderMode,
+        autoUpload: data.autoUpload,
+        uploadMode: data.uploadMode,
       },
     });
 
@@ -85,7 +90,7 @@ export async function GET(request: NextRequest) {
     const [videos, total] = await Promise.all([
       prisma.video.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit,
         skip: offset,
         include: {

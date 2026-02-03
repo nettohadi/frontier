@@ -166,45 +166,47 @@ export default function TopicsPage() {
         isGenerating={creating}
       />
 
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur">
-        <h1 className="text-xl font-semibold">Manage Topics</h1>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:h-16 md:px-6">
+        <h1 className="text-lg font-semibold md:text-xl">Manage Topics</h1>
         <Button
           onClick={() => setGenerateModalOpen(true)}
           disabled={creating}
-          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90"
+          size="sm"
+          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 md:size-default"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          {creating ? 'Generating...' : 'Generate Video'}
+          <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
+          <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
         </Button>
       </header>
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4 md:p-6 md:space-y-6">
         {/* Add new topic */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Plus className="h-4 w-4 md:h-5 md:w-5" />
               Add New Topic
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
               <Input
                 placeholder="Topic name (e.g., Mahabbah)"
                 value={newTopic.name}
                 onChange={(e) => setNewTopic({ ...newTopic, name: e.target.value })}
-                className="w-48"
+                className="w-full md:w-48"
               />
               <Input
                 placeholder="Description in Indonesian"
                 value={newTopic.description}
                 onChange={(e) => setNewTopic({ ...newTopic, description: e.target.value })}
-                className="min-w-[300px] flex-1"
+                className="w-full md:min-w-[300px] md:flex-1"
               />
               <Button
                 onClick={createTopic}
                 disabled={saving || !newTopic.name.trim() || !newTopic.description.trim()}
-                className="gap-2"
+                className="gap-2 w-full md:w-auto"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Add Topic
@@ -215,8 +217,8 @@ export default function TopicsPage() {
 
         {/* Topic list */}
         <Card>
-          <CardHeader>
-            <CardTitle>All Topics ({topics.length})</CardTitle>
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="text-base md:text-lg">All Topics ({topics.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -224,15 +226,15 @@ export default function TopicsPage() {
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : topics.length === 0 ? (
-              <p className="py-8 text-center text-muted-foreground">No topics yet. Add one above!</p>
+              <p className="py-8 text-center text-muted-foreground text-sm">No topics yet. Add one above!</p>
             ) : (
-              <ScrollArea className="h-[600px] pr-4">
+              <ScrollArea className="h-[500px] pr-2 md:h-[600px] md:pr-4">
                 <div className="space-y-2">
                   {topics.map((topic) => (
                     <div
                       key={topic.id}
                       className={cn(
-                        'rounded-lg border p-4 transition-colors',
+                        'rounded-lg border p-3 transition-colors md:p-4',
                         topic.isActive
                           ? 'border-emerald-500/50 bg-emerald-500/5'
                           : 'border-border bg-muted/30 opacity-60'
@@ -260,23 +262,25 @@ export default function TopicsPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-4">
                           <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <span className="font-medium">{topic.name}</span>
-                              <Badge variant={topic.isActive ? 'success' : 'secondary'}>
+                            <div className="flex flex-wrap items-center gap-1.5 mb-1 md:gap-2">
+                              <span className="font-medium text-sm md:text-base">{topic.name}</span>
+                              <Badge variant={topic.isActive ? 'success' : 'secondary'} className="text-[10px] md:text-xs">
                                 {topic.isActive ? 'Active' : 'Inactive'}
                               </Badge>
-                              <span className="text-xs text-muted-foreground">Used: {topic.usageCount}x</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 mb-1.5 text-[10px] text-muted-foreground md:text-xs">
+                              <span>Used: {topic.usageCount}x</span>
                               {topic._count.videos > 0 && (
-                                <span className="text-xs text-muted-foreground">
+                                <span>
                                   {topic._count.videos} video{topic._count.videos > 1 ? 's' : ''}
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{topic.description}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-2 md:text-sm">{topic.description}</p>
                           </div>
-                          <div className="flex shrink-0 gap-1">
+                          <div className="flex shrink-0 gap-1 mt-2 md:mt-0">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggleTopicActive(topic)}>

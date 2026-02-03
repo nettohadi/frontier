@@ -258,77 +258,79 @@ export default function DashboardPage() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:h-16 md:px-6">
+        <h1 className="text-lg font-semibold md:text-xl">Dashboard</h1>
         <Button
           onClick={() => setGenerateModalOpen(true)}
           disabled={creating}
-          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90"
+          size="sm"
+          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 md:size-default"
         >
           {creating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Generating...
+              <span className="hidden sm:inline">Generating...</span>
             </>
           ) : (
             <>
               <Sparkles className="h-4 w-4" />
-              Generate Video
+              <span className="hidden sm:inline">Generate Video</span>
+              <span className="sm:hidden">Generate</span>
             </>
           )}
         </Button>
       </header>
 
       {/* Page Content */}
-      <div className="p-6">
-        <div className="space-y-6">
+      <div className="p-4 md:p-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
-                  <Video className="h-6 w-6 text-primary" />
+              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 md:h-12 md:w-12">
+                  <Video className="h-5 w-5 text-primary md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{videos.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Videos</p>
+                  <p className="text-xl font-bold md:text-2xl">{videos.length}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Total Videos</p>
                 </div>
               </CardContent>
             </Card>
             <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10">
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 md:h-12 md:w-12">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{completedVideos}</p>
-                  <p className="text-sm text-muted-foreground">Completed</p>
+                  <p className="text-xl font-bold md:text-2xl">{completedVideos}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Completed</p>
                 </div>
               </CardContent>
             </Card>
             <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10">
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20">
+              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20 md:h-12 md:w-12">
                   {processingVideos > 0 ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                    <Loader2 className="h-5 w-5 animate-spin text-orange-500 md:h-6 md:w-6" />
                   ) : (
-                    <Clock className="h-6 w-6 text-orange-500" />
+                    <Clock className="h-5 w-5 text-orange-500 md:h-6 md:w-6" />
                   )}
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{processingVideos}</p>
-                  <p className="text-sm text-muted-foreground">Processing</p>
+                  <p className="text-xl font-bold md:text-2xl">{processingVideos}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Processing</p>
                 </div>
               </CardContent>
             </Card>
             <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-red-500/10">
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20">
-                  <XCircle className="h-6 w-6 text-red-500" />
+              <CardContent className="flex items-center gap-3 p-4 md:gap-4 md:p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20 md:h-12 md:w-12">
+                  <XCircle className="h-5 w-5 text-red-500 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{failedVideos}</p>
-                  <p className="text-sm text-muted-foreground">Failed</p>
+                  <p className="text-xl font-bold md:text-2xl">{failedVideos}</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">Failed</p>
                 </div>
               </CardContent>
             </Card>
@@ -359,12 +361,12 @@ export default function DashboardPage() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {videos.map((video) => (
                     <div
                       key={video.id}
                       className={cn(
-                        'rounded-lg border p-4 transition-colors',
+                        'rounded-lg border p-3 transition-colors md:p-4',
                         video.status === 'FAILED' && 'border-red-500/50 bg-red-500/5'
                       )}
                     >
@@ -398,17 +400,17 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Pipeline Progress */}
-                      <div className="mt-4 flex items-center gap-1 rounded-lg bg-muted/50 p-3">
+                      <div className="mt-3 flex items-center justify-between gap-0.5 overflow-x-auto rounded-lg bg-muted/50 p-2 md:mt-4 md:gap-1 md:p-3">
                         {pipelineSteps.map((step, index, arr) => {
                           const state = getStepState(video, step);
                           const Icon = step.icon;
                           return (
-                            <div key={step.key} className="flex items-center">
+                            <div key={step.key} className="flex flex-1 items-center justify-center">
                               <Tooltip>
                                 <TooltipTrigger>
                                   <div
                                     className={cn(
-                                      'flex flex-col items-center rounded-md px-2 py-1.5 transition-colors',
+                                      'flex flex-col items-center rounded-md px-1.5 py-1 transition-colors md:px-2 md:py-1.5',
                                       state === 'active' &&
                                         'bg-primary text-primary-foreground animate-pulse',
                                       state === 'completed' &&
@@ -417,13 +419,13 @@ export default function DashboardPage() {
                                     )}
                                   >
                                     {state === 'completed' ? (
-                                      <CheckCircle2 className="h-5 w-5" />
+                                      <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
                                     ) : state === 'active' ? (
-                                      <Loader2 className="h-5 w-5 animate-spin" />
+                                      <Loader2 className="h-4 w-4 animate-spin md:h-5 md:w-5" />
                                     ) : (
-                                      <Icon className="h-5 w-5" />
+                                      <Icon className="h-4 w-4 md:h-5 md:w-5" />
                                     )}
-                                    <span className="mt-0.5 text-[10px] font-medium">
+                                    <span className="mt-0.5 text-[9px] font-medium md:text-[10px]">
                                       {step.label}
                                     </span>
                                   </div>
@@ -433,7 +435,7 @@ export default function DashboardPage() {
                               {index < arr.length - 1 && (
                                 <div
                                   className={cn(
-                                    'mx-0.5 h-0.5 w-4 rounded-full',
+                                    'mx-0.5 h-0.5 w-2 shrink-0 rounded-full md:w-4',
                                     state === 'completed' ? 'bg-emerald-500' : 'bg-muted'
                                   )}
                                 />
@@ -445,8 +447,8 @@ export default function DashboardPage() {
 
                       {/* Error Message */}
                       {video.errorMessage && (
-                        <div className="mt-3 rounded-lg border border-red-500/50 bg-red-500/10 p-3">
-                          <p className="text-sm text-red-600 dark:text-red-400">
+                        <div className="mt-2 rounded-lg border border-red-500/50 bg-red-500/10 p-2 md:mt-3 md:p-3">
+                          <p className="text-xs text-red-600 dark:text-red-400 md:text-sm">
                             {video.errorMessage}
                           </p>
                         </div>
@@ -454,25 +456,26 @@ export default function DashboardPage() {
 
                       {/* Video Actions */}
                       {video.outputPath && (
-                        <div className="mt-4 flex flex-wrap gap-2">
+                        <div className="mt-3 flex flex-wrap gap-2 md:mt-4">
                           <Button
                             size="sm"
                             onClick={() => setPlayingVideo(video)}
-                            className="gap-2"
+                            className="gap-1.5 text-xs md:gap-2 md:text-sm"
                           >
-                            <Play className="h-4 w-4" />
-                            Play Video
+                            <Play className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                            <span className="hidden xs:inline">Play</span>
+                            <span className="xs:hidden">Play</span>
                           </Button>
-                          <Button size="sm" variant="outline" asChild className="gap-2">
+                          <Button size="sm" variant="outline" asChild className="gap-1.5 text-xs md:gap-2 md:text-sm">
                             <a href={`/api/videos/${video.id}/download`}>
-                              <Download className="h-4 w-4" />
-                              Download
+                              <Download className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                              <span className="hidden sm:inline">Download</span>
                             </a>
                           </Button>
                           {video.uploadedToYouTube ? (
-                            <Badge variant="success" className="gap-1 h-8 px-3">
+                            <Badge variant="success" className="gap-1 h-7 px-2 text-xs md:h-8 md:px-3">
                               <Youtube className="h-3 w-3" />
-                              Uploaded
+                              <span className="hidden sm:inline">Uploaded</span>
                             </Badge>
                           ) : video.uploadSchedule ? (
                             <Badge
@@ -483,29 +486,31 @@ export default function DashboardPage() {
                                   ? 'destructive'
                                   : 'info'
                               }
-                              className="gap-1 h-8 px-3"
+                              className="gap-1 h-7 px-2 text-xs md:h-8 md:px-3"
                             >
                               <Upload className="h-3 w-3" />
-                              {video.uploadSchedule.status === 'SCHEDULED'
-                                ? 'Scheduled'
-                                : video.uploadSchedule.status === 'UPLOADING'
-                                ? `Uploading ${video.uploadSchedule.progress}%`
-                                : video.uploadSchedule.status}
+                              <span className="hidden sm:inline">
+                                {video.uploadSchedule.status === 'SCHEDULED'
+                                  ? 'Scheduled'
+                                  : video.uploadSchedule.status === 'UPLOADING'
+                                  ? `${video.uploadSchedule.progress}%`
+                                  : video.uploadSchedule.status}
+                              </span>
                             </Badge>
                           ) : (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-2"
+                              className="gap-1.5 text-xs md:gap-2 md:text-sm"
                               onClick={() => scheduleUpload(video.id)}
                               disabled={uploadingVideoId === video.id}
                             >
                               {uploadingVideoId === video.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" />
                               ) : (
-                                <Youtube className="h-4 w-4" />
+                                <Youtube className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               )}
-                              Upload to YouTube
+                              <span className="hidden sm:inline">Upload</span>
                             </Button>
                           )}
                         </div>

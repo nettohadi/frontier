@@ -103,25 +103,28 @@ export default function SchedulePage() {
         isGenerating={creating}
       />
 
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur">
-        <h1 className="text-xl font-semibold">Upload Schedule</h1>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:h-16 md:px-6">
+        <h1 className="text-lg font-semibold md:text-xl">Upload Schedule</h1>
         <Button
           onClick={() => setGenerateModalOpen(true)}
           disabled={creating}
-          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90"
+          size="sm"
+          className="gap-2 bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-600/90 md:size-default"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          {creating ? 'Generating...' : 'Generate Video'}
+          <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
+          <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
         </Button>
       </header>
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4 md:p-6 md:space-y-6">
         {/* Date Navigation */}
         <Card>
-          <CardContent className="flex items-center justify-between p-4">
+          <CardContent className="flex items-center justify-between p-3 md:p-4">
             <Button
               variant="outline"
               size="icon"
+              className="h-8 w-8 md:h-10 md:w-10"
               onClick={() => {
                 const newDate = new Date(scheduleDate);
                 newDate.setDate(newDate.getDate() - 1);
@@ -130,22 +133,32 @@ export default function SchedulePage() {
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-semibold">
-                {scheduleDate.toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+            <div className="flex flex-col items-center gap-1 md:flex-row md:gap-4">
+              <h2 className="text-sm font-semibold text-center md:text-lg">
+                <span className="hidden md:inline">
+                  {scheduleDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </span>
+                <span className="md:hidden">
+                  {scheduleDate.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </span>
               </h2>
-              <Button variant="outline" size="sm" onClick={() => setScheduleDate(new Date())}>
+              <Button variant="outline" size="sm" className="h-7 text-xs md:h-8 md:text-sm" onClick={() => setScheduleDate(new Date())}>
                 Today
               </Button>
             </div>
             <Button
               variant="outline"
               size="icon"
+              className="h-8 w-8 md:h-10 md:w-10"
               onClick={() => {
                 const newDate = new Date(scheduleDate);
                 newDate.setDate(newDate.getDate() + 1);
@@ -159,9 +172,9 @@ export default function SchedulePage() {
 
         {/* Time Slots */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Calendar className="h-4 w-4 md:h-5 md:w-5" />
               Upload Slots (GMT+8)
             </CardTitle>
           </CardHeader>
@@ -171,12 +184,12 @@ export default function SchedulePage() {
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-2 md:gap-3 md:grid-cols-2">
                 {slots.map((slot) => (
                   <div
                     key={slot.slot}
                     className={cn(
-                      'rounded-lg border p-4 transition-colors',
+                      'rounded-lg border p-3 transition-colors md:p-4',
                       slot.isPast && 'opacity-50',
                       slot.schedule?.status === 'COMPLETED' && 'border-emerald-500/50 bg-emerald-500/5',
                       slot.schedule?.status === 'UPLOADING' && 'border-orange-500/50 bg-orange-500/5',
@@ -185,26 +198,26 @@ export default function SchedulePage() {
                       slot.available && 'border-dashed'
                     )}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                          <Clock className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex items-start justify-between gap-2 md:gap-4">
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted md:h-10 md:w-10">
+                          <Clock className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
                         </div>
-                        <div>
-                          <p className="font-semibold">{slot.time}</p>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm md:text-base">{slot.time}</p>
                           {slot.schedule ? (
-                            <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                            <p className="text-xs text-muted-foreground truncate max-w-[120px] md:text-sm md:max-w-[200px]">
                               {slot.schedule.youtubeTitle || 'Untitled'}
                             </p>
                           ) : slot.isPast ? (
-                            <p className="text-sm text-muted-foreground">Slot passed</p>
+                            <p className="text-xs text-muted-foreground md:text-sm">Passed</p>
                           ) : (
-                            <p className="text-sm text-muted-foreground">Available</p>
+                            <p className="text-xs text-muted-foreground md:text-sm">Available</p>
                           )}
                         </div>
                       </div>
                       {slot.schedule && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 md:gap-2">
                           <Badge
                             variant={
                               slot.schedule.status === 'COMPLETED'
@@ -215,6 +228,7 @@ export default function SchedulePage() {
                                 ? 'destructive'
                                 : 'info'
                             }
+                            className="text-[10px] px-1.5 md:text-xs md:px-2"
                           >
                             {slot.schedule.status}
                           </Badge>
@@ -222,10 +236,10 @@ export default function SchedulePage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              className="h-7 w-7 text-destructive hover:text-destructive md:h-8 md:w-8"
                               onClick={() => cancelSchedule(slot.schedule!.id)}
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-3.5 w-3.5 md:h-4 md:w-4" />
                             </Button>
                           )}
                         </div>
