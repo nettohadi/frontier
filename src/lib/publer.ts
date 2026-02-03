@@ -27,6 +27,7 @@ export interface CreatePostParams {
   scheduleAt?: Date;
   isShort?: boolean;
   isDraft?: boolean; // For testing - creates draft instead of scheduled
+  madeForKids?: boolean; // YouTube COPPA compliance - defaults to false
 }
 
 /**
@@ -165,12 +166,14 @@ export class PublerService {
     // - type must be "video", not "short"
     // - isShort: true marks it as a YouTube Short
     // - media array with {id, type} objects instead of media_ids
+    // - text field at post level for description fallback
     const body = {
       bulk: {
         state,
         posts: [
           {
             accounts: [accountObj],
+            text: descriptionWithTags,
             networks: {
               youtube: {
                 type: 'video',
@@ -180,6 +183,7 @@ export class PublerService {
                 description: descriptionWithTags,
                 privacy: 'public',
                 tags: uniqueTags.map((t) => t.replace('#', '')),
+                madeForKids: params.madeForKids ?? false,
               },
             },
           },
