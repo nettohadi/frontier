@@ -14,7 +14,7 @@ export async function GET() {
 
     if (!credentials) {
       return NextResponse.json(
-        { error: 'Publer not configured. Set PUBLER_KEY and PUBLER_WORKSPACE_ID in .env or configure in settings.' },
+        { error: 'Publer not configured. Please add your API Key and Workspace ID in Settings.' },
         { status: 400 }
       );
     }

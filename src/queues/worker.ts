@@ -10,6 +10,7 @@ import { processTts } from './processors/tts.processor';
 import { processSrt } from './processors/srt.processor';
 import { processRender } from './processors/render.processor';
 import { addVideoJob } from './queues';
+import { triggerAutoUpload } from '@/lib/autoUpload';
 
 const connection = createRedisConnection();
 
@@ -107,6 +108,14 @@ export const videoWorker = new Worker<VideoJobData>(
           errorMessage: null,
         },
       });
+
+      // Trigger auto-upload if enabled
+      if (video.autoUpload && video.uploadMode) {
+        console.log(`[${videoId}] Triggering auto-upload (mode: ${video.uploadMode})`);
+        // Run async - don't await to avoid blocking the worker
+        triggerAutoUpload(videoId, video.uploadMode as 'immediate' | 'scheduled')
+          .catch((err) => console.error(`[${videoId}] Auto-upload error:`, err));
+      }
     }
   },
   {

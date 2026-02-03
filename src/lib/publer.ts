@@ -423,15 +423,14 @@ export async function createPublerService(
 }
 
 /**
- * Get Publer credentials from environment variables or database settings
+ * Get Publer credentials from database settings
  */
 export function getPublerCredentials(dbSettings?: {
   apiKey?: string | null;
   workspaceId?: string | null;
 }): { apiKey: string; workspaceId: string } | null {
-  // Priority: env vars > database settings
-  const apiKey = process.env.PUBLER_KEY || dbSettings?.apiKey;
-  const workspaceId = process.env.PUBLER_WORKSPACE_ID || dbSettings?.workspaceId;
+  const apiKey = dbSettings?.apiKey;
+  const workspaceId = dbSettings?.workspaceId;
 
   if (!apiKey || !workspaceId) {
     return null;

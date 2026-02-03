@@ -10,16 +10,12 @@ export async function GET() {
       where: { id: 'singleton' },
     });
 
-    // Check if credentials are available (env vars take priority)
-    const hasEnvCredentials = !!process.env.PUBLER_KEY && !!process.env.PUBLER_WORKSPACE_ID;
     const credentials = getPublerCredentials(settings || undefined);
 
     return NextResponse.json({
-      hasApiKey: hasEnvCredentials || !!settings?.apiKey,
-      hasEnvCredentials,
-      workspaceId: hasEnvCredentials ? '(from env)' : (settings?.workspaceId || null),
+      apiKey: settings?.apiKey || null,
+      workspaceId: settings?.workspaceId || null,
       defaultChannelId: settings?.defaultChannelId || null,
-      autoUpload: settings?.autoUpload ?? false,
       configured: !!credentials,
     });
   } catch (error) {
@@ -33,7 +29,6 @@ const UpdateSettingsSchema = z.object({
   apiKey: z.string().optional(),
   workspaceId: z.string().optional(),
   defaultChannelId: z.string().optional(),
-  autoUpload: z.boolean().optional(),
 });
 
 // PUT /api/settings/publer - Update Publer settings
@@ -47,7 +42,6 @@ export async function PUT(request: NextRequest) {
     if (data.apiKey !== undefined) updateData.apiKey = data.apiKey;
     if (data.workspaceId !== undefined) updateData.workspaceId = data.workspaceId;
     if (data.defaultChannelId !== undefined) updateData.defaultChannelId = data.defaultChannelId;
-    if (data.autoUpload !== undefined) updateData.autoUpload = data.autoUpload;
 
     const settings = await prisma.publerSettings.upsert({
       where: { id: 'singleton' },
@@ -59,11 +53,11 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json({
-      hasApiKey: !!settings.apiKey,
+      apiKey: settings.apiKey,
       workspaceId: settings.workspaceId,
       defaultChannelId: settings.defaultChannelId,
-      autoUpload: settings.autoUpload,
-      message: 'Settings updated successfully',
+      configured: !!(settings.apiKey && settings.workspaceId),
+      success: true,
     });
   } catch (error) {
     console.error('Error updating Publer settings:', error);
@@ -85,12 +79,11 @@ export async function POST() {
       where: { id: 'singleton' },
     });
 
-    // Use env vars with database fallback
     const credentials = getPublerCredentials(settings || undefined);
 
     if (!credentials) {
       return NextResponse.json(
-        { error: 'Publer API key and workspace ID are required. Set PUBLER_KEY and PUBLER_WORKSPACE_ID in .env or configure in settings.' },
+        { error: 'Publer API key and workspace ID are required. Please configure them in Settings.' },
         { status: 400 }
       );
     }
@@ -102,7 +95,6 @@ export async function POST() {
       return NextResponse.json({
         success: true,
         message: 'Connection successful',
-        usingEnvVars: !!process.env.PUBLER_KEY,
       });
     } else {
       return NextResponse.json(

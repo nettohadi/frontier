@@ -2,27 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { addVideoJob } from '@/queues/queues';
+import { RenderMode } from '@prisma/client';
 
 const BatchCreateSchema = z.object({
-  videos: z
-    .array(
-      z.object({
-        topic: z.string().min(3).max(500),
-        style: z.string().optional(),
-        backgroundId: z.string().uuid().optional(),
-      })
-    )
-    .min(1)
-    .max(50), // Maximum 50 videos per batch
+  count: z.coerce.number().min(1).max(10), // 1-10 videos per batch
+  renderMode: z.nativeEnum(RenderMode).optional().default(RenderMode.AI_IMAGES),
+  // Auto-upload settings
+  autoUpload: z.boolean().optional().default(false),
+  uploadMode: z.enum(['immediate', 'scheduled']).nullable().optional(),
 });
 
 // POST /api/videos/batch - Create multiple video jobs
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { videos: videoInputs } = BatchCreateSchema.parse(body);
+    const { count, renderMode, autoUpload, uploadMode } = BatchCreateSchema.parse(body);
 
-    // Get all backgrounds for sequential selection (round-robin)
+    // Get all backgrounds for sequential selection (for BACKGROUND_VIDEO mode)
     const backgrounds = await prisma.backgroundVideo.findMany({
       orderBy: { createdAt: 'asc' },
     });
@@ -30,13 +26,12 @@ export async function POST(request: NextRequest) {
     // Get current video count for sequential indexing
     const currentVideoCount = await prisma.video.count();
 
-    // Create all video records with sequential backgrounds
+    // Create all video records
     const createdVideos: Awaited<ReturnType<typeof prisma.video.create>>[] = [];
-    for (let i = 0; i < videoInputs.length; i++) {
-      const input = videoInputs[i];
-      let backgroundId = input.backgroundId;
+    for (let i = 0; i < count; i++) {
+      let backgroundId: string | undefined = undefined;
 
-      if (!backgroundId && backgrounds.length > 0) {
+      if (renderMode === RenderMode.BACKGROUND_VIDEO && backgrounds.length > 0) {
         // Sequential selection: (currentCount + batchIndex) % totalBackgrounds
         const nextIndex = (currentVideoCount + i) % backgrounds.length;
         backgroundId = backgrounds[nextIndex].id;
@@ -44,9 +39,11 @@ export async function POST(request: NextRequest) {
 
       const video = await prisma.video.create({
         data: {
-          topic: input.topic,
-          style: input.style,
+          topic: 'Auto theme rotation', // Use topic rotation
+          renderMode,
           backgroundId,
+          autoUpload,
+          uploadMode,
         },
       });
       createdVideos.push(video);
@@ -64,7 +61,10 @@ export async function POST(request: NextRequest) {
           id: v.id,
           topic: v.topic,
           status: v.status,
+          autoUpload: v.autoUpload,
+          uploadMode: v.uploadMode,
         })),
+        message: `${count} video${count > 1 ? 's' : ''} queued for generation`,
       },
       { status: 201 }
     );
@@ -76,8 +76,9 @@ export async function POST(request: NextRequest) {
       );
     }
     console.error('Error creating batch:', error);
+    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', message },
       { status: 500 }
     );
   }
