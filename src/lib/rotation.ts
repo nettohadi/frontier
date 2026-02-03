@@ -1,6 +1,6 @@
 import { prisma } from './prisma';
 
-type RotationType = 'music' | 'overlay' | 'colorScheme' | 'openingHook';
+type RotationType = 'music' | 'overlay' | 'colorScheme' | 'openingHook' | 'topic';
 
 // Ensure rotation counter exists and get next index for a given type
 async function getNextIndex(type: RotationType, totalItems: number): Promise<number> {
@@ -44,12 +44,18 @@ export async function getNextOpeningHookIndex(totalItems: number): Promise<numbe
   return getNextIndex('openingHook', totalItems);
 }
 
+// Get next topic index
+export async function getNextTopicIndex(totalItems: number): Promise<number> {
+  return getNextIndex('topic', totalItems);
+}
+
 // Get current counters (for debugging/display)
 export async function getRotationCounters(): Promise<{
   music: number;
   overlay: number;
   colorScheme: number;
   openingHook: number;
+  topic: number;
 }> {
   const counter = await prisma.rotationCounter.findUnique({
     where: { id: 'singleton' },
@@ -60,5 +66,6 @@ export async function getRotationCounters(): Promise<{
     overlay: counter?.overlay ?? 0,
     colorScheme: counter?.colorScheme ?? 0,
     openingHook: counter?.openingHook ?? 0,
+    topic: counter?.topic ?? 0,
   };
 }

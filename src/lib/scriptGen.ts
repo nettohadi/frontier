@@ -225,39 +225,68 @@ Tulis renungan spiritual berdasarkan topik di atas.`;
   let description: string;
   let script: string;
 
+  // Helper to clean any JSON/markdown artifacts from script text
+  const cleanScriptContent = (text: string): string => {
+    return text
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
+      .replace(/\\n/g, '\n') // Unescape newlines
+      .replace(/\\"/g, '"') // Unescape quotes
+      .replace(/^\s*\{?\s*"?title"?\s*:.*$/im, '') // Remove any title line
+      .replace(/^\s*"?description"?\s*:.*$/im, '') // Remove any description line
+      .replace(/^\s*"?script"?\s*:\s*"?/im, '') // Remove script field prefix
+      .replace(/"?\s*\}?\s*$/i, '') // Remove trailing JSON
+      .trim();
+  };
+
   try {
-    // Try to extract JSON from markdown code blocks if present
-    // Use greedy match (*) to capture the full JSON object
-    const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) || content.match(/(\{[\s\S]*\})/);
-    const jsonStr = jsonMatch ? jsonMatch[1] : content;
-    const parsed = JSON.parse(jsonStr);
+    // Step 1: Strip markdown code block wrappers first
+    let jsonContent = content;
+
+    // Remove ```json ... ``` wrapper (handle both complete and incomplete blocks)
+    const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
+    if (codeBlockMatch) {
+      jsonContent = codeBlockMatch[1].trim();
+    }
+
+    // Step 2: If content starts with {, try to extract the JSON object
+    if (!jsonContent.startsWith('{')) {
+      const jsonObjMatch = jsonContent.match(/(\{[\s\S]*\})/);
+      if (jsonObjMatch) {
+        jsonContent = jsonObjMatch[1];
+      }
+    }
+
+    // Step 3: Parse JSON
+    const parsed = JSON.parse(jsonContent);
 
     title = parsed.title || '';
     description = parsed.description || '';
     script = parsed.script || '';
 
     // Safety check: ensure script doesn't contain JSON artifacts
-    if (script.includes('```') || script.includes('"title"') || script.includes('"script"')) {
+    if (script.includes('```') || script.includes('"title"') || script.includes('"script"') || script.includes('{"')) {
       console.warn('[ScriptGen] Script contains JSON artifacts, cleaning up');
-      script = script
-        .replace(/```json\s*/gi, '')
-        .replace(/```\s*/g, '')
-        .trim();
+      script = cleanScriptContent(script);
     }
   } catch (error) {
-    // Fallback if JSON parsing fails - strip JSON formatting and use as plain script
-    console.warn('[ScriptGen] Failed to parse JSON response, using fallback');
+    // Fallback if JSON parsing fails - extract script content manually
+    console.warn('[ScriptGen] Failed to parse JSON response, using fallback. Raw content starts with:', content.substring(0, 100));
+
     title = `Renungan: ${theme.name}`;
     description = `Sebuah renungan spiritual tentang ${theme.name.toLowerCase()}.`;
-    // Strip JSON formatting artifacts
-    script = content
-      .replace(/```json\s*/gi, '')
-      .replace(/```\s*/g, '')
-      .replace(/^\s*\{\s*"title"[^"]*"[^"]*",?\s*/i, '')
-      .replace(/^\s*"description"[^"]*"[^"]*",?\s*/i, '')
-      .replace(/^\s*"script"\s*:\s*"/i, '')
-      .replace(/"\s*\}\s*$/i, '')
-      .trim();
+
+    // Try to extract script from the "script" field if it exists
+    const scriptMatch = content.match(/"script"\s*:\s*"([\s\S]*?)(?:"\s*\}|"$)/);
+    if (scriptMatch) {
+      script = scriptMatch[1]
+        .replace(/\\n/g, '\n')
+        .replace(/\\"/g, '"')
+        .trim();
+    } else {
+      // Last resort: clean up the entire content
+      script = cleanScriptContent(content);
+    }
   }
 
   // Count words excluding audio tags
