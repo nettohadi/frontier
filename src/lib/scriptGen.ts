@@ -94,6 +94,7 @@ Gaya Bahasa:
 - Berbicara KEPADA pendengar muslim, bukan TENTANG pendengar
 - Mengajak merenungkan, bukan memberikan jawaban final
 - Membuka pintu kesadaran, bukan memaksakan kesimpulan
+- Gunakan istilah-istilah tasawuf dan Islam: dzikir, qalbu, ruh, tawakkal, ridho, fana, baqa, muraqabah, taubat, syukur, sabar, mahabbah, ma'rifat, dll.
 - Gunakan kata "Tuhan", "Sang Pencipta", "Sang Kekasih", "Yang Maha", "Dia" — JANGAN gunakan kata "Allah" atau "Robb"
 
 Struktur:
@@ -226,19 +227,37 @@ Tulis renungan spiritual berdasarkan topik di atas.`;
 
   try {
     // Try to extract JSON from markdown code blocks if present
-    const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) || content.match(/(\{[\s\S]*\})/);
+    // Use greedy match (*) to capture the full JSON object
+    const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) || content.match(/(\{[\s\S]*\})/);
     const jsonStr = jsonMatch ? jsonMatch[1] : content;
     const parsed = JSON.parse(jsonStr);
 
     title = parsed.title || '';
     description = parsed.description || '';
     script = parsed.script || '';
+
+    // Safety check: ensure script doesn't contain JSON artifacts
+    if (script.includes('```') || script.includes('"title"') || script.includes('"script"')) {
+      console.warn('[ScriptGen] Script contains JSON artifacts, cleaning up');
+      script = script
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim();
+    }
   } catch (error) {
-    // Fallback if JSON parsing fails - treat as plain script
+    // Fallback if JSON parsing fails - strip JSON formatting and use as plain script
     console.warn('[ScriptGen] Failed to parse JSON response, using fallback');
     title = `Renungan: ${theme.name}`;
     description = `Sebuah renungan spiritual tentang ${theme.name.toLowerCase()}.`;
-    script = content;
+    // Strip JSON formatting artifacts
+    script = content
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
+      .replace(/^\s*\{\s*"title"[^"]*"[^"]*",?\s*/i, '')
+      .replace(/^\s*"description"[^"]*"[^"]*",?\s*/i, '')
+      .replace(/^\s*"script"\s*:\s*"/i, '')
+      .replace(/"\s*\}\s*$/i, '')
+      .trim();
   }
 
   // Count words excluding audio tags
