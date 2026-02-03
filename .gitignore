@@ -58,3 +58,4 @@ bin/
 !assets/musics/.gitkeep
 !assets/overlays/.gitkeep
 !assets/voices/.gitkeep
+prisma/dev.db
