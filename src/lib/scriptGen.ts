@@ -162,12 +162,21 @@ SPESIFIKASI:
 - PERINGATAN: Jika script lebih dari 150 kata, video akan terlalu panjang!
 
 FORMAT OUTPUT JSON:
-Berikan output dalam format JSON berikut:
-{
-  "title": "Judul video yang menarik dan unik (berbeda dari nama topik, maksimal 60 karakter, untuk YouTube)",
-  "description": "Deskripsi video untuk YouTube (2-3 kalimat, menjelaskan isi video tanpa spoiler)",
-  "script": "Renungan spiritual lengkap dengan format ElevenLabs v3"
-}
+PENTING - IKUTI FORMAT INI DENGAN TEPAT:
+1. Output HANYA JSON murni, tanpa markdown code block (jangan gunakan \`\`\`json atau \`\`\`)
+2. Pastikan JSON valid dan dapat di-parse
+3. Gunakan escape sequence yang benar: \\n untuk newline, \\" untuk kutip dalam string
+
+Format yang diharapkan:
+{"title": "Judul video", "description": "Deskripsi video", "script": "Isi script dengan [tags] dan ..."}
+
+Contoh output yang BENAR:
+{"title": "Ketika Hati Berbisik Rindu", "description": "Sebuah renungan tentang kerinduan jiwa.", "script": "[thoughtful] Di suatu tempat dalam dirimu... ada ruang yang menunggu. [pause] Menunggu untuk pulang..."}
+
+Contoh output yang SALAH (JANGAN LAKUKAN INI):
+\`\`\`json
+{"title": "...", "script": "..."}
+\`\`\`
 
 PANDUAN JUDUL:
 - Judul harus BERBEDA dan UNIK, bukan hanya nama topik
