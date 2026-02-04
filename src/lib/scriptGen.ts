@@ -9,66 +9,103 @@ const client = new OpenAI({
 });
 
 // Opening hook styles for rotation - ensures variety across videos
+// Each hook is designed to be ≤15 words (~5 seconds) and create immediate curiosity
 const OPENING_HOOK_STYLES = [
   {
-    id: 'poetic',
-    name: 'Pernyataan Puitis',
-    instruction:
-      'Gunakan pernyataan puitis yang misterius — kalimat pembuka yang indah, penuh misteri. Contoh: "Ada sesuatu yang bergerak dalam keheningan malam ini..."',
+    id: 'paradoks-tajam',
+    name: 'Paradoks Tajam',
+    instruction: `PEMBUKA PARADOKS (maksimal 15 kata):
+Tulis pernyataan yang tampak kontradiktif tapi mengandung kebenaran spiritual mendalam.
+- Gunakan struktur: "Yang [positif] justru [negatif]" atau sebaliknya
+- Harus langsung terkait dengan topik yang diberikan
+- Contoh: "Orang terkaya tidak memiliki apa-apa"
+- Contoh: "Dalam kehilangan itulah kau menemukan"
+- Contoh: "Berhenti mencari, maka kau akan menemukan"
+PENTING: Setelah hook, script HARUS menjelaskan paradoks ini layer by layer — mulai dari yang literal, lalu spiritual, hingga makna terdalam.`,
   },
   {
-    id: 'metaphor',
-    name: 'Metafora Pembuka',
-    instruction:
-      'Gunakan metafora pembuka yang langsung menarik — perbandingan atau kiasan yang kuat. Contoh: "Seperti air yang selalu mencari jalan ke laut..."',
+    id: 'pertanyaan-menantang',
+    name: 'Pertanyaan Menantang',
+    instruction: `PEMBUKA PERTANYAAN PROVOKATIF (maksimal 15 kata):
+Tulis pertanyaan yang menantang asumsi atau keyakinan umum pendengar.
+- Gunakan "Bagaimana jika...", "Apa jadinya kalau..."
+- Harus membuat pendengar berhenti dan berpikir
+- Contoh: "Bagaimana jika semua yang kau kejar justru sedang lari darimu?"
+- Contoh: "Apa jadinya kalau Tuhan tidak pernah pergi?"
+- Contoh: "Bagaimana jika doa terbaikmu adalah diam?"
+PENTING: Script selanjutnya harus menjawab pertanyaan ini secara bertahap, mengungkap perspektif baru yang mengejutkan.`,
   },
   {
-    id: 'paradox',
-    name: 'Pernyataan Paradoks',
-    instruction:
-      'Gunakan pernyataan paradoks yang membuat berpikir — kontradiksi yang mengandung kebenaran. Contoh: "Dalam kekosongan itulah kesempurnaan bersemayam..."',
+    id: 'kontra-intuitif',
+    name: 'Pernyataan Kontra-Intuitif',
+    instruction: `PEMBUKA KONTRA-INTUITIF (maksimal 15 kata):
+Tulis pernyataan yang berlawanan dengan "common sense" atau nasihat spiritual umum.
+- Harus terdengar "salah" di permukaan tapi benar di kedalaman
+- Gunakan kata-kata perintah: "Berhenti...", "Jangan...", "Lupakan..."
+- Contoh: "Berhenti berdoa untuk apa yang kau inginkan"
+- Contoh: "Jangan mencari kedamaian"
+- Contoh: "Lupakan Tuhan sejenak"
+PENTING: Script WAJIB menjelaskan mengapa pernyataan ini benar — bukan literal, tapi dalam konteks spiritual yang lebih dalam. Buka layer demi layer.`,
   },
   {
-    id: 'imaginative',
-    name: 'Ajakan Imajinatif',
-    instruction:
-      'Gunakan ajakan imajinatif — "Bayangkan...", "Coba rasakan...". Contoh: "Bayangkan sebuah cahaya yang tak pernah padam di dalam dadamu..."',
+    id: 'citra-emosional',
+    name: 'Citra Emosional',
+    instruction: `PEMBUKA CITRA EMOSIONAL (maksimal 15 kata):
+Tulis gambaran visual/sensori yang menyentuh emosi terdalam.
+- Gunakan metafora tubuh atau alam yang intim
+- Harus membangkitkan perasaan langsung (rindu, sesak, lega, sunyi)
+- Contoh: "Ada burung di dadamu yang lupa cara terbang"
+- Contoh: "Di suatu tempat dalam dirimu, ada luka yang masih memanggil"
+- Contoh: "Hatimu adalah lautan yang sudah lama tidak didatangi hujan"
+PENTING: Script selanjutnya harus mengembangkan imagery ini — apa artinya, mengapa terjadi, dan bagaimana jalan pulangnya.`,
   },
   {
-    id: 'simple-profound',
-    name: 'Pengamatan Sederhana',
-    instruction:
-      'Gunakan pengamatan sederhana yang dalam — observasi harian yang mengandung makna spiritual. Contoh: "Daun yang jatuh tidak pernah mengeluh ke mana ia akan mendarat..."',
+    id: 'fakta-mengejutkan',
+    name: 'Fakta Spiritual Mengejutkan',
+    instruction: `PEMBUKA FAKTA MENGEJUTKAN (maksimal 15 kata):
+Tulis "fakta" spiritual yang tidak disadari kebanyakan orang.
+- Gunakan struktur deklaratif yang kuat dan pasti
+- Harus relevan dengan topik dan membuat pendengar merasa "terpapar"
+- Contoh: "Kau sudah sampai. Hanya saja kau tidak menyadarinya"
+- Contoh: "Tuhan tidak pernah tidak menjawab doamu"
+- Contoh: "Kesedihan adalah cara Tuhan menarikmu lebih dekat"
+PENTING: Script harus membongkar "fakta" ini dengan bukti dari kehidupan sehari-hari dan hikmah sufi.`,
   },
   {
-    id: 'mini-story',
-    name: 'Kisah Mini',
-    instruction:
-      'Gunakan kisah mini atau anekdot singkat — cerita pendek 1-2 kalimat. Contoh: "Seorang pengelana berhenti di tepi sungai dan bertanya kepada airnya..."',
+    id: 'pengakuan-jujur',
+    name: 'Pengakuan Jujur',
+    instruction: `PEMBUKA PENGAKUAN JUJUR (maksimal 15 kata):
+Tulis pernyataan yang mengakui kelemahan, keraguan, atau perjuangan manusiawi.
+- Gunakan "kita", "kau", atau suara orang pertama kolektif
+- Harus terasa jujur dan relatable, bukan menghakimi
+- Contoh: "Kita semua pernah berpura-pura baik-baik saja di hadapan-Nya"
+- Contoh: "Terkadang... yang paling berat adalah mengakui bahwa kita butuh Dia"
+- Contoh: "Ada doa yang kau simpan karena malu mengucapkannya"
+PENTING: Script harus memvalidasi perasaan ini, lalu membawa ke ruang penerimaan dan kasih Tuhan.`,
   },
   {
-    id: 'inner-location',
-    name: 'Lokasi Batin',
-    instruction:
-      'Gunakan rujukan lokasi dalam diri — menunjuk ke tempat di dalam jiwa. Contoh: "Di suatu tempat dalam dirimu, ada ruang yang tak pernah disentuh kebisingan..."',
+    id: 'suara-tuhan',
+    name: 'Suara dari Yang Maha',
+    instruction: `PEMBUKA SUARA TUHAN (maksimal 15 kata):
+Tulis seolah-olah Tuhan/Sang Kekasih sedang berbicara kepada pendengar.
+- Gunakan nada lembut, penuh kasih, tidak menghakimi
+- Bisa menggunakan "Aku" dari perspektif Ilahi (dengan hati-hati dan penuh adab)
+- Contoh: "Kau pikir Aku tidak melihat saat kau menangis sendirian?"
+- Contoh: "Datanglah dengan semua lukamu — bukan setelah kau sembuh"
+- Contoh: "Aku lebih dekat dari yang kau sangka"
+PENTING: Script harus melanjutkan dialog ini dengan hikmah — apa yang ingin Sang Kekasih sampaikan tentang topik ini.`,
   },
   {
-    id: 'temporal',
-    name: 'Pembuka Temporal',
-    instruction:
-      'Gunakan penanda waktu yang menciptakan suasana — "Malam ini...", "Pagi ini...", "Di senja ini...". Contoh: "Malam ini, ketika dunia tertidur, ada yang tetap terjaga dalam dadamu..."',
-  },
-  {
-    id: 'direct-invitation',
-    name: 'Undangan Langsung',
-    instruction:
-      'Gunakan ajakan langsung yang lembut — "Lihatlah...", "Dengarkan...", "Rasakanlah...". Contoh: "Lihatlah bagaimana langit tidak pernah menolak awan yang datang..."',
-  },
-  {
-    id: 'reflective-search',
-    name: 'Pencarian Reflektif',
-    instruction:
-      'Gunakan pembuka yang merenungkan pencarian — "Mungkin yang kita cari...", "Barangkali selama ini...". Contoh: "Mungkin yang kita cari selama ini bukan di luar sana, tapi di sini, dalam diam..."',
+    id: 'realita-pahit',
+    name: 'Realita Pahit',
+    instruction: `PEMBUKA REALITA PAHIT (maksimal 15 kata):
+Tulis pernyataan yang mengakui kesakitan atau kenyataan sulit dalam kehidupan spiritual.
+- Jangan langsung memberikan solusi — duduk dulu dengan kesakitan
+- Harus terasa nyata, bukan klise
+- Contoh: "Tidak semua doa dijawab seperti yang kita mau"
+- Contoh: "Ada malam-malam di mana iman terasa seperti beban"
+- Contoh: "Terkadang jalan Tuhan terasa terlalu sunyi"
+PENTING: Script harus mengakui realita ini dengan jujur, BARU kemudian membuka perspektif yang lebih luas dan menenangkan.`,
   },
 ];
 
@@ -98,8 +135,13 @@ Gaya Bahasa:
 - Gunakan kata "Tuhan", "Sang Pencipta", "Sang Kekasih", "Yang Maha", "Dia" — JANGAN gunakan kata "Allah" atau "Robb"
 
 Struktur:
-1. Opening Hook — Gunakan gaya pembuka yang ditentukan dalam instruksi pengguna. JANGAN PERNAH memulai dengan pertanyaan.
-2. 2-3 Bagian Inti — Singkat dan padat, masing-masing menggunakan metafora dari alam, kehidupan sehari-hari, atau kisah para sufi
+1. Opening Hook (KRITIS - 5 DETIK PERTAMA):
+   - MAKSIMAL 15 kata — ini sangat penting untuk engagement!
+   - Harus langsung menciptakan curiosity, tension, atau emotional hook
+   - Gunakan gaya pembuka yang ditentukan dalam instruksi pengguna
+   - Hook adalah JANJI — seluruh script harus menjelaskan dan memenuhi janji ini
+   - Jika hook paradoks/kontra-intuitif, script WAJIB menjelaskan layer by layer
+2. 2-3 Bagian Inti — Singkat dan padat, masing-masing MENGEMBANGKAN hook dengan metafora dari alam, kehidupan sehari-hari, atau kisah para sufi
 3. Closing (SANGAT PENTING untuk tone akhir):
    - Bukan kesimpulan, melainkan pertanyaan, undangan, atau keheningan yang meninggalkan jejak di hati
    - Gunakan kalimat PENDEK dan TERPISAH di bagian akhir (untuk pace lebih lambat)
@@ -108,6 +150,15 @@ Struktur:
    - Contoh pola closing yang baik:
      "Mungkin... di situlah Dia menunggu... [pause] Dalam diam... kau akan mendengar-Nya."
      "Dan pada akhirnya... cinta itu... hanya ingin pulang... [long pause] Pulang kepada-Nya."
+
+ALUR PEMBUKA → PENJELASAN:
+Hook harus PENDEK (maksimal 15 kata, ~5 detik) dan langsung menciptakan rasa ingin tahu.
+Setelah hook, script WAJIB mengikuti alur:
+- HOOK (5 detik) — Paradoks/pertanyaan/pernyataan mengejutkan terkait topik
+- KONTEKS (15-20 detik) — Kenapa ini relevan? Apa yang biasa kita pikirkan?
+- PEMBALIKAN (30-40 detik) — Ungkap kebenaran spiritual layer by layer
+- PENUTUP (20-25 detik) — Kembali ke hook dengan pemahaman baru, tinggalkan keheningan
+Prinsip: Hook adalah JANJI yang harus ditepati oleh seluruh script.
 
 Teknik Penulisan:
 - Gunakan "kau" untuk menyapa pendengar secara intim
@@ -148,8 +199,7 @@ HINDARI:
 - Nada ceramah, mendikte, atau merasa lebih tahu
 - Nada menakut-nakuti dengan neraka
 - Menggunakan kata "Allah" atau "Robb"
-- JANGAN PERNAH memulai dengan pertanyaan (seperti "Pernahkah...", "Bagaimana jika...", "Siapa yang...")
-- Kalimat pembuka yang berakhir dengan tanda tanya (?)
+- Hook pembuka yang terlalu panjang (harus ≤15 kata)
 
 PRINSIP:
 Kamu bukan ustadz yang berceramah. Kamu adalah teman seperjalanan di jalan Tuhan yang berbisik di malam sunyi — menunjuk ke arah Sang Kekasih, bukan menjelaskan siapa Dia. Seperti Rumi yang membuat orang jatuh cinta kepada Tuhan melalui puisinya.
@@ -211,9 +261,14 @@ Deskripsi topik: ${theme.description}
 === GAYA PEMBUKA YANG WAJIB DIGUNAKAN ===
 ${openingHook.name}: ${openingHook.instruction}
 
-PENTING: Kamu WAJIB menggunakan gaya pembuka "${openingHook.name}" di atas. Jangan gunakan gaya pembuka lain.
+=== PENGINGAT KRITIS ===
+1. Hook pembuka WAJIB maksimal 15 kata (5 detik). INI SANGAT PENTING untuk engagement!
+2. Hook harus langsung menciptakan curiosity atau emotional engagement.
+3. Hook HARUS terkait langsung dengan topik "${theme.name}".
+4. Script setelah hook HARUS menjelaskan dan mengembangkan hook tersebut.
+5. Jelaskan layer by layer — jangan langsung ke kesimpulan.
 
-Tulis renungan spiritual berdasarkan topik di atas.`;
+Tulis renungan spiritual berdasarkan topik di atas dengan gaya pembuka "${openingHook.name}".`;
 
   console.log(`[ScriptGen] Generating for topic: ${theme.name}, hook: ${openingHook.name}`);
 

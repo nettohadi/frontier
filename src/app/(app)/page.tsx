@@ -12,7 +12,6 @@ import {
   Subtitles,
   Film,
   Sparkles,
-  X,
   Clock,
   Video,
   Lightbulb,
@@ -27,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
+import { ScheduleUploadModal, useScheduleUploadModal } from '@/components/ScheduleUploadModal';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -140,6 +140,7 @@ export default function DashboardPage() {
   const [playingVideo, setPlayingVideo] = useState<VideoItem | null>(null);
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
+  const { modalState: scheduleModal, openModal: openScheduleModal, setModalOpen: setScheduleModalOpen } = useScheduleUploadModal();
 
   const fetchVideos = async () => {
     try {
@@ -182,27 +183,6 @@ export default function DashboardPage() {
       console.error('Failed to create videos:', err);
     } finally {
       setCreating(false);
-    }
-  };
-
-  const scheduleUpload = async (videoId: string) => {
-    setUploadingVideoId(videoId);
-    try {
-      const res = await fetch('/api/upload/youtube', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId }),
-      });
-      if (res.ok) {
-        fetchVideos();
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to schedule upload');
-      }
-    } catch (err) {
-      console.error('Failed to schedule upload:', err);
-    } finally {
-      setUploadingVideoId(null);
     }
   };
 
@@ -274,6 +254,15 @@ export default function DashboardPage() {
         onOpenChange={setGenerateModalOpen}
         onGenerate={handleBatchGenerate}
         isGenerating={creating}
+      />
+
+      {/* Schedule Upload Modal */}
+      <ScheduleUploadModal
+        open={scheduleModal.open}
+        onOpenChange={setScheduleModalOpen}
+        videoId={scheduleModal.videoId}
+        videoTitle={scheduleModal.videoTitle}
+        onSuccess={fetchVideos}
       />
 
       {/* Header */}
@@ -549,14 +538,14 @@ export default function DashboardPage() {
                               size="sm"
                               variant="outline"
                               className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
-                              onClick={() => scheduleUpload(video.id)}
-                              disabled={uploadingVideoId === video.id}
+                              onClick={() =>
+                                openScheduleModal(
+                                  video.id,
+                                  video.title || video.topicRelation?.name || video.topic
+                                )
+                              }
                             >
-                              {uploadingVideoId === video.id ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" />
-                              ) : (
-                                <Youtube className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                              )}
+                              <Youtube className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               <span className="hidden sm:inline">Upload</span>
                             </Button>
                           )}

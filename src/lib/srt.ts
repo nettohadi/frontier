@@ -2,10 +2,10 @@ import { writeFile } from 'fs/promises';
 import path from 'path';
 import type { WordAlignment } from '@/types';
 
-// Regex pattern for ElevenLabs v3 audio tags (without flags for reuse)
-// Matches: [whispers], [laughs], [thoughtful], [sighs], [pause], [clears throat], etc.
-const AUDIO_TAG_PATTERN =
-  '\\[(?:whispers?|laughs?|thoughtful|sighs?|pause|clears?\\s*throat|gasps?|sobs?|giggles?|cries|yells?|shouts?|screams?)\\]';
+// Regex pattern for all bracketed tags (audio tags, tone tags, mood tags, etc.)
+// Matches any text in square brackets: [whispers], [Contemplative], [soft], [pause], etc.
+// This ensures no tags appear in subtitles regardless of what the LLM generates
+const AUDIO_TAG_PATTERN = '\\[[^\\]]+\\]';
 
 /**
  * Strip ElevenLabs v3 audio tags and ellipses from text

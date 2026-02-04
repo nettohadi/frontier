@@ -10,6 +10,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +41,11 @@ export default function TopicsPage() {
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    type: 'delete' | 'deactivate';
+    topic: Topic | null;
+  }>({ open: false, type: 'delete', topic: null });
 
   const fetchTopics = async () => {
     try {
@@ -97,23 +112,51 @@ export default function TopicsPage() {
     }
   };
 
-  const toggleTopicActive = async (topic: Topic) => {
+  const openDeactivateConfirm = (topic: Topic) => {
+    setConfirmDialog({ open: true, type: 'deactivate', topic });
+  };
+
+  const openDeleteConfirm = (topic: Topic) => {
+    setConfirmDialog({ open: true, type: 'delete', topic });
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDialog({ open: false, type: 'delete', topic: null });
+  };
+
+  const confirmDeactivate = async () => {
+    if (!confirmDialog.topic) return;
+    try {
+      await fetch(`/api/topics/${confirmDialog.topic.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: false }),
+      });
+      fetchTopics();
+    } catch (err) {
+      console.error('Failed to deactivate topic:', err);
+    } finally {
+      closeConfirmDialog();
+    }
+  };
+
+  const activateTopic = async (topic: Topic) => {
     try {
       await fetch(`/api/topics/${topic.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !topic.isActive }),
+        body: JSON.stringify({ isActive: true }),
       });
       fetchTopics();
     } catch (err) {
-      console.error('Failed to toggle topic:', err);
+      console.error('Failed to activate topic:', err);
     }
   };
 
-  const deleteTopic = async (topic: Topic) => {
-    if (!confirm(`Delete topic "${topic.name}"? This cannot be undone.`)) return;
+  const confirmDelete = async () => {
+    if (!confirmDialog.topic) return;
     try {
-      const res = await fetch(`/api/topics/${topic.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/topics/${confirmDialog.topic.id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchTopics();
       } else {
@@ -122,6 +165,8 @@ export default function TopicsPage() {
       }
     } catch (err) {
       console.error('Failed to delete topic:', err);
+    } finally {
+      closeConfirmDialog();
     }
   };
 
@@ -153,6 +198,43 @@ export default function TopicsPage() {
         onGenerate={handleBatchGenerate}
         isGenerating={creating}
       />
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && closeConfirmDialog()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog.type === 'delete' ? 'Delete Topic' : 'Deactivate Topic'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.type === 'delete' ? (
+                <>
+                  Are you sure you want to delete <strong>"{confirmDialog.topic?.name}"</strong>?
+                  This action cannot be undone.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to deactivate <strong>"{confirmDialog.topic?.name}"</strong>?
+                  It will be excluded from video generation rotation.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDialog.type === 'delete' ? confirmDelete : confirmDeactivate}
+              className={
+                confirmDialog.type === 'delete'
+                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                  : ''
+              }
+            >
+              {confirmDialog.type === 'delete' ? 'Delete' : 'Deactivate'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
         <h1 className="text-lg font-semibold md:text-xl">Manage Topics</h1>
@@ -302,7 +384,11 @@ export default function TopicsPage() {
                                   size="icon"
                                   variant="ghost"
                                   className="h-8 w-8"
-                                  onClick={() => toggleTopicActive(topic)}
+                                  onClick={() =>
+                                    topic.isActive
+                                      ? openDeactivateConfirm(topic)
+                                      : activateTopic(topic)
+                                  }
                                 >
                                   {topic.isActive ? (
                                     <Pause className="h-4 w-4" />
@@ -334,7 +420,7 @@ export default function TopicsPage() {
                                   size="icon"
                                   variant="ghost"
                                   className="text-destructive hover:text-destructive h-8 w-8"
-                                  onClick={() => deleteTopic(topic)}
+                                  onClick={() => openDeleteConfirm(topic)}
                                   disabled={topic._count.videos > 0}
                                 >
                                   <Trash2 className="h-4 w-4" />

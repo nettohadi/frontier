@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
+import { ScheduleUploadModal, useScheduleUploadModal } from '@/components/ScheduleUploadModal';
 import { cn } from '@/lib/utils';
 
 interface VideoItem {
@@ -75,6 +76,11 @@ export default function VideosPage() {
   const [inlinePlayingId, setInlinePlayingId] = useState<string | null>(null);
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
+  const {
+    modalState: scheduleModal,
+    openModal: openScheduleModal,
+    setModalOpen: setScheduleModalOpen,
+  } = useScheduleUploadModal();
   const playStartedRef = useRef<string | null>(null);
 
   const fetchVideos = async () => {
@@ -118,24 +124,6 @@ export default function VideosPage() {
     }
   };
 
-  const scheduleUpload = async (videoId: string) => {
-    setUploadingVideoId(videoId);
-    try {
-      const res = await fetch('/api/upload/youtube', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId }),
-      });
-      if (res.ok) {
-        fetchVideos();
-      }
-    } catch (err) {
-      console.error('Failed to schedule upload:', err);
-    } finally {
-      setUploadingVideoId(null);
-    }
-  };
-
   const triggerUploadNow = async (scheduleId: string) => {
     setUploadingVideoId(scheduleId);
     try {
@@ -166,6 +154,15 @@ export default function VideosPage() {
         onOpenChange={setGenerateModalOpen}
         onGenerate={handleBatchGenerate}
         isGenerating={creating}
+      />
+
+      {/* Schedule Upload Modal */}
+      <ScheduleUploadModal
+        open={scheduleModal.open}
+        onOpenChange={setScheduleModalOpen}
+        videoId={scheduleModal.videoId}
+        videoTitle={scheduleModal.videoTitle}
+        onSuccess={fetchVideos}
       />
 
       <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
@@ -373,15 +370,13 @@ export default function VideosPage() {
                             className="h-7 w-full gap-1 text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
-                              scheduleUpload(video.id);
+                              openScheduleModal(
+                                video.id,
+                                video.title || video.topicRelation?.name || video.topic
+                              );
                             }}
-                            disabled={uploadingVideoId === video.id}
                           >
-                            {uploadingVideoId === video.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Youtube className="h-3 w-3" />
-                            )}
+                            <Youtube className="h-3 w-3" />
                             YouTube
                           </Button>
                         )}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getPublerCredentials } from '@/lib/publer';
+import { getNextAvailableSlot } from '@/lib/scheduling';
 import { processUpload } from '@/queues/processors/upload.processor';
 
 const ScheduleUploadSchema = z.object({
@@ -98,23 +99,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the upload schedule (immediate upload, no scheduling)
-    const now = new Date();
+    // Find the next available schedule slot
+    const nextSlot = await getNextAvailableSlot();
+
+    // Create the upload schedule for the next available slot
+    // Status is UPLOADING because we start uploading to Publer immediately
     const schedule = await prisma.uploadSchedule.create({
       data: {
         videoId,
         youtubeChannelId,
         youtubeTitle: video.title || `Video ${video.id.slice(0, 8)}`,
         youtubeDescription: video.description || '',
-        scheduledSlot: 0, // Not used for immediate upload
-        scheduledDate: now,
-        scheduledAt: now,
+        scheduledSlot: nextSlot.slot,
+        scheduledDate: nextSlot.date,
+        scheduledAt: nextSlot.scheduledAt,
         status: 'UPLOADING',
         progress: 0,
       },
     });
 
+    console.log(
+      `[Upload] Uploading video ${videoId} to Publer, scheduled to publish at ${nextSlot.displayTime} (slot ${nextSlot.slot})`
+    );
+
     // Start the upload process immediately in the background
+    // Publer will hold the video and publish at the scheduled time
     processUpload(schedule.id).catch((error) => {
       console.error(`[Upload] Background upload failed for ${schedule.id}:`, error);
     });
@@ -122,7 +131,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         scheduleId: schedule.id,
-        message: 'Upload started',
+        message: 'Upload started, will publish at scheduled time',
+        scheduledAt: nextSlot.scheduledAt,
+        displayTime: nextSlot.displayTime,
       },
       { status: 201 }
     );
