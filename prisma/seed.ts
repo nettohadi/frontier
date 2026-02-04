@@ -224,6 +224,21 @@ const topics = [
     description:
       'Beramal tanpa perhitungan untung rugi. Bukan pedagang yang berdagang dengan Tuhan, tapi pecinta yang memberi tanpa mengharap kembali. Ibadah karena Dia layak disembah, bukan karena apa yang bisa didapat.',
   },
+  {
+    name: 'Yang Wujud Hanya Tuhan',
+    description:
+      'Renungan tentang hakikat wujud — bahwa segala yang tampak hanyalah bayangan, dan yang benar-benar "ada" hanyalah Dia. Seperti ombak yang mengira dirinya terpisah dari laut, kita merasa memiliki keberadaan sendiri. Padahal, kita adalah cermin yang memantulkan satu Cahaya. Bukan berarti kita adalah Tuhan, tapi tanpa Tuhan, kita bukanlah apa-apa.',
+  },
+  {
+    name: 'Siapa Ruh',
+    description:
+      'Renungan tentang misteri terbesar dalam diri manusia — ruh. Dari mana ia datang? Mengapa ia selalu merasa asing di dunia ini? Ruh adalah hembusan Ilahi yang dititipkan dalam jasad tanah liat. Ia rindu pulang karena memang bukan berasal dari sini. Mengenal ruh adalah pintu mengenal Tuhan, sebagaimana sabda: Siapa mengenal dirinya, mengenal Tuhannya.',
+  },
+  {
+    name: 'Syirik yang Sebenarnya',
+    description:
+      'Renungan tentang syirik yang lebih halus dari semut hitam di batu hitam di malam gelap. Bukan tentang menyembah berhala, tapi tentang hati yang bergantung pada selain-Nya — pada harta, pada manusia, pada diri sendiri. Syirik tersembunyi adalah ketika kita mengira ada kekuatan lain yang bisa memberi atau menahan selain Dia. Murnikan tauhid, maka murnilah hatimu.',
+  },
 ];
 
 const backgrounds = [
@@ -290,6 +305,21 @@ async function main() {
     });
     console.log(`  - ${bg.name}`);
   }
+
+  console.log('\nInitializing rotation counter...');
+  await prisma.rotationCounter.upsert({
+    where: { id: 'singleton' },
+    update: {},
+    create: {
+      id: 'singleton',
+      music: 0,
+      overlay: 0,
+      colorScheme: 0,
+      openingHook: 0,
+      topic: 0,
+    },
+  });
+  console.log('  - Rotation counter initialized');
 
   console.log('\nSeeding complete!');
 }
