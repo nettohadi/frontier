@@ -24,18 +24,6 @@ Tulis pernyataan yang tampak kontradiktif tapi mengandung kebenaran spiritual me
 PENTING: Setelah hook, script HARUS menjelaskan paradoks ini layer by layer — mulai dari yang literal, lalu spiritual, hingga makna terdalam.`,
   },
   {
-    id: 'pertanyaan-menantang',
-    name: 'Pertanyaan Menantang',
-    instruction: `PEMBUKA PERTANYAAN PROVOKATIF (maksimal 15 kata):
-Tulis pertanyaan yang menantang asumsi atau keyakinan umum pendengar.
-- Gunakan "Bagaimana jika...", "Apa jadinya kalau..."
-- Harus membuat pendengar berhenti dan berpikir
-- Contoh: "Bagaimana jika semua yang kau kejar justru sedang lari darimu?"
-- Contoh: "Apa jadinya kalau Tuhan tidak pernah pergi?"
-- Contoh: "Bagaimana jika doa terbaikmu adalah diam?"
-PENTING: Script selanjutnya harus menjawab pertanyaan ini secara bertahap, mengungkap perspektif baru yang mengejutkan.`,
-  },
-  {
     id: 'kontra-intuitif',
     name: 'Pernyataan Kontra-Intuitif',
     instruction: `PEMBUKA KONTRA-INTUITIF (maksimal 15 kata):
@@ -70,30 +58,6 @@ Tulis "fakta" spiritual yang tidak disadari kebanyakan orang.
 - Contoh: "Tuhan tidak pernah tidak menjawab doamu"
 - Contoh: "Kesedihan adalah cara Tuhan menarikmu lebih dekat"
 PENTING: Script harus membongkar "fakta" ini dengan bukti dari kehidupan sehari-hari dan hikmah sufi.`,
-  },
-  {
-    id: 'pengakuan-jujur',
-    name: 'Pengakuan Jujur',
-    instruction: `PEMBUKA PENGAKUAN JUJUR (maksimal 15 kata):
-Tulis pernyataan yang mengakui kelemahan, keraguan, atau perjuangan manusiawi.
-- Gunakan "kita", "kau", atau suara orang pertama kolektif
-- Harus terasa jujur dan relatable, bukan menghakimi
-- Contoh: "Kita semua pernah berpura-pura baik-baik saja di hadapan-Nya"
-- Contoh: "Terkadang... yang paling berat adalah mengakui bahwa kita butuh Dia"
-- Contoh: "Ada doa yang kau simpan karena malu mengucapkannya"
-PENTING: Script harus memvalidasi perasaan ini, lalu membawa ke ruang penerimaan dan kasih Tuhan.`,
-  },
-  {
-    id: 'realita-pahit',
-    name: 'Realita Pahit',
-    instruction: `PEMBUKA REALITA PAHIT (maksimal 15 kata):
-Tulis pernyataan yang mengakui kesakitan atau kenyataan sulit dalam kehidupan spiritual.
-- Jangan langsung memberikan solusi — duduk dulu dengan kesakitan
-- Harus terasa nyata, bukan klise
-- Contoh: "Tidak semua doa dijawab seperti yang kita mau"
-- Contoh: "Ada malam-malam di mana iman terasa seperti beban"
-- Contoh: "Terkadang jalan Tuhan terasa terlalu sunyi"
-PENTING: Script harus mengakui realita ini dengan jujur, BARU kemudian membuka perspektif yang lebih luas dan menenangkan.`,
   },
 ];
 
@@ -155,6 +119,7 @@ Teknik Penulisan:
 - Biarkan ada ruang kosong — tidak semua harus dijelaskan
 - Akhiri dengan sesuatu yang membuat pendengar terdiam dan ingin berdzikir
 - CLOSING TONE: Perlambat ritme di akhir — kalimat makin pendek, jeda makin panjang, seperti nafas yang pelan mengalir
+- SANGAT PENTING: Periksa ejaan dengan teliti! Tidak boleh ada typo. Pastikan setiap kata ditulis dengan benar dalam Bahasa Indonesia baku.
 
 FORMAT OUTPUT UNTUK ELEVENLABS v3
 Audio Tags yang tersedia (dalam kurung siku):
