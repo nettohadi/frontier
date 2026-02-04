@@ -244,10 +244,10 @@ export default function DashboardPage() {
       </header>
 
       {/* Page Content */}
-      <div className="overflow-x-hidden p-4 md:p-6">
-        <div className="space-y-4 md:space-y-6">
+      <div className="overflow-x-hidden p-4 md:p-6 w-full max-w-full">
+        <div className="space-y-4 md:space-y-6 w-full max-w-full">
           {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-2 md:gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:gap-4">
             <Card className="border-primary/20 from-primary/5 to-primary/10 bg-gradient-to-br">
               <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
                 <div className="bg-primary/20 flex h-8 w-8 items-center justify-center rounded-full md:h-12 md:w-12">
@@ -299,7 +299,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Video List */}
-          <Card>
+          <Card className="overflow-hidden max-w-full">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Video className="h-5 w-5" />
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                 <Link href="/videos">View All</Link>
               </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
@@ -323,18 +323,18 @@ export default function DashboardPage() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3 md:space-y-4">
+                <div className="space-y-3 md:space-y-4 min-w-0">
                   {videos.map((video) => (
                     <div
                       key={video.id}
                       onClick={() => router.push(`/videos/${video.id}`)}
                       className={cn(
-                        'rounded-lg border p-3 transition-colors md:p-4 cursor-pointer hover:bg-muted/50',
+                        'rounded-lg border p-3 transition-colors md:p-4 cursor-pointer hover:bg-muted/50 overflow-hidden min-w-0 w-full',
                         video.status === 'FAILED' && 'border-red-500/50 bg-red-500/5'
                       )}
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-start justify-between gap-4 min-w-0 w-full">
+                        <div className="min-w-0 flex-1 overflow-hidden">
                           <h3 className="mb-1 truncate font-semibold">
                             {video.title || video.topicRelation?.name || video.topic}
                           </h3>
@@ -343,10 +343,10 @@ export default function DashboardPage() {
                               {video.topicRelation?.name || video.topic}
                             </span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                             <Badge
                               variant={statusConfig[video.status]?.variant || 'secondary'}
-                              className={cn('gap-1', isProcessing(video.status) && 'animate-pulse')}
+                              className={cn('gap-1 text-[10px] md:text-xs', isProcessing(video.status) && 'animate-pulse')}
                             >
                               {isProcessing(video.status) && (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -358,7 +358,7 @@ export default function DashboardPage() {
                                 <TooltipTrigger>
                                   <Badge
                                     variant={video.validationPassed ? 'success' : 'destructive'}
-                                    className="gap-1"
+                                    className="gap-1 text-[10px] md:text-xs"
                                   >
                                     {video.validationPassed ? (
                                       <CheckCircle2 className="h-3 w-3" />
@@ -375,28 +375,28 @@ export default function DashboardPage() {
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                              <Clock className="h-3 w-3" />
-                              {formatDate(video.createdAt)}
+                            <span className="text-muted-foreground flex items-center gap-1 text-[10px] md:text-xs">
+                              <Clock className="h-3 w-3 shrink-0" />
+                              <span className="truncate max-w-[100px] md:max-w-none">{formatDate(video.createdAt)}</span>
                             </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Pipeline Progress */}
-                      <div className="bg-muted/50 mt-3 flex max-w-3xl items-center rounded-lg p-1.5 md:mt-4 md:p-3">
+                      <div className="bg-muted/50 mt-3 flex items-center overflow-hidden rounded-lg p-1.5 md:mt-4 md:p-3">
                         {pipelineSteps.map((step, index, arr) => {
                           const state = getStepState(video, step);
                           const nextState =
                             index < arr.length - 1 ? getStepState(video, arr[index + 1]) : null;
                           const Icon = step.icon;
                           return (
-                            <div key={step.key} className="flex flex-1 items-center">
+                            <div key={step.key} className="flex flex-1 items-center min-w-0">
                               <Tooltip>
                                 <TooltipTrigger>
                                   <div
                                     className={cn(
-                                      'flex flex-col items-center rounded-md px-1.5 py-1 transition-colors md:px-2 md:py-1.5',
+                                      'flex flex-col items-center rounded-md px-1 py-1 transition-colors md:px-2 md:py-1.5 min-w-0',
                                       state === 'active' &&
                                         'bg-primary text-primary-foreground animate-pulse',
                                       state === 'completed' &&
@@ -421,7 +421,7 @@ export default function DashboardPage() {
                               {index < arr.length - 1 && (
                                 <div
                                   className={cn(
-                                    'mx-1 h-0.5 flex-1 rounded-full md:mx-2',
+                                    'mx-0.5 h-0.5 flex-1 min-w-0 rounded-full md:mx-2',
                                     state === 'completed' && nextState === 'completed'
                                       ? 'bg-emerald-500'
                                       : state === 'completed'

@@ -206,7 +206,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Main Content */}
         <main
           className={cn(
-            'flex-1 transition-all duration-300',
+            'flex-1 transition-all duration-300 min-w-0 overflow-x-hidden',
             // Mobile: no margin, add top padding for header
             'mt-14 md:mt-0',
             // Desktop: margin based on sidebar state
