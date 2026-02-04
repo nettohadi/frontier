@@ -34,6 +34,78 @@ Tulis pernyataan yang berlawanan dengan "common sense" atau nasihat spiritual um
 - Contoh: "Lupakan Tuhan sejenak"
 PENTING: Script WAJIB menjelaskan mengapa pernyataan ini benar — bukan literal, tapi dalam konteks spiritual yang lebih dalam. Buka layer demi layer.`,
   },
+  {
+    id: 'pertanyaan-menantang',
+    name: 'Pertanyaan Menantang',
+    instruction: `PEMBUKA PERTANYAAN PROVOKATIF (maksimal 15 kata):
+Tulis pertanyaan yang menantang asumsi dan memaksa refleksi internal.
+- Gunakan "Bagaimana jika...", "Pernahkah kau...", "Apa jadinya kalau..."
+- Pertanyaan harus mengejutkan dan membuat pendengar berhenti sejenak
+- Contoh: "Bagaimana jika semua yang kau kejar... justru lari darimu?"
+- Contoh: "Pernahkah kau berdoa... dan berharap Dia tidak menjawab?"
+- Contoh: "Apa jadinya kalau ketakutan terbesarmu... adalah jawabannya?"
+PENTING: Script HARUS menjawab pertanyaan ini secara bertahap, membuka layer demi layer hingga pendengar menemukan jawabannya sendiri.`,
+  },
+  {
+    id: 'citra-emosional',
+    name: 'Citra Emosional',
+    instruction: `PEMBUKA CITRA EMOSIONAL (maksimal 15 kata):
+Tulis gambaran visual/metafora yang menyentuh emosi terdalam secara langsung.
+- Gunakan metafora tubuh, alam, atau pengalaman universal yang intim
+- Harus terasa "ditujukan untuk pendengar" secara personal
+- Contoh: "Ada burung di dadamu yang lupa cara terbang"
+- Contoh: "Lukamu masih berbicara... di tengah malam"
+- Contoh: "Ada hujan yang turun di dalam dirimu... yang tak pernah reda"
+PENTING: Script HARUS mengembangkan imagery ini — jelaskan apa burung itu, apa luka itu, apa hujan itu dalam konteks spiritual topik yang diberikan.`,
+  },
+  {
+    id: 'pengakuan-jujur',
+    name: 'Pengakuan Jujur',
+    instruction: `PEMBUKA PENGAKUAN JUJUR (maksimal 15 kata):
+Tulis pernyataan yang mengakui kelemahan atau perjuangan manusiawi secara vulnerable.
+- Gunakan "Kita semua pernah...", "Kadang...", "Ada bagian dari dirimu yang..."
+- Harus terasa jujur dan relatable — bukan menghakimi
+- Contoh: "Kita semua pernah berpura-pura baik-baik saja di hadapan-Nya"
+- Contoh: "Kadang... aku lelah bersabar"
+- Contoh: "Ada bagian dari dirimu yang malu mengakui... kau masih ragu"
+PENTING: Script harus MEMVALIDASI perasaan ini dulu, baru membawa ke penerimaan dan kasih Tuhan. Jangan langsung menasihati.`,
+  },
+  {
+    id: 'suara-tuhan',
+    name: 'Suara dari Yang Maha',
+    instruction: `PEMBUKA SUARA TUHAN (maksimal 15 kata):
+Tulis seolah Sang Kekasih/Tuhan berbicara langsung kepada pendengar dengan lembut.
+- Gunakan sudut pandang orang pertama dari perspektif Ilahi
+- Harus intim, penuh kasih, dan mengejutkan
+- Contoh: "Kau pikir Aku tidak melihat... saat kau menangis sendirian?"
+- Contoh: "Kenapa kau lari dari-Ku... padahal Aku yang mencarimu?"
+- Contoh: "Aku menunggumu... di tempat yang kau hindari"
+PENTING: Script harus melanjutkan "dialog" ini — mengembangkan apa yang Tuhan ingin sampaikan tentang topik tersebut dengan penuh hikmah dan kelembutan.`,
+  },
+  {
+    id: 'realita-pahit',
+    name: 'Realita Pahit',
+    instruction: `PEMBUKA REALITA PAHIT (maksimal 15 kata):
+Tulis pernyataan yang mengakui kenyataan sulit/menyakitkan dalam kehidupan spiritual.
+- Harus jujur tentang rasa sakit, tanpa langsung memberi solusi
+- Validasi dulu, baru buka perspektif
+- Contoh: "Tidak semua doa dijawab seperti yang kita mau"
+- Contoh: "Ada luka yang memang... tidak akan sembuh"
+- Contoh: "Terkadang Tuhan diam. Dan itu menyakitkan"
+PENTING: Script harus MENGAKUI realita ini dengan jujur terlebih dahulu, BARU KEMUDIAN membuka perspektif spiritual yang lebih luas. Jangan terburu-buru memberi "jawaban".`,
+  },
+  {
+    id: 'misteri-menggantung',
+    name: 'Misteri Menggantung',
+    instruction: `PEMBUKA MISTERI MENGGANTUNG (maksimal 15 kata):
+Tulis pernyataan misterius yang menciptakan suspense dan rasa ingin tahu.
+- Harus terasa seperti ada "sesuatu" yang akan diungkap
+- Gunakan bahasa yang enigmatis tapi tidak membingungkan
+- Contoh: "Ada sesuatu yang menunggumu... di balik kesedihanmu"
+- Contoh: "Malam ini berbeda. Kau akan mengerti nanti"
+- Contoh: "Seseorang sedang memikirkanmu. Bukan manusia"
+PENTING: Script HARUS mengungkap misteri ini secara bertahap — bawa pendengar dalam perjalanan penemuan hingga "sesuatu" itu terungkap di akhir.`,
+  },
 ];
 
 // Get next opening hook using database-persisted rotation
