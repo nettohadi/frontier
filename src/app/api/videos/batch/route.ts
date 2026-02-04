@@ -10,13 +10,20 @@ const BatchCreateSchema = z.object({
   // Auto-upload settings
   autoUpload: z.boolean().optional().default(false),
   uploadMode: z.enum(['immediate', 'scheduled']).nullable().optional(),
+  // Custom topic for one-off generation (bypasses rotation)
+  customTopic: z
+    .object({
+      name: z.string().min(2).max(100),
+      description: z.string().min(10).max(1000),
+    })
+    .optional(),
 });
 
 // POST /api/videos/batch - Create multiple video jobs
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { count, renderMode, autoUpload, uploadMode } = BatchCreateSchema.parse(body);
+    const { count, renderMode, autoUpload, uploadMode, customTopic } = BatchCreateSchema.parse(body);
 
     // Get all backgrounds for sequential selection (for BACKGROUND_VIDEO mode)
     const backgrounds = await prisma.backgroundVideo.findMany({
@@ -39,11 +46,13 @@ export async function POST(request: NextRequest) {
 
       const video = await prisma.video.create({
         data: {
-          topic: 'Auto theme rotation', // Use topic rotation
+          topic: customTopic ? customTopic.name : 'Auto theme rotation',
           renderMode,
           backgroundId,
           autoUpload,
           uploadMode,
+          customTopicName: customTopic?.name,
+          customTopicDescription: customTopic?.description,
         },
       });
       createdVideos.push(video);

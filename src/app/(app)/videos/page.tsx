@@ -7,7 +7,6 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
-  Sparkles,
   X,
   Clock,
   Video,
@@ -18,8 +17,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
 import { ScheduleUploadModal, useScheduleUploadModal } from '@/components/ScheduleUploadModal';
+import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
 import { cn } from '@/lib/utils';
 
 interface VideoItem {
@@ -72,9 +71,7 @@ function isProcessing(status: string): boolean {
 export default function VideosPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
   const [inlinePlayingId, setInlinePlayingId] = useState<string | null>(null);
-  const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
   const {
     modalState: scheduleModal,
@@ -101,29 +98,6 @@ export default function VideosPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleBatchGenerate = async (config: GenerateConfig) => {
-    setGenerateModalOpen(false);
-    setCreating(true);
-    try {
-      const res = await fetch('/api/videos/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          count: config.count,
-          autoUpload: config.uploadMode !== 'none',
-          uploadMode: config.uploadMode === 'none' ? null : config.uploadMode,
-        }),
-      });
-      if (res.ok) {
-        fetchVideos();
-      }
-    } catch (err) {
-      console.error('Failed to create videos:', err);
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const triggerUploadNow = async (scheduleId: string) => {
     setUploadingVideoId(scheduleId);
     try {
@@ -149,13 +123,6 @@ export default function VideosPage() {
 
   return (
     <>
-      <GenerateModal
-        open={generateModalOpen}
-        onOpenChange={setGenerateModalOpen}
-        onGenerate={handleBatchGenerate}
-        isGenerating={creating}
-      />
-
       {/* Schedule Upload Modal */}
       <ScheduleUploadModal
         open={scheduleModal.open}
@@ -167,20 +134,7 @@ export default function VideosPage() {
 
       <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
         <h1 className="text-lg font-semibold md:text-xl">All Videos</h1>
-        <Button
-          onClick={() => setGenerateModalOpen(true)}
-          disabled={creating}
-          size="sm"
-          className="from-primary hover:from-primary/90 md:size-default gap-2 bg-gradient-to-r to-violet-600 hover:to-violet-600/90"
-        >
-          {creating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
-          <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
-        </Button>
+        <GenerateVideoDropdown onRefresh={fetchVideos} />
       </header>
 
       <div className="p-4 md:p-6">

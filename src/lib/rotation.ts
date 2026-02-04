@@ -3,23 +3,31 @@ import { prisma } from './prisma';
 type RotationType = 'music' | 'overlay' | 'colorScheme' | 'openingHook' | 'topic';
 
 // Ensure rotation counter exists and get next index for a given type
+// Counter stores "the next index to use" - we read it, use it, then increment
 async function getNextIndex(type: RotationType, totalItems: number): Promise<number> {
   if (totalItems === 0) return -1;
 
-  // Upsert to ensure row exists, then increment and get new value
-  const counter = await prisma.rotationCounter.upsert({
-    where: { id: 'singleton' },
-    create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
-    update: {
-      [type]: {
-        increment: 1,
-      },
-    },
-  });
+  // Use transaction to atomically read-then-increment
+  const index = await prisma.$transaction(async (tx) => {
+    // Ensure counter exists
+    const counter = await tx.rotationCounter.upsert({
+      where: { id: 'singleton' },
+      create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
+      update: {}, // No update needed, just ensure it exists
+    });
 
-  // Get the current value (after increment) and wrap around
-  const currentValue = counter[type];
-  const index = currentValue % totalItems;
+    // Get current value and calculate index
+    const currentValue = counter[type];
+    const currentIndex = currentValue % totalItems;
+
+    // Increment for next time
+    await tx.rotationCounter.update({
+      where: { id: 'singleton' },
+      data: { [type]: currentValue + 1 },
+    });
+
+    return currentIndex;
+  });
 
   return index;
 }

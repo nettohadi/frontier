@@ -38,6 +38,10 @@ model Video {
   topic           String
   style           String?      @default("educational")
 
+  // Custom topic for one-off generation (not in rotation)
+  customTopicName        String?
+  customTopicDescription String?      @db.Text
+
   // Generated content
   title           String?
   description     String?      @db.Text
@@ -149,7 +153,7 @@ model UploadSchedule {
 
   // Video relation
   videoId          String       @unique
-  video            Video        @relation(fields: [videoId], references: [id])
+  video            Video        @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   // YouTube details
   youtubeChannelId String

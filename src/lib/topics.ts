@@ -5,13 +5,13 @@ import { getNextTopicIndex } from './rotation';
 /**
  * Get the next topic for video generation using atomic counter rotation.
  * Uses database-level atomic increment to prevent race conditions in batch generation.
- * Goes through topics alphabetically by name, cycling back to the start.
+ * Goes through topics by creation date (oldest first), cycling back to the start.
  */
 export async function getNextTopic(): Promise<Topic> {
-  // Get all active topics ordered alphabetically (matches UI display order)
+  // Get all active topics ordered by creation date (matches UI display order)
   const allTopics = await prisma.topic.findMany({
     where: { isActive: true },
-    orderBy: { name: 'asc' },
+    orderBy: { createdAt: 'asc' },
   });
 
   if (allTopics.length === 0) {
@@ -49,7 +49,7 @@ export async function getTopicByName(name: string): Promise<Topic | null> {
 export async function getAllActiveTopics(): Promise<Topic[]> {
   return prisma.topic.findMany({
     where: { isActive: true },
-    orderBy: { name: 'asc' },
+    orderBy: { createdAt: 'asc' },
   });
 }
 

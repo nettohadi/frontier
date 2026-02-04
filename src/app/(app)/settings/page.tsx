@@ -7,7 +7,6 @@ import {
   XCircle,
   RefreshCw,
   Settings,
-  Sparkles,
   Eye,
   EyeOff,
   Youtube,
@@ -25,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
+import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
 import { toast } from 'sonner';
 
 interface PublerSettings {
@@ -53,8 +52,6 @@ export default function SettingsPage() {
   const [channels, setChannels] = useState<YouTubeChannel[]>([]);
   const [channelsLoading, setChannelsLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [generateModalOpen, setGenerateModalOpen] = useState(false);
 
   const fetchSettings = async () => {
     try {
@@ -137,51 +134,11 @@ export default function SettingsPage() {
     }
   };
 
-  const handleBatchGenerate = async (config: GenerateConfig) => {
-    setGenerateModalOpen(false);
-    setCreating(true);
-    try {
-      await fetch('/api/videos/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          count: config.count,
-          autoUpload: config.uploadMode !== 'none',
-          uploadMode: config.uploadMode === 'none' ? null : config.uploadMode,
-        }),
-      });
-    } catch (err) {
-      console.error('Failed to create videos:', err);
-    } finally {
-      setCreating(false);
-    }
-  };
-
   return (
     <>
-      <GenerateModal
-        open={generateModalOpen}
-        onOpenChange={setGenerateModalOpen}
-        onGenerate={handleBatchGenerate}
-        isGenerating={creating}
-      />
-
       <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
         <h1 className="text-lg font-semibold md:text-xl">Settings</h1>
-        <Button
-          onClick={() => setGenerateModalOpen(true)}
-          disabled={creating}
-          size="sm"
-          className="from-primary hover:from-primary/90 md:size-default gap-2 bg-gradient-to-r to-violet-600 hover:to-violet-600/90"
-        >
-          {creating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
-          <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
-        </Button>
+        <GenerateVideoDropdown />
       </header>
 
       <div className="max-w-2xl space-y-4 p-4 md:space-y-6 md:p-6">

@@ -5,8 +5,9 @@ import { prisma } from '@/lib/prisma';
 // GET /api/topics - List all topics
 export async function GET() {
   try {
+    // Get all topics ordered by: active first, then by creation date (oldest first)
     const topics = await prisma.topic.findMany({
-      orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
+      orderBy: [{ isActive: 'desc' }, { createdAt: 'asc' }],
       include: {
         _count: {
           select: { videos: true },
@@ -14,7 +15,19 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ topics });
+    // Get active topics for rotation calculation
+    const activeTopics = topics.filter((t) => t.isActive);
+
+    // Get rotation counter to determine next topic
+    const counter = await prisma.rotationCounter.findUnique({
+      where: { id: 'singleton' },
+    });
+
+    // Counter directly stores the next index to use
+    const nextTopicIndex = activeTopics.length > 0 ? (counter?.topic ?? 0) % activeTopics.length : -1;
+    const nextTopicId = nextTopicIndex >= 0 ? activeTopics[nextTopicIndex]?.id : null;
+
+    return NextResponse.json({ topics, nextTopicId });
   } catch (error) {
     console.error('Error listing topics:', error);
     const message = error instanceof Error ? error.message : String(error);

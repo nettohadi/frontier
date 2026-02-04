@@ -16,7 +16,6 @@ const OPENING_HOOK_STYLES = [
     name: 'Paradoks Tajam',
     instruction: `PEMBUKA PARADOKS (maksimal 15 kata):
 Tulis pernyataan yang tampak kontradiktif tapi mengandung kebenaran spiritual mendalam.
-- Gunakan struktur: "Yang [positif] justru [negatif]" atau sebaliknya
 - Harus langsung terkait dengan topik yang diberikan
 - Contoh: "Orang terkaya tidak memiliki apa-apa"
 - Contoh: "Dalam kehilangan itulah kau menemukan"
@@ -34,30 +33,6 @@ Tulis pernyataan yang berlawanan dengan "common sense" atau nasihat spiritual um
 - Contoh: "Jangan mencari kedamaian"
 - Contoh: "Lupakan Tuhan sejenak"
 PENTING: Script WAJIB menjelaskan mengapa pernyataan ini benar — bukan literal, tapi dalam konteks spiritual yang lebih dalam. Buka layer demi layer.`,
-  },
-  {
-    id: 'citra-emosional',
-    name: 'Citra Emosional',
-    instruction: `PEMBUKA CITRA EMOSIONAL (maksimal 15 kata):
-Tulis gambaran visual/sensori yang menyentuh emosi terdalam.
-- Gunakan metafora tubuh atau alam yang intim
-- Harus membangkitkan perasaan langsung (rindu, sesak, lega, sunyi)
-- Contoh: "Ada burung di dadamu yang lupa cara terbang"
-- Contoh: "Di suatu tempat dalam dirimu, ada luka yang masih memanggil"
-- Contoh: "Hatimu adalah lautan yang sudah lama tidak didatangi hujan"
-PENTING: Script selanjutnya harus mengembangkan imagery ini — apa artinya, mengapa terjadi, dan bagaimana jalan pulangnya.`,
-  },
-  {
-    id: 'fakta-mengejutkan',
-    name: 'Fakta Spiritual Mengejutkan',
-    instruction: `PEMBUKA FAKTA MENGEJUTKAN (maksimal 15 kata):
-Tulis "fakta" spiritual yang tidak disadari kebanyakan orang.
-- Gunakan struktur deklaratif yang kuat dan pasti
-- Harus relevan dengan topik dan membuat pendengar merasa "terpapar"
-- Contoh: "Kau sudah sampai. Hanya saja kau tidak menyadarinya"
-- Contoh: "Tuhan tidak pernah tidak menjawab doamu"
-- Contoh: "Kesedihan adalah cara Tuhan menarikmu lebih dekat"
-PENTING: Script harus membongkar "fakta" ini dengan bukti dari kehidupan sehari-hari dan hikmah sufi.`,
   },
 ];
 

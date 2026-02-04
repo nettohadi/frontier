@@ -11,7 +11,6 @@ import {
   Volume2,
   Subtitles,
   Film,
-  Sparkles,
   Clock,
   Video,
   Lightbulb,
@@ -25,8 +24,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
 import { ScheduleUploadModal, useScheduleUploadModal } from '@/components/ScheduleUploadModal';
+import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -136,9 +135,7 @@ function getStepState(
 export default function DashboardPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
   const [playingVideo, setPlayingVideo] = useState<VideoItem | null>(null);
-  const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
   const { modalState: scheduleModal, openModal: openScheduleModal, setModalOpen: setScheduleModalOpen } = useScheduleUploadModal();
 
@@ -159,32 +156,6 @@ export default function DashboardPage() {
     const interval = setInterval(fetchVideos, 10000);
     return () => clearInterval(interval);
   }, []);
-
-  const handleBatchGenerate = async (config: GenerateConfig) => {
-    setGenerateModalOpen(false);
-    setCreating(true);
-    try {
-      const res = await fetch('/api/videos/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          count: config.count,
-          autoUpload: config.uploadMode !== 'none',
-          uploadMode: config.uploadMode === 'none' ? null : config.uploadMode,
-        }),
-      });
-      if (res.ok) {
-        fetchVideos();
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to create videos');
-      }
-    } catch (err) {
-      console.error('Failed to create videos:', err);
-    } finally {
-      setCreating(false);
-    }
-  };
 
   const triggerUploadNow = async (scheduleId: string) => {
     setUploadingVideoId(scheduleId);
@@ -248,14 +219,6 @@ export default function DashboardPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Generate Video Modal */}
-      <GenerateModal
-        open={generateModalOpen}
-        onOpenChange={setGenerateModalOpen}
-        onGenerate={handleBatchGenerate}
-        isGenerating={creating}
-      />
-
       {/* Schedule Upload Modal */}
       <ScheduleUploadModal
         open={scheduleModal.open}
@@ -268,25 +231,7 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
         <h1 className="text-lg font-semibold md:text-xl">Dashboard</h1>
-        <Button
-          onClick={() => setGenerateModalOpen(true)}
-          disabled={creating}
-          size="sm"
-          className="from-primary hover:from-primary/90 md:size-default gap-2 bg-gradient-to-r to-violet-600 hover:to-violet-600/90"
-        >
-          {creating ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="hidden sm:inline">Generating...</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">Generate Video</span>
-              <span className="sm:hidden">Generate</span>
-            </>
-          )}
-        </Button>
+        <GenerateVideoDropdown onRefresh={fetchVideos} />
       </header>
 
       {/* Page Content */}

@@ -63,38 +63,48 @@ export async function GET() {
   }
 }
 
-// POST /api/rotation - Reset counters
+// POST /api/rotation - Reset counters or set specific counter value
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { reset } = body;
+    const { reset, setTopic } = body;
+
+    // Set topic counter to a specific value
+    if (typeof setTopic === 'number') {
+      await prisma.rotationCounter.upsert({
+        where: { id: 'singleton' },
+        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: setTopic },
+        update: { topic: setTopic },
+      });
+      return NextResponse.json({ message: `Topic counter set to ${setTopic}` });
+    }
 
     if (reset === 'all') {
       // Reset all counters to 0
       await prisma.rotationCounter.upsert({
         where: { id: 'singleton' },
-        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0 },
-        update: { music: 0, overlay: 0, colorScheme: 0 },
+        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
+        update: { music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
       });
       return NextResponse.json({ message: 'All counters reset to 0' });
     }
 
-    if (reset === 'music' || reset === 'overlay' || reset === 'colorScheme') {
+    if (reset === 'music' || reset === 'overlay' || reset === 'colorScheme' || reset === 'topic' || reset === 'openingHook') {
       // Reset specific counter
       await prisma.rotationCounter.upsert({
         where: { id: 'singleton' },
-        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0 },
+        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
         update: { [reset]: 0 },
       });
       return NextResponse.json({ message: `${reset} counter reset to 0` });
     }
 
     return NextResponse.json(
-      { error: 'Invalid reset value. Use: all, music, overlay, or colorScheme' },
+      { error: 'Invalid request. Use reset or setTopic parameter' },
       { status: 400 }
     );
   } catch (error) {
-    console.error('Error resetting rotation:', error);
+    console.error('Error updating rotation:', error);
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: 'Internal server error', message }, { status: 500 });
   }

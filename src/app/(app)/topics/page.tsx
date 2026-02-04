@@ -1,15 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Loader2, Pencil, Trash2, Pause, PlayCircle, Sparkles } from 'lucide-react';
+import {
+  Plus,
+  Loader2,
+  Pencil,
+  Trash2,
+  Pause,
+  PlayCircle,
+  Target,
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  ListFilter,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +30,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { GenerateModal, type GenerateConfig } from '@/components/GenerateModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
 import { cn } from '@/lib/utils';
 
 interface Topic {
@@ -33,25 +50,33 @@ interface Topic {
   _count: { videos: number };
 }
 
+const TOPICS_PER_PAGE = 20;
+
 export default function TopicsPage() {
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const [allTopics, setAllTopics] = useState<Topic[]>([]);
+  const [nextTopicId, setNextTopicId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [newTopic, setNewTopic] = useState({ name: '', description: '' });
   const [saving, setSaving] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     type: 'delete' | 'deactivate';
     topic: Topic | null;
   }>({ open: false, type: 'delete', topic: null });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Filter state - "What's Next" shows topics starting from the next topic
+  const [whatsNextFilter, setWhatsNextFilter] = useState(false);
+
   const fetchTopics = async () => {
     try {
       const res = await fetch('/api/topics');
       const data = await res.json();
-      setTopics(data.topics || []);
+      setAllTopics(data.topics || []);
+      setNextTopicId(data.nextTopicId || null);
     } catch (err) {
       console.error('Failed to fetch topics:', err);
     } finally {
@@ -62,6 +87,34 @@ export default function TopicsPage() {
   useEffect(() => {
     fetchTopics();
   }, []);
+
+  // Get filtered and paginated topics
+  const getDisplayedTopics = () => {
+    let topics = allTopics;
+
+    if (whatsNextFilter && nextTopicId) {
+      // Find the index of the next topic
+      const nextIndex = topics.findIndex((t) => t.id === nextTopicId);
+      if (nextIndex !== -1) {
+        // Reorder: topics from nextIndex to end, then start to nextIndex
+        topics = [...topics.slice(nextIndex), ...topics.slice(0, nextIndex)];
+      }
+    }
+
+    return topics;
+  };
+
+  const filteredTopics = getDisplayedTopics();
+  const totalPages = Math.ceil(filteredTopics.length / TOPICS_PER_PAGE);
+  const paginatedTopics = filteredTopics.slice(
+    (currentPage - 1) * TOPICS_PER_PAGE,
+    currentPage * TOPICS_PER_PAGE
+  );
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [whatsNextFilter]);
 
   const createTopic = async () => {
     if (!newTopic.name.trim() || !newTopic.description.trim()) return;
@@ -153,6 +206,25 @@ export default function TopicsPage() {
     }
   };
 
+  const setAsNextTopic = async (topic: Topic) => {
+    // Find the index of this topic among active topics (ordered by createdAt)
+    const activeTopics = allTopics.filter((t) => t.isActive);
+    const topicIndex = activeTopics.findIndex((t) => t.id === topic.id);
+    if (topicIndex === -1) return;
+
+    // Counter directly stores the next index to use
+    try {
+      await fetch('/api/rotation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ setTopic: topicIndex }),
+      });
+      fetchTopics();
+    } catch (err) {
+      console.error('Failed to set next topic:', err);
+    }
+  };
+
   const confirmDelete = async () => {
     if (!confirmDialog.topic) return;
     try {
@@ -170,35 +242,8 @@ export default function TopicsPage() {
     }
   };
 
-  const handleBatchGenerate = async (config: GenerateConfig) => {
-    setGenerateModalOpen(false);
-    setCreating(true);
-    try {
-      await fetch('/api/videos/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          count: config.count,
-          autoUpload: config.uploadMode !== 'none',
-          uploadMode: config.uploadMode === 'none' ? null : config.uploadMode,
-        }),
-      });
-    } catch (err) {
-      console.error('Failed to create videos:', err);
-    } finally {
-      setCreating(false);
-    }
-  };
-
   return (
     <>
-      <GenerateModal
-        open={generateModalOpen}
-        onOpenChange={setGenerateModalOpen}
-        onGenerate={handleBatchGenerate}
-        isGenerating={creating}
-      />
-
       {/* Confirmation Dialog */}
       <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && closeConfirmDialog()}>
         <AlertDialogContent>
@@ -238,20 +283,7 @@ export default function TopicsPage() {
 
       <header className="bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:h-16 md:px-6">
         <h1 className="text-lg font-semibold md:text-xl">Manage Topics</h1>
-        <Button
-          onClick={() => setGenerateModalOpen(true)}
-          disabled={creating}
-          size="sm"
-          className="from-primary hover:from-primary/90 md:size-default gap-2 bg-gradient-to-r to-violet-600 hover:to-violet-600/90"
-        >
-          {creating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          <span className="hidden sm:inline">{creating ? 'Generating...' : 'Generate Video'}</span>
-          <span className="sm:hidden">{creating ? '...' : 'Generate'}</span>
-        </Button>
+        <GenerateVideoDropdown onRefresh={fetchTopics} />
       </header>
 
       <div className="space-y-4 p-4 md:space-y-6 md:p-6">
@@ -296,21 +328,34 @@ export default function TopicsPage() {
         {/* Topic list */}
         <Card>
           <CardHeader className="pb-3 md:pb-6">
-            <CardTitle className="text-base md:text-lg">All Topics ({topics.length})</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base md:text-lg">
+                All Topics ({allTopics.length})
+              </CardTitle>
+              <Button
+                variant={whatsNextFilter ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setWhatsNextFilter(!whatsNextFilter)}
+                className="gap-2"
+              >
+                <ListFilter className="h-4 w-4" />
+                <span className="hidden sm:inline">What's Next</span>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
               </div>
-            ) : topics.length === 0 ? (
+            ) : allTopics.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center text-sm">
                 No topics yet. Add one above!
               </p>
             ) : (
-              <ScrollArea className="h-[500px] pr-2 md:h-[600px] md:pr-4">
+              <>
                 <div className="space-y-2">
-                  {topics.map((topic) => (
+                  {paginatedTopics.map((topic) => (
                     <div
                       key={topic.id}
                       className={cn(
@@ -364,6 +409,14 @@ export default function TopicsPage() {
                               >
                                 {topic.isActive ? 'Active' : 'Inactive'}
                               </Badge>
+                              {topic.id === nextTopicId && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-primary text-primary text-[10px] md:text-xs"
+                                >
+                                  Next
+                                </Badge>
+                              )}
                             </div>
                             <div className="text-muted-foreground mb-1.5 flex flex-wrap items-center gap-2 text-[10px] md:text-xs">
                               <span>Used: {topic.usageCount}x</span>
@@ -377,66 +430,82 @@ export default function TopicsPage() {
                               {topic.description}
                             </p>
                           </div>
-                          <div className="mt-2 flex shrink-0 gap-1 md:mt-0">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8"
-                                  onClick={() =>
-                                    topic.isActive
-                                      ? openDeactivateConfirm(topic)
-                                      : activateTopic(topic)
-                                  }
-                                >
-                                  {topic.isActive ? (
-                                    <Pause className="h-4 w-4" />
-                                  ) : (
-                                    <PlayCircle className="h-4 w-4" />
-                                  )}
+                          <div className="mt-2 flex shrink-0 items-center gap-1 md:mt-0">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="icon" variant="ghost" className="h-8 w-8">
+                                  <MoreHorizontal className="h-4 w-4" />
                                 </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {topic.isActive ? 'Deactivate' : 'Activate'}
-                              </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8"
-                                  onClick={() => setEditingTopic(topic)}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="text-destructive hover:text-destructive h-8 w-8"
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {topic.isActive && topic.id !== nextTopicId && (
+                                  <DropdownMenuItem onClick={() => setAsNextTopic(topic)}>
+                                    <Target className="mr-2 h-4 w-4" />
+                                    Set as Next
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={() => setEditingTopic(topic)}>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                {topic.isActive ? (
+                                  <DropdownMenuItem onClick={() => openDeactivateConfirm(topic)}>
+                                    <Pause className="mr-2 h-4 w-4" />
+                                    Deactivate
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem onClick={() => activateTopic(topic)}>
+                                    <PlayCircle className="mr-2 h-4 w-4" />
+                                    Activate
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
                                   onClick={() => openDeleteConfirm(topic)}
                                   disabled={topic._count.videos > 0}
+                                  className="text-destructive focus:text-destructive"
                                 >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {topic._count.videos > 0 ? 'Cannot delete (has videos)' : 'Delete'}
-                              </TooltipContent>
-                            </Tooltip>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  {topic._count.videos > 0 ? 'Cannot delete' : 'Delete'}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-4 flex items-center justify-between border-t pt-4">
+                    <p className="text-muted-foreground text-sm">
+                      Page {currentPage} of {totalPages}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        <span className="hidden sm:inline">Previous</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        <span className="hidden sm:inline">Next</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>

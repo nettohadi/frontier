@@ -82,9 +82,11 @@ INSTRUKSI:
 ATURAN PENTING:
 - Dalam bahasa Inggris (untuk AI image generator)
 - Format vertikal (portrait 9:16)
-- TIDAK menampilkan wajah manusia atau teks
+- DILARANG KERAS: manusia, bagian tubuh manusia, siluet manusia, hewan, burung, ikan, serangga
+- HANYA boleh: alam (nature), pohon, bunga, tanaman, benda mati, pemandangan, elemen abstrak
+- TIDAK menampilkan teks atau tulisan dalam gambar
 - Gaya: PHOTO REALISTIC, cinematic, high-quality photography
-- Fokus pada elemen visual yang DISEBUTKAN atau TERSIRAT dalam narasi
+- Fokus pada elemen visual ALAM atau BENDA yang DISEBUTKAN atau TERSIRAT dalam narasi
 
 GAYA FOTO REALISTIK - SANGAT PENTING:
 - WAJIB menggunakan gaya PHOTO REALISTIC / PHOTOGRAPHIC
@@ -110,18 +112,20 @@ ELEMEN ATMOSFER MISTIS:
 - Kabut tipis atau mist yang terlihat natural
 - Cahaya bulan yang menembus awan
 - Bintang-bintang di langit malam
-- Siluet yang dramatis dengan backlight
+- Siluet pohon atau gunung yang dramatis dengan backlight (BUKAN manusia/hewan)
 - Refleksi air yang tenang
 - Partikel debu atau embun yang tertangkap cahaya
 
-CONTOH KONEKSI NARASI-VISUAL (Photo Realistic dengan variasi warna):
-- Narasi tentang "rindu" → silhouette under deep crimson sunset sky, warm amber glow on horizon
-- Narasi tentang "cinta Ilahi" → golden candlelight in dark temple, warm orange tones, sacred atmosphere
-- Narasi tentang "keheningan" → dark forest with deep green shadows, single ray of warm light
-- Narasi tentang "perjalanan jiwa" → lone figure on path at dusk, deep purple and orange sky gradient
-- Narasi tentang "air mata" → rain on window with warm city lights bokeh, amber and red reflections
-- Narasi tentang "api" → dark embers glowing deep red and orange, dramatic shadows
-- Narasi tentang "harapan" → single lantern in darkness, warm golden light against deep blue night
+CONTOH KONEKSI NARASI-VISUAL (Photo Realistic dengan variasi warna - TANPA MANUSIA/HEWAN):
+- Narasi tentang "rindu" → withered rose petals on dark wooden surface, deep crimson tones, warm amber glow
+- Narasi tentang "cinta Ilahi" → golden candlelight illuminating ancient prayer beads, warm orange tones, sacred atmosphere
+- Narasi tentang "keheningan" → dark forest with deep green shadows, single ray of warm light through trees
+- Narasi tentang "perjalanan jiwa" → winding path through misty forest at dusk, deep purple and orange sky gradient
+- Narasi tentang "air mata" → rain droplets on window with warm city lights bokeh, amber and red reflections
+- Narasi tentang "api" → dark embers glowing deep red and orange in stone fireplace, dramatic shadows
+- Narasi tentang "harapan" → single lantern hanging in darkness, warm golden light against deep blue night sky
+- Narasi tentang "kesabaran" → ancient tree roots gripping rocks, earth tones, misty morning light
+- Narasi tentang "keikhlasan" → flower petals drifting in gentle breeze, soft twilight sky, peaceful atmosphere
 
 GAYA VISUAL:
 - Photo realistic, shot on professional camera
@@ -146,15 +150,18 @@ ELEMEN YANG HARUS SELALU ADA:
 4. High contrast cinematic lighting dengan warna yang bervariasi
 5. Professional camera/photography reference
 6. PENTING: Gunakan warm tones (merah, oranye, amber, emas) sesering cool tones (biru, ungu)
+7. KRITIS: Hanya nature, tanaman, benda mati - JANGAN PERNAH manusia, bagian tubuh, atau hewan
 
 FORMAT OUTPUT (JSON):
 [
   {
-    "prompt": "photo realistic, [detailed scene description], dark background, cinematic lighting, shot on Sony A7IV, 8K, atmospheric...",
+    "prompt": "photo realistic, [detailed nature/object scene - NO HUMANS NO ANIMALS], dark background, cinematic lighting, shot on Sony A7IV, 8K, atmospheric...",
     "timing": "full",
     "description": "penjelasan singkat bagaimana gambar ini merepresentasikan narasi"
   }
 ]
+
+PENGINGAT TERAKHIR: Gambar WAJIB hanya berisi alam, tanaman, atau benda mati. DILARANG KERAS menampilkan manusia (termasuk siluet, bayangan, atau bagian tubuh) dan hewan dalam bentuk apapun.
 
 HANYA output JSON array dengan 1 item, tanpa penjelasan tambahan.`;
 
