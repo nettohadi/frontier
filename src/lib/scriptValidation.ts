@@ -14,30 +14,38 @@ FOKUS KHUSUS:
 - Alur pemikiran yang melompat-lompat atau tidak jelas
 - Kalimat yang terlalu panjang atau membingungkan
 
-OUTPUT FORMAT:
-Berikan hasil dalam format JSON dengan struktur berikut:
-{
-  "isValid": true/false,
-  "overallQuality": "excellent/good/fair/poor",
-  "issues": [
-    {
-      "type": "typo/made-up-word/coherence/clarity",
-      "severity": "critical/major/minor",
-      "location": "bagian naskah yang bermasalah",
-      "issue": "deskripsi masalah",
-      "suggestion": "saran perbaikan"
-    }
-  ],
-  "summary": "ringkasan singkat hasil validasi",
-  "recommendation": "accept/revise/regenerate"
-}
-
 KRITERIA VALIDASI:
-- "isValid: true" jika tidak ada masalah critical atau major
-- "isValid: false" jika ada masalah critical atau 2+ masalah major
+- "isValid": true jika tidak ada masalah critical atau major
+- "isValid": false jika ada masalah critical atau 2+ masalah major
 - Masalah "critical": kata yang jelas tidak ada dalam bahasa Indonesia
 - Masalah "major": typo yang mengubah makna, alur yang tidak jelas
 - Masalah "minor": typo kecil yang tidak mengganggu pemahaman
+
+OUTPUT FORMAT - SANGAT PENTING:
+Anda WAJIB mengembalikan HANYA JSON yang valid tanpa teks tambahan. Gunakan struktur PERSIS seperti berikut:
+
+{
+  "isValid": <boolean: true atau false>,
+  "overallQuality": <string: "excellent" atau "good" atau "fair" atau "poor">,
+  "issues": [
+    {
+      "type": <string: "typo" atau "made-up-word" atau "coherence" atau "clarity">,
+      "severity": <string: "critical" atau "major" atau "minor">,
+      "location": <string: kutipan bagian yang bermasalah>,
+      "issue": <string: deskripsi masalah>,
+      "suggestion": <string: saran perbaikan>
+    }
+  ],
+  "summary": <string: ringkasan singkat hasil validasi>,
+  "recommendation": <string: "accept" atau "revise" atau "regenerate">
+}
+
+ATURAN OUTPUT:
+1. Kembalikan HANYA objek JSON, tanpa markdown code blocks, tanpa penjelasan tambahan
+2. Field "isValid" HARUS bernilai boolean (true/false), BUKAN string
+3. Field "issues" HARUS berupa array (bisa kosong jika tidak ada masalah)
+4. Semua field WAJIB ada dalam response
+5. Gunakan PERSIS nilai yang diizinkan untuk setiap field
 
 Berikan penilaian yang objektif dan konstruktif.`;
 
@@ -62,6 +70,111 @@ export interface ScriptValidationResponse {
   result: ValidationResult;
   rawResponse?: string;
   error?: string;
+}
+
+/**
+ * Validates and sanitizes the LLM response to ensure it matches expected structure.
+ * Provides safe defaults for missing or invalid fields.
+ */
+function sanitizeValidationResult(parsed: unknown): ValidationResult {
+  // Handle non-object responses
+  if (!parsed || typeof parsed !== 'object') {
+    console.warn('[ScriptValidation] Invalid response: not an object, defaulting to accept');
+    return createDefaultResult('accept');
+  }
+
+  const raw = parsed as Record<string, unknown>;
+
+  // Sanitize isValid - must be boolean
+  let isValid: boolean;
+  if (typeof raw.isValid === 'boolean') {
+    isValid = raw.isValid;
+  } else if (raw.isValid === 'true' || raw.isValid === 'yes') {
+    isValid = true;
+  } else if (raw.isValid === 'false' || raw.isValid === 'no') {
+    isValid = false;
+  } else {
+    console.warn('[ScriptValidation] Invalid isValid value, defaulting to true');
+    isValid = true;
+  }
+
+  // Sanitize overallQuality - must be one of the allowed values
+  const validQualities = ['excellent', 'good', 'fair', 'poor'] as const;
+  let overallQuality: ValidationResult['overallQuality'] = 'fair';
+  if (typeof raw.overallQuality === 'string' && validQualities.includes(raw.overallQuality as any)) {
+    overallQuality = raw.overallQuality as ValidationResult['overallQuality'];
+  } else {
+    console.warn('[ScriptValidation] Invalid overallQuality, defaulting to "fair"');
+  }
+
+  // Sanitize recommendation - must be one of the allowed values
+  const validRecommendations = ['accept', 'revise', 'regenerate'] as const;
+  let recommendation: ValidationResult['recommendation'] = 'accept';
+  if (typeof raw.recommendation === 'string' && validRecommendations.includes(raw.recommendation as any)) {
+    recommendation = raw.recommendation as ValidationResult['recommendation'];
+  } else {
+    console.warn('[ScriptValidation] Invalid recommendation, defaulting to "accept"');
+  }
+
+  // Sanitize issues array
+  let issues: ValidationIssue[] = [];
+  if (Array.isArray(raw.issues)) {
+    issues = raw.issues
+      .filter((issue): issue is Record<string, unknown> => issue && typeof issue === 'object')
+      .map((issue) => sanitizeIssue(issue))
+      .filter((issue): issue is ValidationIssue => issue !== null);
+  }
+
+  // Sanitize summary
+  const summary = typeof raw.summary === 'string' ? raw.summary : 'Validation completed';
+
+  return {
+    isValid,
+    overallQuality,
+    issues,
+    summary,
+    recommendation,
+  };
+}
+
+/**
+ * Sanitizes a single issue object from the LLM response.
+ * Returns null if the issue is invalid.
+ */
+function sanitizeIssue(raw: Record<string, unknown>): ValidationIssue | null {
+  const validTypes = ['typo', 'made-up-word', 'coherence', 'clarity'] as const;
+  const validSeverities = ['critical', 'major', 'minor'] as const;
+
+  // Type must be valid
+  if (typeof raw.type !== 'string' || !validTypes.includes(raw.type as any)) {
+    return null;
+  }
+
+  // Severity must be valid
+  if (typeof raw.severity !== 'string' || !validSeverities.includes(raw.severity as any)) {
+    return null;
+  }
+
+  return {
+    type: raw.type as ValidationIssue['type'],
+    severity: raw.severity as ValidationIssue['severity'],
+    location: typeof raw.location === 'string' ? raw.location : 'Unknown location',
+    issue: typeof raw.issue === 'string' ? raw.issue : 'Unknown issue',
+    suggestion: typeof raw.suggestion === 'string' ? raw.suggestion : '',
+  };
+}
+
+/**
+ * Creates a default validation result for error cases
+ */
+function createDefaultResult(recommendation: ValidationResult['recommendation']): ValidationResult {
+  return {
+    isValid: recommendation === 'accept',
+    overallQuality: 'fair',
+    issues: [],
+    summary: 'Validation could not be completed properly',
+    recommendation,
+  };
 }
 
 /**
@@ -127,7 +240,10 @@ Berikan hasil validasi dalam format JSON yang sudah ditentukan.`;
       jsonContent = objectMatch[0];
     }
 
-    const validationResult: ValidationResult = JSON.parse(jsonContent);
+    const parsed = JSON.parse(jsonContent);
+
+    // Guard check: validate and sanitize the parsed response
+    const validationResult = sanitizeValidationResult(parsed);
 
     // Log validation summary
     console.log('[ScriptValidation] Validation complete:', {
@@ -152,15 +268,11 @@ Berikan hasil validasi dalam format JSON yang sudah ditentukan.`;
     };
   } catch (error) {
     console.error('[ScriptValidation] Validation error:', error);
+    const defaultResult = createDefaultResult('accept');
+    defaultResult.summary = `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
     return {
       success: false,
-      result: {
-        isValid: false,
-        overallQuality: 'poor',
-        issues: [],
-        summary: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        recommendation: 'accept', // Default to accepting if validation fails
-      },
+      result: defaultResult,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }

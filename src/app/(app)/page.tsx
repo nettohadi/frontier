@@ -357,7 +357,7 @@ export default function DashboardPage() {
                               <Tooltip>
                                 <TooltipTrigger>
                                   <Badge
-                                    variant={video.validationPassed ? 'success' : 'warning'}
+                                    variant={video.validationPassed ? 'success' : 'destructive'}
                                     className="gap-1"
                                   >
                                     {video.validationPassed ? (

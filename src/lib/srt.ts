@@ -233,7 +233,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
   // Generate ONE dialogue entry per line
   // Show subtitle slightly before it's spoken so viewers can read ahead
-  const leadTime = 0.5; // seconds before the first word is spoken
+  const leadTime = 0.3; // seconds before the first word is spoken
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];

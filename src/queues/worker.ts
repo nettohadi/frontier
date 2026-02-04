@@ -57,6 +57,17 @@ export const videoWorker = new Worker<VideoJobData>(
 
     console.log(`[${videoId}] Starting step: ${step}`);
 
+    // Skip if video is already completed (prevents re-processing after crashes)
+    const currentVideo = await prisma.video.findUnique({
+      where: { id: videoId },
+      select: { status: true },
+    });
+
+    if (currentVideo?.status === VideoStatus.COMPLETED) {
+      console.log(`[${videoId}] Skipping - video already completed`);
+      return;
+    }
+
     // Update status
     await prisma.video.update({
       where: { id: videoId },

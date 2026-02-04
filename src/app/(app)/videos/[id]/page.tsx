@@ -171,7 +171,7 @@ export default function VideoDetailPage() {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Status</p>
-                <Badge variant={video.validationPassed ? 'success' : 'warning'} className="mt-1">
+                <Badge variant={video.validationPassed ? 'success' : 'destructive'} className="mt-1">
                   {video.validationPassed ? 'Passed' : 'Has Issues'}
                 </Badge>
               </div>
