@@ -49,6 +49,11 @@ model Video {
   script          String?      @db.Text
   scriptWordCount Int?
 
+  // Script validation
+  scriptValidationResult Json?        // Full validation result from second LLM
+  validationPassed       Boolean?     @default(false)
+  validationAttempts     Int?         @default(0)
+
   // File paths (relative to project root)
   audioPath       String?
   srtPath         String?

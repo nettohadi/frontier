@@ -1,7 +1,10 @@
 import { prisma } from '@/lib/prisma';
 import { generateScript } from '@/lib/scriptGen';
 import { getNextTopic } from '@/lib/topics';
+import { validateScript, shouldRegenerateScript } from '@/lib/scriptValidation';
 import type { Topic } from '@prisma/client';
+
+const MAX_REGENERATION_ATTEMPTS = 2;
 
 export async function processScript(videoId: string): Promise<void> {
   const video = await prisma.video.findUniqueOrThrow({
@@ -27,14 +30,64 @@ export async function processScript(videoId: string): Promise<void> {
     console.log(`[${videoId}] Selected topic from rotation: "${theme.name}"`);
   }
 
-  console.log(`[${videoId}] Generating Hakikat script for topic: "${theme.name}"`);
+  let attempts = 0;
+  let title: string = '';
+  let description: string = '';
+  let script: string = '';
+  let wordCount: number = 0;
+  let validationResult;
 
-  const { title, description, script, wordCount } = await generateScript({
-    theme: theme as Topic,
-  });
+  // Generation loop with validation
+  while (attempts < MAX_REGENERATION_ATTEMPTS) {
+    attempts++;
+    console.log(
+      `[${videoId}] Generating script (attempt ${attempts}/${MAX_REGENERATION_ATTEMPTS})`
+    );
 
-  console.log(`[${videoId}] Script generated: "${title}" with ${wordCount} words`);
+    const generated = await generateScript({
+      theme: theme as Topic,
+    });
 
+    title = generated.title;
+    description = generated.description;
+    script = generated.script;
+    wordCount = generated.wordCount;
+
+    console.log(`[${videoId}] Script generated: "${title}" with ${wordCount} words`);
+
+    // Validate the generated script
+    console.log(`[${videoId}] Validating script quality...`);
+    const validation = await validateScript(title, description, script);
+
+    if (!validation.success) {
+      console.error(`[${videoId}] Validation failed to run, accepting script anyway`);
+      validationResult = validation.result;
+      break;
+    }
+
+    validationResult = validation.result;
+
+    console.log(`[${videoId}] Validation result:`, {
+      isValid: validationResult.isValid,
+      quality: validationResult.overallQuality,
+      issueCount: validationResult.issues.length,
+      recommendation: validationResult.recommendation,
+    });
+
+    // Check if we should regenerate
+    if (shouldRegenerateScript(validationResult, MAX_REGENERATION_ATTEMPTS, attempts)) {
+      console.log(
+        `[${videoId}] Script has issues, regenerating (attempt ${attempts}/${MAX_REGENERATION_ATTEMPTS})`
+      );
+      continue;
+    }
+
+    // Script is acceptable
+    console.log(`[${videoId}] Script validation passed`);
+    break;
+  }
+
+  // Save script and validation results
   await prisma.video.update({
     where: { id: videoId },
     data: {
@@ -43,6 +96,13 @@ export async function processScript(videoId: string): Promise<void> {
       script,
       scriptWordCount: wordCount,
       topicId,
+      scriptValidationResult: validationResult as any,
+      validationPassed: validationResult?.isValid ?? false,
+      validationAttempts: attempts,
     },
   });
+
+  console.log(
+    `[${videoId}] Script saved with validation (passed: ${validationResult?.isValid}, attempts: ${attempts})`
+  );
 }
