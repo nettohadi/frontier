@@ -84,18 +84,6 @@ Tulis pernyataan yang mengakui kelemahan, keraguan, atau perjuangan manusiawi.
 PENTING: Script harus memvalidasi perasaan ini, lalu membawa ke ruang penerimaan dan kasih Tuhan.`,
   },
   {
-    id: 'suara-tuhan',
-    name: 'Suara dari Yang Maha',
-    instruction: `PEMBUKA SUARA TUHAN (maksimal 15 kata):
-Tulis seolah-olah Tuhan/Sang Kekasih sedang berbicara kepada pendengar.
-- Gunakan nada lembut, penuh kasih, tidak menghakimi
-- Bisa menggunakan "Aku" dari perspektif Ilahi (dengan hati-hati dan penuh adab)
-- Contoh: "Kau pikir Aku tidak melihat saat kau menangis sendirian?"
-- Contoh: "Datanglah dengan semua lukamu — bukan setelah kau sembuh"
-- Contoh: "Aku lebih dekat dari yang kau sangka"
-PENTING: Script harus melanjutkan dialog ini dengan hikmah — apa yang ingin Sang Kekasih sampaikan tentang topik ini.`,
-  },
-  {
     id: 'realita-pahit',
     name: 'Realita Pahit',
     instruction: `PEMBUKA REALITA PAHIT (maksimal 15 kata):
