@@ -28,6 +28,7 @@ import { ScheduleUploadModal, useScheduleUploadModal } from '@/components/Schedu
 import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface VideoItem {
   id: string;
@@ -45,6 +46,8 @@ interface VideoItem {
   updatedAt: string;
   renderMode: 'BACKGROUND_VIDEO' | 'AI_IMAGES';
   uploadedToYouTube: boolean;
+  validationPassed: boolean | null;
+  validationAttempts: number | null;
   background: {
     name: string;
     filename: string;
@@ -70,6 +73,7 @@ const statusConfig: Record<
 > = {
   PENDING: { label: 'Pending', variant: 'secondary' },
   GENERATING_SCRIPT: { label: 'Generating Script', variant: 'info' },
+  VALIDATING_SCRIPT: { label: 'Validating Script', variant: 'info' },
   GENERATING_IMAGE_PROMPTS: { label: 'Creating Prompts', variant: 'info' },
   GENERATING_IMAGES: { label: 'Generating Images', variant: 'info' },
   GENERATING_AUDIO: { label: 'Generating Audio', variant: 'info' },
@@ -81,6 +85,7 @@ const statusConfig: Record<
 
 const pipelineSteps = [
   { key: 'script', label: 'Script', icon: FileText, status: 'GENERATING_SCRIPT' },
+  { key: 'validation', label: 'Validation', icon: CheckCircle2, status: 'VALIDATING_SCRIPT' },
   { key: 'imagePrompts', label: 'Prompts', icon: Lightbulb, status: 'GENERATING_IMAGE_PROMPTS' },
   { key: 'images', label: 'Images', icon: ImageIcon, status: 'GENERATING_IMAGES' },
   { key: 'audio', label: 'Audio', icon: Volume2, status: 'GENERATING_AUDIO' },
@@ -92,6 +97,7 @@ function isProcessing(status: string): boolean {
   return [
     'PENDING',
     'GENERATING_SCRIPT',
+    'VALIDATING_SCRIPT',
     'GENERATING_IMAGE_PROMPTS',
     'GENERATING_IMAGES',
     'GENERATING_AUDIO',
@@ -107,6 +113,7 @@ function getStepState(
   const statusOrder = [
     'PENDING',
     'GENERATING_SCRIPT',
+    'VALIDATING_SCRIPT',
     'GENERATING_IMAGE_PROMPTS',
     'GENERATING_IMAGES',
     'GENERATING_AUDIO',
@@ -120,6 +127,7 @@ function getStepState(
 
   if (video.status === 'FAILED') {
     if (step.key === 'script' && video.script) return 'completed';
+    if (step.key === 'validation' && video.script) return 'completed';
     if (step.key === 'audio' && video.audioPath) return 'completed';
     if (step.key === 'srt' && video.srtPath) return 'completed';
     if (step.key === 'render' && video.outputPath) return 'completed';
@@ -133,6 +141,7 @@ function getStepState(
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [playingVideo, setPlayingVideo] = useState<VideoItem | null>(null);
@@ -318,8 +327,9 @@ export default function DashboardPage() {
                   {videos.map((video) => (
                     <div
                       key={video.id}
+                      onClick={() => router.push(`/videos/${video.id}`)}
                       className={cn(
-                        'rounded-lg border p-3 transition-colors md:p-4',
+                        'rounded-lg border p-3 transition-colors md:p-4 cursor-pointer hover:bg-muted/50',
                         video.status === 'FAILED' && 'border-red-500/50 bg-red-500/5'
                       )}
                     >
@@ -343,6 +353,28 @@ export default function DashboardPage() {
                               )}
                               {statusConfig[video.status]?.label || video.status}
                             </Badge>
+                            {video.validationPassed !== null && (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Badge
+                                    variant={video.validationPassed ? 'success' : 'warning'}
+                                    className="gap-1"
+                                  >
+                                    {video.validationPassed ? (
+                                      <CheckCircle2 className="h-3 w-3" />
+                                    ) : (
+                                      <XCircle className="h-3 w-3" />
+                                    )}
+                                    Validation
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {video.validationPassed
+                                    ? 'Script validation passed'
+                                    : `Script has issues (${video.validationAttempts} attempts)`}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                             <span className="text-muted-foreground flex items-center gap-1 text-xs">
                               <Clock className="h-3 w-3" />
                               {formatDate(video.createdAt)}

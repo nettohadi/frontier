@@ -55,6 +55,12 @@ export async function processScript(videoId: string): Promise<void> {
 
     console.log(`[${videoId}] Script generated: "${title}" with ${wordCount} words`);
 
+    // Update status to validating
+    await prisma.video.update({
+      where: { id: videoId },
+      data: { status: 'VALIDATING_SCRIPT' },
+    });
+
     // Validate the generated script
     console.log(`[${videoId}] Validating script quality...`);
     const validation = await validateScript(title, description, script);
@@ -79,6 +85,11 @@ export async function processScript(videoId: string): Promise<void> {
       console.log(
         `[${videoId}] Script has issues, regenerating (attempt ${attempts}/${MAX_REGENERATION_ATTEMPTS})`
       );
+      // Set status back to generating script for next attempt
+      await prisma.video.update({
+        where: { id: videoId },
+        data: { status: 'GENERATING_SCRIPT' },
+      });
       continue;
     }
 

@@ -8,7 +8,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const video = await prisma.video.findUnique({
       where: { id },
-      include: { background: true },
+      include: {
+        background: true,
+        topicRelation: true,
+      },
     });
 
     if (!video) {

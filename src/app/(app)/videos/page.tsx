@@ -47,6 +47,7 @@ const statusConfig: Record<
 > = {
   PENDING: { label: 'Pending', variant: 'secondary' },
   GENERATING_SCRIPT: { label: 'Generating Script', variant: 'info' },
+  VALIDATING_SCRIPT: { label: 'Validating Script', variant: 'info' },
   GENERATING_IMAGE_PROMPTS: { label: 'Creating Prompts', variant: 'info' },
   GENERATING_IMAGES: { label: 'Generating Images', variant: 'info' },
   GENERATING_AUDIO: { label: 'Generating Audio', variant: 'info' },
@@ -60,6 +61,7 @@ function isProcessing(status: string): boolean {
   return [
     'PENDING',
     'GENERATING_SCRIPT',
+    'VALIDATING_SCRIPT',
     'GENERATING_IMAGE_PROMPTS',
     'GENERATING_IMAGES',
     'GENERATING_AUDIO',
