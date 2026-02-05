@@ -144,11 +144,12 @@ Struktur:
 3. Closing (SANGAT PENTING untuk tone akhir):
    - Bukan kesimpulan, melainkan pertanyaan, undangan, atau keheningan yang meninggalkan jejak di hati
    - Gunakan kalimat PENDEK dan TERPISAH di bagian akhir (untuk pace lebih lambat)
-   - Tambahkan ellipses (...) lebih sering di 2-3 kalimat terakhir untuk jeda natural
-   - Akhiri dengan satu kalimat singkat yang POWERFUL — biarkan menggantung
+   - Gunakan audio tags untuk memperlambat: [softly], [gently], [slows down], [reflective]
+   - PENTING: Akhiri kalimat terakhir dengan TITIK (.) bukan ellipses (...) — ini memberikan tone penutup yang lebih tegas dan final
+   - Akhiri dengan satu kalimat singkat yang POWERFUL
    - Contoh pola closing yang baik:
-     "Mungkin... di situlah Dia menunggu... [pause] Dalam diam... kau akan mendengar-Nya."
-     "Dan pada akhirnya... cinta itu... hanya ingin pulang... [long pause] Pulang kepada-Nya."
+     "[slows down] Mungkin... di situlah Dia menunggu. [long pause][softly] Dalam diam, kau akan mendengar-Nya."
+     "[gently] Dan pada akhirnya... cinta itu hanya ingin pulang. [long pause][softly] Pulang kepada-Nya."
 
 ALUR PEMBUKA → PENJELASAN:
 Hook harus PENDEK (maksimal 15 kata, ~5 detik) dan langsung menciptakan rasa ingin tahu.
@@ -165,7 +166,7 @@ Teknik Penulisan:
 - Bangun layer makna: permukaan yang indah, kedalaman yang menggetarkan
 - Biarkan ada ruang kosong — tidak semua harus dijelaskan
 - Akhiri dengan sesuatu yang membuat pendengar terdiam dan ingin berdzikir
-- CLOSING TONE: Perlambat ritme di akhir — kalimat makin pendek, jeda makin panjang, seperti nafas yang pelan mengalir
+- CLOSING TONE: Perlambat ritme di akhir — kalimat makin pendek, jeda makin panjang, seperti nafas yang pelan mengalir. Gunakan tags [softly], [gently], atau [slows down]. Akhiri dengan titik (.) bukan ellipses
 - SANGAT PENTING: Periksa ejaan dengan teliti! Tidak boleh ada typo. Pastikan setiap kata ditulis dengan benar dalam Bahasa Indonesia baku.
 
 FORMAT OUTPUT UNTUK ELEVENLABS v3
@@ -175,6 +176,10 @@ Emotion/Direction:
 [whispers] — untuk bisikan lembut yang intim
 [curious] — untuk pertanyaan penuh keheranan
 [sad] — untuk kesedihan atau kerinduan
+[softly] — untuk nada lembut dan pelan (bagus untuk closing)
+[gently] — untuk nada halus dan penuh kehangatan
+[slows down] — untuk memperlambat pace bicara
+[reflective] — untuk nada kontemplatif dan merenung
 Non-Verbal:
 [sighs] — untuk helaan nafas kontemplasi
 [short pause] — jeda pendek

@@ -68,17 +68,33 @@ function reconstructWordsFromCharacters(alignment: WordAlignment): WordTiming[] 
   let currentWord = '';
   let wordStartTime = 0;
   let wordEndTime = 0;
+  let insideBracket = false; // Track if we're inside a [tag]
 
   for (let i = 0; i < alignment.characters.length; i++) {
     const char = alignment.characters[i];
     const startTime = alignment.character_start_times_seconds[i];
     const endTime = alignment.character_end_times_seconds[i];
 
+    // Track when we enter/exit bracketed tags
+    if (char === '[') {
+      insideBracket = true;
+      continue; // Skip the opening bracket
+    }
+    if (char === ']') {
+      insideBracket = false;
+      continue; // Skip the closing bracket
+    }
+
+    // Skip all characters inside brackets (audio tags like [slows down], [pause], etc.)
+    if (insideBracket) {
+      continue;
+    }
+
     if (char === ' ' || char === '\n') {
       if (currentWord.length > 0) {
-        // Skip words that are entirely audio tags like [thoughtful]
+        // Skip words that are entirely audio tags like [thoughtful] or ellipses
         if (!isAudioTagOrEllipsis(currentWord)) {
-          // Strip any audio tags from within the word
+          // Strip any remaining audio tags from within the word
           const cleanWord = stripAudioTags(currentWord);
           if (cleanWord.length > 0) {
             words.push({

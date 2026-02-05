@@ -449,7 +449,10 @@ export default function DashboardPage() {
                         <div className="mt-3 flex flex-wrap items-center gap-1.5 md:mt-4 md:gap-2">
                           <Button
                             size="sm"
-                            onClick={() => setPlayingVideo(video)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPlayingVideo(video);
+                            }}
                             className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
                           >
                             <Play className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -458,13 +461,14 @@ export default function DashboardPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            asChild
                             className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.location.href = `/api/videos/${video.id}/download`;
+                            }}
                           >
-                            <a href={`/api/videos/${video.id}/download`}>
-                              <Download className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                              <span className="hidden sm:inline">Download</span>
-                            </a>
+                            <Download className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                            <span className="hidden sm:inline">Download</span>
                           </Button>
                           {video.uploadedToYouTube ? (
                             <Badge variant="success" className="h-8 gap-1 px-2.5 text-xs">
@@ -496,7 +500,10 @@ export default function DashboardPage() {
                                   size="sm"
                                   variant="outline"
                                   className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
-                                  onClick={() => triggerUploadNow(video.uploadSchedule!.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    triggerUploadNow(video.uploadSchedule!.id);
+                                  }}
                                   disabled={uploadingVideoId === video.uploadSchedule.id}
                                 >
                                   {uploadingVideoId === video.uploadSchedule.id ? (
@@ -515,12 +522,13 @@ export default function DashboardPage() {
                               size="sm"
                               variant="outline"
                               className="h-8 gap-1.5 px-3 text-xs md:gap-2 md:text-sm"
-                              onClick={() =>
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 openScheduleModal(
                                   video.id,
                                   video.title || video.topicRelation?.name || video.topic
-                                )
-                              }
+                                );
+                              }}
                             >
                               <Youtube className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               <span className="hidden sm:inline">Upload</span>
