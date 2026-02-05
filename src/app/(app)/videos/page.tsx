@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ScheduleUploadModal, useScheduleUploadModal } from '@/components/ScheduleUploadModal';
 import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
 import { cn } from '@/lib/utils';
@@ -141,8 +142,17 @@ export default function VideosPage() {
 
       <div className="p-4 md:p-6">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-[9/16] w-full rounded-none" />
+                <CardContent className="p-3">
+                  <Skeleton className="mb-1.5 h-4 w-full" />
+                  <Skeleton className="mb-1.5 h-3 w-2/3" />
+                  <Skeleton className="h-2.5 w-1/2" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
         ) : videos.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -174,7 +184,7 @@ export default function VideosPage() {
                             src={`/api/videos/${video.id}/thumbnail`}
                             alt={video.title || 'Video thumbnail'}
                             loading="lazy"
-                            className="absolute inset-0 h-full w-full object-cover"
+                            className="absolute inset-0 flex h-full w-full items-center justify-center object-cover text-center text-xs text-muted-foreground"
                           />
                         )}
                         {/* Video element only rendered when playing */}

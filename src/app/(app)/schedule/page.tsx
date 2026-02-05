@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 interface ScheduleSlot {
@@ -217,8 +218,18 @@ export default function SchedulePage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+              <div className="grid gap-2 md:grid-cols-2 md:gap-3">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className="rounded-lg border border-dashed p-3 md:p-4">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <Skeleton className="h-8 w-8 shrink-0 rounded-full md:h-10 md:w-10" />
+                      <div className="min-w-0 flex-1">
+                        <Skeleton className="mb-1 h-4 w-16 md:h-5" />
+                        <Skeleton className="h-3 w-20 md:h-4" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="grid gap-2 md:grid-cols-2 md:gap-3">

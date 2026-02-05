@@ -2,34 +2,38 @@ import { prisma } from './prisma';
 
 type RotationType = 'music' | 'overlay' | 'colorScheme' | 'openingHook' | 'topic';
 
+// Valid column names for rotation counters (used to safely build raw SQL)
+const validColumns: Record<RotationType, string> = {
+  music: 'music',
+  overlay: 'overlay',
+  colorScheme: 'colorScheme',
+  openingHook: 'openingHook',
+  topic: 'topic',
+};
+
 // Ensure rotation counter exists and get next index for a given type
 // Counter stores "the next index to use" - we read it, use it, then increment
 async function getNextIndex(type: RotationType, totalItems: number): Promise<number> {
   if (totalItems === 0) return -1;
 
-  // Use transaction to atomically read-then-increment
-  const index = await prisma.$transaction(async (tx) => {
-    // Ensure counter exists
-    const counter = await tx.rotationCounter.upsert({
-      where: { id: 'singleton' },
-      create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
-      update: {}, // No update needed, just ensure it exists
-    });
+  const col = validColumns[type];
 
-    // Get current value and calculate index
-    const currentValue = counter[type];
-    const currentIndex = currentValue % totalItems;
-
-    // Increment for next time
-    await tx.rotationCounter.update({
-      where: { id: 'singleton' },
-      data: { [type]: currentValue + 1 },
-    });
-
-    return currentIndex;
+  // Ensure counter row exists
+  await prisma.rotationCounter.upsert({
+    where: { id: 'singleton' },
+    create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
+    update: {},
   });
 
-  return index;
+  // Atomic increment-and-return using raw SQL.
+  // The UPDATE takes a row-level lock in PostgreSQL, so concurrent calls
+  // serialize properly and can never read the same counter value.
+  const result = await prisma.$queryRawUnsafe<[{ prev: bigint }]>(
+    `UPDATE "RotationCounter" SET "${col}" = "${col}" + 1, "updatedAt" = NOW() WHERE "id" = 'singleton' RETURNING "${col}" - 1 AS "prev"`
+  );
+
+  const previousValue = Number(result[0].prev);
+  return previousValue % totalItems;
 }
 
 // Get next music index

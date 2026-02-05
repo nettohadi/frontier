@@ -10,6 +10,7 @@ TUGAS ANDA:
 
 FOKUS KHUSUS:
 - Kata-kata yang sepertinya bahasa Indonesia tapi sebenarnya tidak ada (contoh: "kemanusiawian" seharusnya "kemanusiaan")
+- Kombinasi kata yang tidak lazim/tidak natural dalam bahasa Indonesia (contoh: "Telahkah" seharusnya "Sudahkah", "Bilamanakah" seharusnya "Kapankah", "Tidakkah" boleh tapi "Belumkah" lebih natural dari "Tak pernah-kah")
 - Kata-kata yang aneh atau tidak natural dalam konteks kalimat
 - Alur pemikiran yang melompat-lompat atau tidak jelas
 - Kalimat yang terlalu panjang atau membingungkan
@@ -18,7 +19,7 @@ KRITERIA VALIDASI:
 - "isValid": true jika tidak ada masalah critical atau major
 - "isValid": false jika ada masalah critical atau 2+ masalah major
 - Masalah "critical": kata yang jelas tidak ada dalam bahasa Indonesia
-- Masalah "major": typo yang mengubah makna, alur yang tidak jelas
+- Masalah "major": typo yang mengubah makna, kombinasi kata yang tidak lazim/tidak natural, alur yang tidak jelas
 - Masalah "minor": typo kecil yang tidak mengganggu pemahaman
 
 OUTPUT FORMAT - SANGAT PENTING:

@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 interface Topic {
@@ -345,8 +346,23 @@ export default function TopicsPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+              <div className="space-y-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="rounded-lg border p-3 md:p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2">
+                          <Skeleton className="h-4 w-32 md:h-5" />
+                          <Skeleton className="h-4 w-14 rounded-full" />
+                        </div>
+                        <Skeleton className="mb-1.5 h-3 w-20" />
+                        <Skeleton className="h-3 w-full max-w-md" />
+                        <Skeleton className="mt-1 h-3 w-2/3 max-w-xs" />
+                      </div>
+                      <Skeleton className="h-8 w-8 shrink-0 rounded-md" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : allTopics.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center text-sm">

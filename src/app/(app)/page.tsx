@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScheduleUploadModal, useScheduleUploadModal } from '@/components/ScheduleUploadModal';
@@ -248,54 +249,70 @@ export default function DashboardPage() {
         <div className="space-y-4 md:space-y-6 w-full max-w-full">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:gap-4">
-            <Card className="border-primary/20 from-primary/5 to-primary/10 bg-gradient-to-br">
-              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
-                <div className="bg-primary/20 flex h-8 w-8 items-center justify-center rounded-full md:h-12 md:w-12">
-                  <Video className="text-primary h-4 w-4 md:h-6 md:w-6" />
-                </div>
-                <div className="mt-1 text-center md:mt-0 md:text-left">
-                  <p className="text-lg font-bold md:text-2xl">{videos.length}</p>
-                  <p className="text-muted-foreground text-[10px] md:text-sm">Total</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10">
-              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 md:h-12 md:w-12">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 md:h-6 md:w-6" />
-                </div>
-                <div className="mt-1 text-center md:mt-0 md:text-left">
-                  <p className="text-lg font-bold md:text-2xl">{completedVideos}</p>
-                  <p className="text-muted-foreground text-[10px] md:text-sm">Done</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10">
-              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/20 md:h-12 md:w-12">
-                  {processingVideos > 0 ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-orange-500 md:h-6 md:w-6" />
-                  ) : (
-                    <Clock className="h-4 w-4 text-orange-500 md:h-6 md:w-6" />
-                  )}
-                </div>
-                <div className="mt-1 text-center md:mt-0 md:text-left">
-                  <p className="text-lg font-bold md:text-2xl">{processingVideos}</p>
-                  <p className="text-muted-foreground text-[10px] md:text-sm">Active</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-red-500/10">
-              <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20 md:h-12 md:w-12">
-                  <XCircle className="h-4 w-4 text-red-500 md:h-6 md:w-6" />
-                </div>
-                <div className="mt-1 text-center md:mt-0 md:text-left">
-                  <p className="text-lg font-bold md:text-2xl">{failedVideos}</p>
-                  <p className="text-muted-foreground text-[10px] md:text-sm">Failed</p>
-                </div>
-              </CardContent>
-            </Card>
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                    <Skeleton className="h-8 w-8 rounded-full md:h-12 md:w-12" />
+                    <div className="mt-1 flex flex-col items-center gap-1 md:mt-0 md:items-start">
+                      <Skeleton className="h-6 w-8 md:h-8 md:w-10" />
+                      <Skeleton className="h-3 w-10 md:h-4 md:w-12" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <>
+                <Card className="border-primary/20 from-primary/5 to-primary/10 bg-gradient-to-br">
+                  <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                    <div className="bg-primary/20 flex h-8 w-8 items-center justify-center rounded-full md:h-12 md:w-12">
+                      <Video className="text-primary h-4 w-4 md:h-6 md:w-6" />
+                    </div>
+                    <div className="mt-1 text-center md:mt-0 md:text-left">
+                      <p className="text-lg font-bold md:text-2xl">{videos.length}</p>
+                      <p className="text-muted-foreground text-[10px] md:text-sm">Total</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10">
+                  <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 md:h-12 md:w-12">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500 md:h-6 md:w-6" />
+                    </div>
+                    <div className="mt-1 text-center md:mt-0 md:text-left">
+                      <p className="text-lg font-bold md:text-2xl">{completedVideos}</p>
+                      <p className="text-muted-foreground text-[10px] md:text-sm">Done</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10">
+                  <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/20 md:h-12 md:w-12">
+                      {processingVideos > 0 ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-orange-500 md:h-6 md:w-6" />
+                      ) : (
+                        <Clock className="h-4 w-4 text-orange-500 md:h-6 md:w-6" />
+                      )}
+                    </div>
+                    <div className="mt-1 text-center md:mt-0 md:text-left">
+                      <p className="text-lg font-bold md:text-2xl">{processingVideos}</p>
+                      <p className="text-muted-foreground text-[10px] md:text-sm">Active</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-red-500/10">
+                  <CardContent className="flex flex-col items-center justify-center p-3 md:flex-row md:gap-4 md:p-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20 md:h-12 md:w-12">
+                      <XCircle className="h-4 w-4 text-red-500 md:h-6 md:w-6" />
+                    </div>
+                    <div className="mt-1 text-center md:mt-0 md:text-left">
+                      <p className="text-lg font-bold md:text-2xl">{failedVideos}</p>
+                      <p className="text-muted-foreground text-[10px] md:text-sm">Failed</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </div>
 
           {/* Video List */}
@@ -311,8 +328,32 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="overflow-hidden">
               {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+                <div className="space-y-3 md:space-y-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="rounded-lg border p-3 md:p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <Skeleton className="mb-2 h-5 w-3/4" />
+                          <Skeleton className="mb-2 h-3 w-1/3" />
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-5 w-20 rounded-full" />
+                            <Skeleton className="h-3 w-28" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-muted/50 mt-3 flex items-center rounded-lg p-1.5 md:mt-4 md:p-3">
+                        {Array.from({ length: 7 }).map((_, j) => (
+                          <div key={j} className="flex flex-1 items-center">
+                            <div className="flex flex-col items-center px-1 md:px-2">
+                              <Skeleton className="h-3.5 w-3.5 rounded-full md:h-5 md:w-5" />
+                              <Skeleton className="mt-0.5 hidden h-2 w-8 sm:block" />
+                            </div>
+                            {j < 6 && <Skeleton className="mx-0.5 h-0.5 flex-1 md:mx-2" />}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : videos.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -353,19 +394,19 @@ export default function DashboardPage() {
                               )}
                               {statusConfig[video.status]?.label || video.status}
                             </Badge>
-                            {video.validationPassed !== null && (
+                            {video.validationAttempts != null && video.validationAttempts > 0 && (
                               <Tooltip>
                                 <TooltipTrigger>
                                   <Badge
-                                    variant={video.validationPassed ? 'success' : 'destructive'}
-                                    className="gap-1 text-[10px] md:text-xs"
+                                    variant={video.validationPassed ? 'default' : 'destructive'}
+                                    className={cn("gap-1 text-[10px] md:text-xs", video.validationPassed && "bg-purple-500/20 text-purple-500 dark:bg-purple-500/20 dark:text-purple-400")}
                                   >
                                     {video.validationPassed ? (
                                       <CheckCircle2 className="h-3 w-3" />
                                     ) : (
                                       <XCircle className="h-3 w-3" />
                                     )}
-                                    Validation
+                                    {video.validationPassed ? 'Validated' : 'Validation Failed'}
                                   </Badge>
                                 </TooltipTrigger>
                                 <TooltipContent>
