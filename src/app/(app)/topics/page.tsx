@@ -208,17 +208,13 @@ export default function TopicsPage() {
   };
 
   const setAsNextTopic = async (topic: Topic) => {
-    // Find the index of this topic among active topics (ordered by createdAt)
-    const activeTopics = allTopics.filter((t) => t.isActive);
-    const topicIndex = activeTopics.findIndex((t) => t.id === topic.id);
-    if (topicIndex === -1) return;
+    if (!topic.isActive) return;
 
-    // Counter directly stores the next index to use
     try {
       await fetch('/api/rotation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ setTopic: topicIndex }),
+        body: JSON.stringify({ setTopic: topic.id }),
       });
       fetchTopics();
     } catch (err) {

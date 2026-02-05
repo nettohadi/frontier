@@ -69,27 +69,51 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { reset, setTopic } = body;
 
-    // Set topic counter to a specific value
-    if (typeof setTopic === 'number') {
+    // Set the next topic to use in rotation (pass the topic ID you want NEXT)
+    if (typeof setTopic === 'string') {
+      // Verify topic exists
+      const topic = await prisma.topic.findUnique({ where: { id: setTopic } });
+      if (!topic) {
+        return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
+      }
+      // Find the topic right BEFORE this one in rotation order,
+      // so getNextTopic() naturally picks the desired topic next
+      const previousTopic = await prisma.topic.findFirst({
+        where: { isActive: true, createdAt: { lt: topic.createdAt } },
+        orderBy: { createdAt: 'desc' },
+      });
+      // If no previous topic (this is the first one), set lastTopicId to null
+      // so getNextTopic() wraps to the first active topic
+      const lastTopicId = previousTopic?.id ?? null;
       await prisma.rotationCounter.upsert({
         where: { id: 'singleton' },
-        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: setTopic },
-        update: { topic: setTopic },
+        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0, lastTopicId },
+        update: { lastTopicId },
       });
-      return NextResponse.json({ message: `Topic counter set to ${setTopic}` });
+      return NextResponse.json({ message: `Next topic set to "${topic.name}"` });
     }
 
     if (reset === 'all') {
       // Reset all counters to 0
       await prisma.rotationCounter.upsert({
         where: { id: 'singleton' },
-        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
-        update: { music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0 },
+        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0, lastTopicId: null },
+        update: { music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0, lastTopicId: null },
       });
       return NextResponse.json({ message: 'All counters reset to 0' });
     }
 
-    if (reset === 'music' || reset === 'overlay' || reset === 'colorScheme' || reset === 'topic' || reset === 'openingHook') {
+    if (reset === 'topic') {
+      // Reset topic rotation
+      await prisma.rotationCounter.upsert({
+        where: { id: 'singleton' },
+        create: { id: 'singleton', music: 0, overlay: 0, colorScheme: 0, openingHook: 0, topic: 0, lastTopicId: null },
+        update: { lastTopicId: null },
+      });
+      return NextResponse.json({ message: 'Topic rotation reset' });
+    }
+
+    if (reset === 'music' || reset === 'overlay' || reset === 'colorScheme' || reset === 'openingHook') {
       // Reset specific counter
       await prisma.rotationCounter.upsert({
         where: { id: 'singleton' },

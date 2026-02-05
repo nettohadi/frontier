@@ -141,6 +141,7 @@ model RotationCounter {
   colorScheme Int      @default(0)
   openingHook Int      @default(0)
   topic       Int      @default(0)
+  lastTopicId String?
   updatedAt   DateTime @updatedAt
 }
 
