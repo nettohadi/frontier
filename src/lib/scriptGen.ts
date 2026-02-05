@@ -70,18 +70,13 @@ Tulis pernyataan yang mengakui kelemahan atau perjuangan manusiawi secara vulner
 - Contoh: "Ada bagian dari dirimu yang malu mengakui... kau masih ragu"
 PENTING: Script harus MEMVALIDASI perasaan ini dulu, baru membawa ke penerimaan dan kasih Tuhan. Jangan langsung menasihati.`,
   },
-  {
-    id: 'suara-tuhan',
-    name: 'Suara dari Yang Maha',
-    instruction: `PEMBUKA SUARA TUHAN (maksimal 15 kata):
-Tulis seolah Sang Kekasih/Tuhan berbicara langsung kepada pendengar dengan lembut.
-- Gunakan sudut pandang orang pertama dari perspektif Ilahi
-- Harus intim, penuh kasih, dan mengejutkan
-- Contoh: "Kau pikir Aku tidak melihat... saat kau menangis sendirian?"
-- Contoh: "Kenapa kau lari dari-Ku... padahal Aku yang mencarimu?"
-- Contoh: "Aku menunggumu... di tempat yang kau hindari"
-PENTING: Script harus melanjutkan "dialog" ini — mengembangkan apa yang Tuhan ingin sampaikan tentang topik tersebut dengan penuh hikmah dan kelembutan.`,
-  },
+  // Disabled: "god voice" perspective is too sensitive
+  // {
+  //   id: 'suara-tuhan',
+  //   name: 'Suara dari Yang Maha',
+  //   instruction: `PEMBUKA SUARA TUHAN (maksimal 15 kata):
+  //     ...`,
+  // },
   {
     id: 'realita-pahit',
     name: 'Realita Pahit',
