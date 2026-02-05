@@ -15,29 +15,21 @@ export async function GET() {
       },
     });
 
-    // Get active topics for rotation calculation (ordered by createdAt asc)
     const activeTopics = topics.filter((t) => t.isActive);
 
-    // Get rotation counter to determine next topic via lastTopicId
+    // Get rotation counter — nextTopicId is stored directly
     const counter = await prisma.rotationCounter.findUnique({
       where: { id: 'singleton' },
     });
 
     let nextTopicId: string | null = null;
     if (activeTopics.length > 0) {
-      const lastTopicId = counter?.lastTopicId;
-      if (!lastTopicId) {
-        nextTopicId = activeTopics[0].id;
+      // Use stored nextTopicId if it points to an active topic
+      if (counter?.nextTopicId && activeTopics.some((t) => t.id === counter.nextTopicId)) {
+        nextTopicId = counter.nextTopicId;
       } else {
-        // Find the last topic to get its createdAt (works even if deactivated)
-        const lastTopic = topics.find((t) => t.id === lastTopicId);
-        if (lastTopic) {
-          // Find next active topic after the last one by creation order
-          const next = activeTopics.find((t) => t.createdAt > lastTopic.createdAt);
-          nextTopicId = next ? next.id : activeTopics[0].id;
-        } else {
-          nextTopicId = activeTopics[0].id;
-        }
+        // Fallback: first active topic
+        nextTopicId = activeTopics[0].id;
       }
     }
 
