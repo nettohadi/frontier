@@ -221,7 +221,7 @@ Format yang diharapkan:
 {"title": "Judul video", "description": "Deskripsi video", "script": "Isi script dengan [tags] dan ..."}
 
 Contoh output yang BENAR:
-{"title": "Ketika Hati Berbisik Rindu", "description": "Sebuah renungan tentang kerinduan jiwa.", "script": "[thoughtful] Di suatu tempat dalam dirimu... ada ruang yang menunggu. [pause] Menunggu untuk pulang..."}
+{"title": "Hati yang Lupa Pulang", "description": "Sebuah renungan tentang kerinduan jiwa.", "script": "[thoughtful] Di suatu tempat dalam dirimu... ada ruang yang menunggu. [pause] Menunggu untuk pulang..."}
 
 Contoh output yang SALAH (JANGAN LAKUKAN INI):
 \`\`\`json
@@ -232,7 +232,8 @@ PANDUAN JUDUL:
 - Judul harus BERBEDA dan UNIK, bukan hanya nama topik
 - Gunakan kata-kata yang menarik, puitis, dan membangkitkan rasa ingin tahu
 - Maksimal 60 karakter agar tampil lengkap di YouTube
-- Contoh: untuk topik "Kesabaran", judulnya bisa "Ketika Hati Belajar Menanti", bukan "Renungan Tentang Kesabaran"
+- Contoh: untuk topik "Kesabaran", judulnya bisa "Seni Menunggu Tanpa Batas", bukan "Renungan Tentang Kesabaran"
+- PENTING: Jangan gunakan kata pembuka yang sama berulang kali. Variasikan struktur judul setiap kali.
 
 PANDUAN DESKRIPSI:
 - 2-3 kalimat yang menjelaskan esensi video
