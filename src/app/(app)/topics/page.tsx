@@ -9,7 +9,6 @@ import {
   Pause,
   PlayCircle,
   Target,
-  MoreHorizontal,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -33,12 +32,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { GenerateVideoDropdown } from '@/components/GenerateVideoDropdown';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -444,47 +442,83 @@ export default function TopicsPage() {
                               {topic.description}
                             </p>
                           </div>
-                          <div className="mt-2 flex shrink-0 items-center gap-1 md:mt-0">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button size="icon" variant="ghost" className="h-8 w-8">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                {topic.isActive && topic.id !== nextTopicId && (
-                                  <DropdownMenuItem onClick={() => setAsNextTopic(topic)}>
-                                    <Target className="mr-2 h-4 w-4" />
-                                    Set as Next
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={() => setEditingTopic(topic)}>
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                                {topic.isActive ? (
-                                  <DropdownMenuItem onClick={() => openDeactivateConfirm(topic)}>
-                                    <Pause className="mr-2 h-4 w-4" />
-                                    Deactivate
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem onClick={() => activateTopic(topic)}>
-                                    <PlayCircle className="mr-2 h-4 w-4" />
-                                    Activate
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => openDeleteConfirm(topic)}
-                                  disabled={topic._count.videos > 0}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
+                          <TooltipProvider delayDuration={300}>
+                            <div className="mt-2 flex shrink-0 items-center gap-1 md:mt-0">
+                              {topic.isActive && topic.id !== nextTopicId && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8"
+                                      onClick={() => setAsNextTopic(topic)}
+                                    >
+                                      <Target className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Set as Next</TooltipContent>
+                                </Tooltip>
+                              )}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8"
+                                    onClick={() => setEditingTopic(topic)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit</TooltipContent>
+                              </Tooltip>
+                              {topic.isActive ? (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8"
+                                      onClick={() => openDeactivateConfirm(topic)}
+                                    >
+                                      <Pause className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Deactivate</TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8"
+                                      onClick={() => activateTopic(topic)}
+                                    >
+                                      <PlayCircle className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Activate</TooltipContent>
+                                </Tooltip>
+                              )}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 text-destructive hover:text-destructive"
+                                    onClick={() => openDeleteConfirm(topic)}
+                                    disabled={topic._count.videos > 0}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
                                   {topic._count.videos > 0 ? 'Cannot delete' : 'Delete'}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </TooltipProvider>
                         </div>
                       )}
                     </div>
