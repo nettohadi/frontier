@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSlotsForDate, formatDateOnly } from '@/lib/scheduling';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/upload/schedules/date?date=2026-02-03 - Get all slots for a specific date
 export async function GET(request: NextRequest) {
   try {

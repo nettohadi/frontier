@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getSlotsForDate, getNextAvailableSlot, formatScheduleTime } from '@/lib/scheduling';
 import { UploadStatus } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 const ListSchedulesSchema = z.object({
   status: z.nativeEnum(UploadStatus).optional(),
   date: z.string().optional(), // ISO date string

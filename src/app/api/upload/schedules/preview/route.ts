@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { previewUpcomingSlots } from '@/lib/autoUpload';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/upload/schedules/preview?count=5
  * Returns the next N available upload slots without reserving them
