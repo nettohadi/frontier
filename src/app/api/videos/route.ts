@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { addVideoJob } from '@/queues/queues';
 import { VideoStatus, RenderMode } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 const CreateVideoSchema = z.object({
   topic: z.string().min(3).max(500).optional().default('Auto theme rotation'),
   style: z.string().optional(),
