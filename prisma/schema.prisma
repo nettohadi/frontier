@@ -92,8 +92,9 @@ model Video {
   // Job tracking
   currentJobId    String?
 
-  // YouTube upload tracking
+  // Upload tracking
   uploadedToYouTube Boolean         @default(false)
+  uploadedToTikTok  Boolean         @default(false)
   uploadSchedule    UploadSchedule?
 
   // Auto-upload settings
@@ -146,17 +147,18 @@ model RotationCounter {
   updatedAt   DateTime @updatedAt
 }
 
-// Publer settings for YouTube upload (singleton pattern)
+// Publer settings for social media upload (singleton pattern)
 model PublerSettings {
-  id               String   @id @default("singleton")
-  apiKey           String?  @db.Text
-  workspaceId      String?
-  defaultChannelId String?
-  autoUpload       Boolean  @default(false)
-  updatedAt        DateTime @updatedAt
+  id                     String   @id @default("singleton")
+  apiKey                 String?  @db.Text
+  workspaceId            String?
+  defaultChannelId       String?  // YouTube channel ID
+  defaultTikTokChannelId String?  // TikTok account ID
+  autoUpload             Boolean  @default(false)
+  updatedAt              DateTime @updatedAt
 }
 
-// YouTube upload scheduling
+// Upload scheduling
 model UploadSchedule {
   id               String       @id @default(uuid())
 
@@ -169,6 +171,10 @@ model UploadSchedule {
   youtubeTitle     String?
   youtubeDescription String?    @db.Text
 
+  // TikTok details
+  tiktokChannelId  String?
+  tiktokDescription String?     @db.Text
+
   // Scheduling (GMT+8 timezone)
   scheduledSlot    Int          // 0-9 (10:00-19:00)
   scheduledDate    DateTime     // Date portion (midnight UTC)
@@ -178,6 +184,7 @@ model UploadSchedule {
   status           UploadStatus @default(SCHEDULED)
   publerJobId      String?
   youtubeUrl       String?
+  tiktokUrl        String?
   errorMessage     String?      @db.Text
   progress         Int          @default(0)
 

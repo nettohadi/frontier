@@ -22,7 +22,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     // Store the schedule slot info before deleting
-    const { scheduledDate, scheduledSlot, scheduledAt, youtubeChannelId, publerJobId } =
+    const { scheduledDate, scheduledSlot, scheduledAt, youtubeChannelId, tiktokChannelId, publerJobId } =
       existingSchedule;
 
     // Get Publer settings for YouTube channel
@@ -32,8 +32,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const channelId = youtubeChannelId || publerSettings?.defaultChannelId;
 
-    if (!channelId) {
-      return NextResponse.json({ error: 'No YouTube channel configured' }, { status: 400 });
+    const tikTokId = tiktokChannelId || publerSettings?.defaultTikTokChannelId || null;
+
+    if (!channelId && !tikTokId) {
+      return NextResponse.json({ error: 'No upload channel configured' }, { status: 400 });
     }
 
     // Cancel the Publer scheduled post if it exists
@@ -80,7 +82,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         scheduledDate,
         scheduledSlot,
         scheduledAt,
-        youtubeChannelId: channelId,
+        youtubeChannelId: channelId || '',
+        tiktokChannelId: tikTokId,
         status: 'SCHEDULED',
       },
     });

@@ -10,6 +10,7 @@ import {
   Eye,
   EyeOff,
   Youtube,
+  Music2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -31,9 +32,16 @@ interface PublerSettings {
   apiKey: string | null;
   workspaceId: string | null;
   defaultChannelId: string | null;
+  defaultTikTokChannelId: string | null;
 }
 
 interface YouTubeChannel {
+  id: string;
+  name: string;
+  avatar?: string;
+}
+
+interface TikTokAccount {
   id: string;
   name: string;
   avatar?: string;
@@ -44,12 +52,14 @@ export default function SettingsPage() {
     apiKey: null,
     workspaceId: null,
     defaultChannelId: null,
+    defaultTikTokChannelId: null,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [channels, setChannels] = useState<YouTubeChannel[]>([]);
+  const [tiktokAccounts, setTiktokAccounts] = useState<TikTokAccount[]>([]);
   const [channelsLoading, setChannelsLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
@@ -61,6 +71,7 @@ export default function SettingsPage() {
         apiKey: data.apiKey || null,
         workspaceId: data.workspaceId || null,
         defaultChannelId: data.defaultChannelId || null,
+        defaultTikTokChannelId: data.defaultTikTokChannelId || null,
       });
     } catch (err) {
       console.error('Failed to fetch settings:', err);
@@ -76,6 +87,9 @@ export default function SettingsPage() {
       const data = await res.json();
       if (data.channels) {
         setChannels(data.channels);
+      }
+      if (data.tiktokAccounts) {
+        setTiktokAccounts(data.tiktokAccounts);
       }
     } catch (err) {
       console.error('Failed to fetch channels:', err);
@@ -308,6 +322,94 @@ export default function SettingsPage() {
                   ) : (
                     <p className="text-muted-foreground py-2 text-sm">
                       Test connection first to load channels
+                    </p>
+                  )}
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">TikTok Account</label>
+                  {channelsLoading ? (
+                    <div className="flex items-center gap-2 py-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-muted-foreground text-sm">Loading accounts...</span>
+                    </div>
+                  ) : tiktokAccounts.length > 0 ? (
+                    <>
+                      {settings.defaultTikTokChannelId && (
+                        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-2 md:gap-3 md:p-3">
+                          {(() => {
+                            const selectedAccount = tiktokAccounts.find(
+                              (a) => a.id === settings.defaultTikTokChannelId
+                            );
+                            return selectedAccount ? (
+                              <>
+                                {selectedAccount.avatar ? (
+                                  <img
+                                    src={selectedAccount.avatar}
+                                    alt={selectedAccount.name}
+                                    className="h-8 w-8 rounded-full md:h-10 md:w-10"
+                                  />
+                                ) : (
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black md:h-10 md:w-10">
+                                    <Music2 className="h-4 w-4 text-white md:h-5 md:w-5" />
+                                  </div>
+                                )}
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium md:text-base">
+                                    {selectedAccount.name}
+                                  </p>
+                                  <p className="text-muted-foreground text-[10px] md:text-xs">
+                                    Active account
+                                  </p>
+                                </div>
+                                <Badge
+                                  variant="success"
+                                  className="gap-1 px-1.5 text-[10px] md:px-2 md:text-xs"
+                                >
+                                  <CheckCircle2 className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                                  <span className="hidden sm:inline">Connected</span>
+                                </Badge>
+                              </>
+                            ) : null;
+                          })()}
+                        </div>
+                      )}
+                      <Select
+                        value={settings.defaultTikTokChannelId || ''}
+                        onValueChange={(value) =>
+                          setSettings({ ...settings, defaultTikTokChannelId: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a TikTok account" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tiktokAccounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              <div className="flex items-center gap-2">
+                                {account.avatar ? (
+                                  <img
+                                    src={account.avatar}
+                                    alt={account.name}
+                                    className="h-5 w-5 rounded-full"
+                                  />
+                                ) : (
+                                  <Music2 className="h-5 w-5" />
+                                )}
+                                {account.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground py-2 text-sm">
+                      {settings.apiKey && settings.workspaceId
+                        ? 'No TikTok account connected in Publer'
+                        : 'Test connection first to load accounts'}
                     </p>
                   )}
                 </div>

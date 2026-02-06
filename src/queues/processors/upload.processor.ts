@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { PublerService, getPublerCredentials } from '@/lib/publer';
 
 /**
- * Process a YouTube upload via Publer
+ * Process a video upload via Publer (YouTube + TikTok)
  * This runs when an upload is triggered (either manually or at scheduled time)
  */
 export async function processUpload(scheduleId: string): Promise<void> {
@@ -30,9 +30,32 @@ export async function processUpload(scheduleId: string): Promise<void> {
 
   const publer = new PublerService(credentials.apiKey, credentials.workspaceId);
 
+  // Determine which platforms to upload to
+  // On retry: skip platforms that already succeeded (TikTok rejects duplicate content)
+  const youtubeAccountId = schedule.youtubeChannelId && !schedule.youtubeUrl
+    ? schedule.youtubeChannelId
+    : undefined;
+  const tiktokAccountId = schedule.tiktokChannelId && !schedule.tiktokUrl
+    ? schedule.tiktokChannelId
+    : undefined;
+
+  if (!youtubeAccountId && !tiktokAccountId) {
+    // All platforms already have URLs — nothing to do
+    console.log(`[Upload] ${scheduleId}: All platforms already uploaded, marking complete`);
+    await prisma.uploadSchedule.update({
+      where: { id: scheduleId },
+      data: { status: 'COMPLETED', progress: 100, completedAt: new Date() },
+    });
+    return;
+  }
+
+  const platforms = [youtubeAccountId && 'YouTube', tiktokAccountId && 'TikTok']
+    .filter(Boolean)
+    .join(' + ');
+
   // Update status to uploading
   await updateProgress(scheduleId, 'UPLOADING', 5);
-  console.log(`[Upload] ${scheduleId}: Starting media upload`);
+  console.log(`[Upload] ${scheduleId}: Starting media upload for ${platforms}`);
 
   try {
     // Step 1: Upload video media (0-40%)
@@ -40,9 +63,10 @@ export async function processUpload(scheduleId: string): Promise<void> {
     await updateProgress(scheduleId, 'UPLOADING', 40);
     console.log(`[Upload] ${scheduleId}: Video uploaded, ID: ${mediaId}`);
 
-    // Step 2: Create YouTube Short post (40-60%)
-    const { jobId } = await publer.createYouTubeShort({
-      accountId: schedule.youtubeChannelId,
+    // Step 2: Create multi-platform post (40-60%)
+    const { jobId } = await publer.createMultiPlatformPost({
+      youtubeAccountId: youtubeAccountId || undefined,
+      tiktokAccountId: tiktokAccountId || undefined,
       mediaIds: [mediaId],
       title: schedule.youtubeTitle || schedule.video.title || 'Untitled Video',
       description: schedule.youtubeDescription || schedule.video.description || '',
@@ -54,7 +78,7 @@ export async function processUpload(scheduleId: string): Promise<void> {
       where: { id: scheduleId },
       data: { publerJobId: jobId, progress: 60 },
     });
-    console.log(`[Upload] ${scheduleId}: Post created, job ID: ${jobId}`);
+    console.log(`[Upload] ${scheduleId}: Post created for ${platforms}, job ID: ${jobId}`);
 
     // Wait a moment for Publer to process, then check job status
     await sleep(3000);
@@ -77,7 +101,6 @@ export async function processUpload(scheduleId: string): Promise<void> {
           data: {
             status: 'COMPLETED',
             progress: 100,
-            // Store post_id if available (needed for Publer deletion)
             publerJobId: jobStatus.result?.post_id || jobId,
             completedAt: new Date(),
           },
@@ -85,10 +108,13 @@ export async function processUpload(scheduleId: string): Promise<void> {
 
         await prisma.video.update({
           where: { id: schedule.videoId },
-          data: { uploadedToYouTube: true },
+          data: {
+            uploadedToYouTube: !!youtubeAccountId || schedule.video.uploadedToYouTube,
+            uploadedToTikTok: !!tiktokAccountId || schedule.video.uploadedToTikTok,
+          },
         });
 
-        console.log(`[Upload] ${scheduleId}: Draft saved to Publer successfully!`);
+        console.log(`[Upload] ${scheduleId}: Draft saved to Publer for ${platforms}!`);
         return;
       }
     }
@@ -107,14 +133,13 @@ export async function processUpload(scheduleId: string): Promise<void> {
       );
 
       if (status.status === 'completed') {
-        // Success! Store the post_id for future deletion if needed
         await prisma.uploadSchedule.update({
           where: { id: scheduleId },
           data: {
             status: 'COMPLETED',
             progress: 100,
-            youtubeUrl: status.result?.url || null,
-            // Store post_id if available (needed for Publer deletion)
+            youtubeUrl: youtubeAccountId ? (status.result?.url || null) : schedule.youtubeUrl,
+            tiktokUrl: tiktokAccountId ? (status.result?.url || null) : schedule.tiktokUrl,
             publerJobId: status.result?.post_id || jobId,
             completedAt: new Date(),
           },
@@ -122,10 +147,13 @@ export async function processUpload(scheduleId: string): Promise<void> {
 
         await prisma.video.update({
           where: { id: schedule.videoId },
-          data: { uploadedToYouTube: true },
+          data: {
+            uploadedToYouTube: !!youtubeAccountId || schedule.video.uploadedToYouTube,
+            uploadedToTikTok: !!tiktokAccountId || schedule.video.uploadedToTikTok,
+          },
         });
 
-        console.log(`[Upload] ${scheduleId}: Completed! URL: ${status.result?.url}`);
+        console.log(`[Upload] ${scheduleId}: Completed! ${platforms} URL: ${status.result?.url}`);
         return;
       }
 

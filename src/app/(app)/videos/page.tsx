@@ -12,6 +12,7 @@ import {
   Video,
   Upload,
   Youtube,
+  Music2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ interface VideoItem {
   errorMessage: string | null;
   createdAt: string;
   uploadedToYouTube: boolean;
+  uploadedToTikTok: boolean;
   topicRelation: { name: string } | null;
   uploadSchedule: {
     id: string;
@@ -284,11 +286,21 @@ export default function VideosPage() {
                           <Download className="h-3 w-3" />
                           Download
                         </Button>
-                        {video.uploadedToYouTube ? (
-                          <Badge variant="success" className="h-7 w-full justify-center gap-1">
-                            <Youtube className="h-3 w-3" />
-                            Uploaded
-                          </Badge>
+                        {(video.uploadedToYouTube || video.uploadedToTikTok) ? (
+                          <div className="flex w-full gap-1">
+                            {video.uploadedToYouTube && (
+                              <Badge variant="success" className="h-7 flex-1 justify-center gap-1">
+                                <Youtube className="h-3 w-3" />
+                                YT
+                              </Badge>
+                            )}
+                            {video.uploadedToTikTok && (
+                              <Badge variant="success" className="h-7 flex-1 justify-center gap-1">
+                                <Music2 className="h-3 w-3" />
+                                TT
+                              </Badge>
+                            )}
+                          </div>
                         ) : video.uploadSchedule ? (
                           <>
                             <Badge
@@ -323,7 +335,7 @@ export default function VideosPage() {
                                 {uploadingVideoId === video.uploadSchedule.id ? (
                                   <Loader2 className="h-3 w-3 animate-spin" />
                                 ) : (
-                                  <Youtube className="h-3 w-3" />
+                                  <Upload className="h-3 w-3" />
                                 )}
                                 {video.uploadSchedule.status === 'FAILED' ? 'Retry' : 'Upload Now'}
                               </Button>
@@ -342,8 +354,8 @@ export default function VideosPage() {
                               );
                             }}
                           >
-                            <Youtube className="h-3 w-3" />
-                            YouTube
+                            <Upload className="h-3 w-3" />
+                            Upload
                           </Button>
                         )}
                       </div>

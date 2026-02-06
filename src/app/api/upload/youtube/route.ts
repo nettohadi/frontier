@@ -92,9 +92,11 @@ export async function POST(request: NextRequest) {
     }
 
     const youtubeChannelId = channelId || settings?.defaultChannelId;
-    if (!youtubeChannelId) {
+    const tiktokChannelId = settings?.defaultTikTokChannelId || null;
+
+    if (!youtubeChannelId && !tiktokChannelId) {
       return NextResponse.json(
-        { error: 'No YouTube channel selected. Please select a channel in Settings.' },
+        { error: 'No upload channel configured. Please select a YouTube or TikTok channel in Settings.' },
         { status: 400 }
       );
     }
@@ -107,9 +109,11 @@ export async function POST(request: NextRequest) {
     const schedule = await prisma.uploadSchedule.create({
       data: {
         videoId,
-        youtubeChannelId,
+        youtubeChannelId: youtubeChannelId || '',
         youtubeTitle: video.title || `Video ${video.id.slice(0, 8)}`,
         youtubeDescription: video.description || '',
+        tiktokChannelId,
+        tiktokDescription: video.description || '',
         scheduledSlot: nextSlot.slot,
         scheduledDate: nextSlot.date,
         scheduledAt: nextSlot.scheduledAt,

@@ -20,9 +20,12 @@ export async function GET() {
     }
 
     const publer = new PublerService(credentials.apiKey, credentials.workspaceId);
-    const channels = await publer.getYouTubeChannels();
+    const allAccounts = await publer.getAllAccounts();
 
-    return NextResponse.json({ channels });
+    return NextResponse.json({
+      channels: allAccounts.youtube,
+      tiktokAccounts: allAccounts.tiktok,
+    });
   } catch (error) {
     console.error('Error fetching YouTube channels:', error);
     const message = error instanceof Error ? error.message : String(error);

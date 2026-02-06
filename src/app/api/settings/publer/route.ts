@@ -16,6 +16,7 @@ export async function GET() {
       apiKey: settings?.apiKey || null,
       workspaceId: settings?.workspaceId || null,
       defaultChannelId: settings?.defaultChannelId || null,
+      defaultTikTokChannelId: settings?.defaultTikTokChannelId || null,
       configured: !!credentials,
     });
   } catch (error) {
@@ -29,6 +30,7 @@ const UpdateSettingsSchema = z.object({
   apiKey: z.string().optional(),
   workspaceId: z.string().optional(),
   defaultChannelId: z.string().optional(),
+  defaultTikTokChannelId: z.string().optional(),
 });
 
 // PUT /api/settings/publer - Update Publer settings
@@ -42,6 +44,8 @@ export async function PUT(request: NextRequest) {
     if (data.apiKey !== undefined) updateData.apiKey = data.apiKey;
     if (data.workspaceId !== undefined) updateData.workspaceId = data.workspaceId;
     if (data.defaultChannelId !== undefined) updateData.defaultChannelId = data.defaultChannelId;
+    if (data.defaultTikTokChannelId !== undefined)
+      updateData.defaultTikTokChannelId = data.defaultTikTokChannelId;
 
     const settings = await prisma.publerSettings.upsert({
       where: { id: 'singleton' },
@@ -56,6 +60,7 @@ export async function PUT(request: NextRequest) {
       apiKey: settings.apiKey,
       workspaceId: settings.workspaceId,
       defaultChannelId: settings.defaultChannelId,
+      defaultTikTokChannelId: settings.defaultTikTokChannelId,
       configured: !!(settings.apiKey && settings.workspaceId),
       success: true,
     });

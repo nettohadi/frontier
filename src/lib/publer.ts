@@ -29,8 +29,20 @@ export interface CreatePostParams {
   isDraft?: boolean; // For testing - creates draft instead of scheduled
 }
 
+export interface CreateMultiPlatformPostParams {
+  youtubeAccountId?: string;
+  tiktokAccountId?: string;
+  mediaIds: string[];
+  title: string;
+  description: string;
+  tags?: string[];
+  scheduleAt?: Date;
+  isShort?: boolean;
+  isDraft?: boolean;
+}
+
 /**
- * Publer API Service for YouTube uploads
+ * Publer API Service for social media uploads
  * Documentation: https://publer.com/docs
  */
 export class PublerService {
@@ -89,6 +101,34 @@ export class PublerService {
         platform: a.provider,
         avatar: a.avatar,
       }));
+  }
+
+  /**
+   * Get all connected accounts (YouTube + TikTok) in a single API call
+   */
+  async getAllAccounts(): Promise<{ youtube: YouTubeChannel[]; tiktok: YouTubeChannel[] }> {
+    const response = await fetch(`${this.baseUrl}/accounts`, {
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to fetch accounts: ${error}`);
+    }
+
+    const accounts = await response.json();
+
+    const mapAccount = (a: { id: string; name: string; provider: string; avatar?: string }): YouTubeChannel => ({
+      id: a.id,
+      name: a.name,
+      platform: a.provider,
+      avatar: a.avatar,
+    });
+
+    return {
+      youtube: accounts.filter((a: { provider: string }) => a.provider === 'youtube').map(mapAccount),
+      tiktok: accounts.filter((a: { provider: string }) => a.provider === 'tiktok').map(mapAccount),
+    };
   }
 
   /**
@@ -214,6 +254,110 @@ export class PublerService {
     console.log('[Publer] Creating YouTube post:', JSON.stringify(body, null, 2));
     console.log(
       `[Publer] Mode: ${state}, Endpoint: ${endpoint}${isFutureScheduled ? ` (scheduled for ${params.scheduleAt?.toISOString()})` : ' (immediate)'}, Tags: ${uniqueTags.join(', ')}`
+    );
+
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Post creation failed: ${error}`);
+    }
+
+    const result = await response.json();
+    return { jobId: result.job_id || result.id };
+  }
+
+  /**
+   * Create a multi-platform post (YouTube + TikTok)
+   * At least one platform account must be provided.
+   */
+  async createMultiPlatformPost(params: CreateMultiPlatformPostParams): Promise<{ jobId: string }> {
+    if (!params.youtubeAccountId && !params.tiktokAccountId) {
+      throw new Error('At least one platform account must be provided');
+    }
+
+    const baseTags = [
+      '#sohibulhikayat',
+      '#renunganmakrifat',
+      '#renungansufi',
+      '#hakikatmakrifat',
+      '#jalaluddinrumi',
+      '#shorts',
+    ];
+    const allTags = [...baseTags, ...(params.tags || [])];
+    const uniqueTags = Array.from(new Set(allTags));
+    const descriptionWithTags = `${params.description}\n\n${uniqueTags.join(' ')}`;
+
+    const useDraft = params.isDraft ?? process.env.PUBLER_DRAFT_MODE === 'true';
+    const state = useDraft ? 'draft_private' : 'scheduled';
+
+    const minFutureTime = new Date(Date.now() + 60 * 1000);
+    const isFutureScheduled =
+      params.scheduleAt && params.scheduleAt.getTime() > minFutureTime.getTime();
+    const usePublishEndpoint = !useDraft && !isFutureScheduled;
+
+    // Build accounts array (only include configured platforms)
+    const accounts: Array<{ id: string; scheduled_at?: string }> = [];
+    if (params.youtubeAccountId) {
+      const acct: { id: string; scheduled_at?: string } = { id: params.youtubeAccountId };
+      if (isFutureScheduled && params.scheduleAt) {
+        acct.scheduled_at = params.scheduleAt.toISOString();
+      }
+      accounts.push(acct);
+    }
+    if (params.tiktokAccountId) {
+      const acct: { id: string; scheduled_at?: string } = { id: params.tiktokAccountId };
+      if (isFutureScheduled && params.scheduleAt) {
+        acct.scheduled_at = params.scheduleAt.toISOString();
+      }
+      accounts.push(acct);
+    }
+
+    // Build networks object (only include configured platforms)
+    const networks: Record<string, unknown> = {};
+    if (params.youtubeAccountId) {
+      networks.youtube = {
+        type: 'video',
+        isShort: params.isShort !== false,
+        media: params.mediaIds.map((id) => ({ id, type: 'video' })),
+        title: params.title,
+        text: descriptionWithTags,
+        privacy: 'public',
+        tags: uniqueTags.map((t) => t.replace('#', '')),
+      };
+    }
+    if (params.tiktokAccountId) {
+      networks.tiktok = {
+        type: 'video',
+        media: params.mediaIds.map((id) => ({ id, type: 'video' })),
+        text: descriptionWithTags,
+        details: {
+          privacy: 'PUBLIC_TO_EVERYONE',
+          comment: true,
+          duet: true,
+          stitch: true,
+        },
+      };
+    }
+
+    const body = {
+      bulk: {
+        state,
+        posts: [{ accounts, networks }],
+      },
+    };
+
+    const endpoint = usePublishEndpoint ? '/posts/schedule/publish' : '/posts/schedule';
+    const platforms = [params.youtubeAccountId && 'YouTube', params.tiktokAccountId && 'TikTok']
+      .filter(Boolean)
+      .join(' + ');
+    console.log(`[Publer] Creating ${platforms} post:`, JSON.stringify(body, null, 2));
+    console.log(
+      `[Publer] Mode: ${state}, Endpoint: ${endpoint}${isFutureScheduled ? ` (scheduled for ${params.scheduleAt?.toISOString()})` : ' (immediate)'}`
     );
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {

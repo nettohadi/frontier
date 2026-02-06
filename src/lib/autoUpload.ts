@@ -66,8 +66,8 @@ export async function triggerAutoUpload(
       throw new Error('Publer not configured. Set PUBLER_KEY and PUBLER_WORKSPACE_ID.');
     }
 
-    if (!settings?.defaultChannelId) {
-      throw new Error('No YouTube channel configured. Please set a default channel in Settings.');
+    if (!settings?.defaultChannelId && !settings?.defaultTikTokChannelId) {
+      throw new Error('No upload channel configured. Please set a YouTube or TikTok channel in Settings.');
     }
 
     // 3. Create upload schedule based on mode
@@ -77,7 +77,8 @@ export async function triggerAutoUpload(
       // Immediate upload - schedule for now
       scheduleId = await createImmediateSchedule(
         videoId,
-        settings.defaultChannelId,
+        settings.defaultChannelId || '',
+        settings.defaultTikTokChannelId || null,
         video.title,
         video.description
       );
@@ -85,7 +86,8 @@ export async function triggerAutoUpload(
       // Scheduled upload - find next available slot
       scheduleId = await assignSlotWithRetry(
         videoId,
-        settings.defaultChannelId,
+        settings.defaultChannelId || '',
+        settings.defaultTikTokChannelId || null,
         video.title,
         video.description
       );
@@ -121,6 +123,7 @@ export async function triggerAutoUpload(
 async function createImmediateSchedule(
   videoId: string,
   channelId: string,
+  tiktokChannelId: string | null,
   title: string | null,
   description: string | null
 ): Promise<string> {
@@ -130,9 +133,10 @@ async function createImmediateSchedule(
     data: {
       videoId,
       youtubeChannelId: channelId,
+      tiktokChannelId,
       youtubeTitle: title,
       youtubeDescription: description,
-      // Use current time for immediate upload
+      tiktokDescription: description,
       scheduledSlot: -1, // Special value for immediate
       scheduledDate: now,
       scheduledAt: now,
@@ -150,6 +154,7 @@ async function createImmediateSchedule(
 async function assignSlotWithRetry(
   videoId: string,
   channelId: string,
+  tiktokChannelId: string | null,
   title: string | null,
   description: string | null,
   maxRetries: number = 5
@@ -170,8 +175,10 @@ async function assignSlotWithRetry(
         data: {
           videoId,
           youtubeChannelId: channelId,
+          tiktokChannelId,
           youtubeTitle: title,
           youtubeDescription: description,
+          tiktokDescription: description,
           scheduledSlot: slot.slot,
           scheduledDate: slot.date,
           scheduledAt: slot.scheduledAt,
@@ -344,10 +351,10 @@ export async function validatePublerConfig(): Promise<{
     };
   }
 
-  if (!settings?.defaultChannelId) {
+  if (!settings?.defaultChannelId && !settings?.defaultTikTokChannelId) {
     return {
       valid: false,
-      error: 'No YouTube channel selected. Please select a default channel in Settings.',
+      error: 'No upload channel selected. Please select at least one channel (YouTube or TikTok) in Settings.',
     };
   }
 

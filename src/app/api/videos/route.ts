@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
               status: true,
               scheduledAt: true,
               youtubeUrl: true,
+              tiktokUrl: true,
               progress: true,
             },
           },

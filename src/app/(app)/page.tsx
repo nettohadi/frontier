@@ -17,6 +17,7 @@ import {
   ImageIcon,
   Upload,
   Youtube,
+  Music2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,7 @@ interface VideoItem {
   updatedAt: string;
   renderMode: 'BACKGROUND_VIDEO' | 'AI_IMAGES';
   uploadedToYouTube: boolean;
+  uploadedToTikTok: boolean;
   validationPassed: boolean | null;
   validationAttempts: number | null;
   background: {
@@ -61,6 +63,7 @@ interface VideoItem {
     status: string;
     scheduledAt: string;
     youtubeUrl: string | null;
+    tiktokUrl: string | null;
     progress: number;
   } | null;
 }
@@ -511,11 +514,21 @@ export default function DashboardPage() {
                             <Download className="h-3.5 w-3.5 md:h-4 md:w-4" />
                             <span className="hidden sm:inline">Download</span>
                           </Button>
-                          {video.uploadedToYouTube ? (
-                            <Badge variant="success" className="h-8 gap-1 px-2.5 text-xs">
-                              <Youtube className="h-3 w-3" />
-                              Uploaded
-                            </Badge>
+                          {(video.uploadedToYouTube || video.uploadedToTikTok) ? (
+                            <>
+                              {video.uploadedToYouTube && (
+                                <Badge variant="success" className="h-8 gap-1 px-2.5 text-xs">
+                                  <Youtube className="h-3 w-3" />
+                                  YT
+                                </Badge>
+                              )}
+                              {video.uploadedToTikTok && (
+                                <Badge variant="success" className="h-8 gap-1 px-2.5 text-xs">
+                                  <Music2 className="h-3 w-3" />
+                                  TT
+                                </Badge>
+                              )}
+                            </>
                           ) : video.uploadSchedule ? (
                             <>
                               <Badge
@@ -550,7 +563,7 @@ export default function DashboardPage() {
                                   {uploadingVideoId === video.uploadSchedule.id ? (
                                     <Loader2 className="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" />
                                   ) : (
-                                    <Youtube className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                                    <Upload className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                   )}
                                   <span className="hidden sm:inline">
                                     {video.uploadSchedule.status === 'FAILED' ? 'Retry' : 'Upload Now'}
@@ -571,7 +584,7 @@ export default function DashboardPage() {
                                 );
                               }}
                             >
-                              <Youtube className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                              <Upload className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               <span className="hidden sm:inline">Upload</span>
                             </Button>
                           )}

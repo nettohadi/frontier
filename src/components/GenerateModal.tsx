@@ -70,13 +70,13 @@ export function GenerateModal({
       const res = await fetch('/api/settings/publer');
       if (res.ok) {
         const data = await res.json();
-        const isConfigured = data.configured && !!data.defaultChannelId;
+        const isConfigured = data.configured && (!!data.defaultChannelId || !!data.defaultTikTokChannelId);
         setPublerConfigured(isConfigured);
         if (!isConfigured) {
           if (!data.configured) {
             setConfigError('Please configure Publer API credentials in Settings first.');
-          } else if (!data.defaultChannelId) {
-            setConfigError('Please select a YouTube channel in Settings first.');
+          } else if (!data.defaultChannelId && !data.defaultTikTokChannelId) {
+            setConfigError('Please select at least one channel (YouTube or TikTok) in Settings first.');
           }
         } else {
           setConfigError(null);
