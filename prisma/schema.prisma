@@ -57,6 +57,7 @@ model Video {
 
   // File paths (relative to project root)
   audioPath       String?
+  audioDurationMs Int?            // Duration in ms from ElevenLabs TTS
   srtPath         String?
   outputPath      String?
 

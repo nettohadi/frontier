@@ -68,6 +68,7 @@ async function renderWithBackgroundVideo(
     id: string;
     audioPath: string | null;
     srtPath: string | null;
+    audioDurationMs: number | null;
     background: { name: string; filename: string } | null;
   },
   finalOutputPath: string,
@@ -91,11 +92,12 @@ async function renderWithBackgroundVideo(
     musicPath: musicPath || undefined,
     musicVolume: 0.25,
     burnSubtitles: true,
+    audioDurationSec: video.audioDurationMs ? video.audioDurationMs / 1000 : undefined,
   });
 }
 
 async function renderWithAiImages(
-  video: { id: string; audioPath: string | null; srtPath: string | null; imagePaths: string[] },
+  video: { id: string; audioPath: string | null; srtPath: string | null; audioDurationMs: number | null; imagePaths: string[] },
   finalOutputPath: string,
   musicPath: string | null,
   tempPath: string
@@ -124,6 +126,7 @@ async function renderWithAiImages(
     enableKenBurns: false, // Static image - no zoom/pan
     enableLightRays: false, // Using overlay only
     musicOnlyEndingSec: 3, // 3 seconds of music-only at the end
+    audioDurationSec: video.audioDurationMs ? video.audioDurationMs / 1000 : undefined,
   });
 }
 

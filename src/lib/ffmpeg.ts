@@ -32,6 +32,7 @@ export interface RenderOptions {
   musicPath?: string; // Optional background music
   musicVolume?: number; // Music volume (0.0 to 1.0), default 0.15
   burnSubtitles?: boolean; // Whether to burn subtitles (default: true)
+  audioDurationSec?: number; // Pre-computed duration in seconds (skips ffprobe if provided)
 }
 
 // List all available music files (sorted alphabetically for consistent ordering)
@@ -74,7 +75,7 @@ export async function renderVideo(options: RenderOptions): Promise<void> {
   console.log(`[FFmpeg] Using binary: ${ffmpegPath}`);
 
   // Get audio duration for the video
-  const audioDuration = await getAudioDuration(audioPath);
+  const audioDuration = options.audioDurationSec ?? await getAudioDuration(audioPath);
 
   // Build FFmpeg arguments
   const args: string[] = [];
@@ -207,7 +208,13 @@ function buildSubtitleFilter(subtitlePath: string): string {
 }
 
 async function getAudioDuration(audioPath: string): Promise<number> {
+  if (!existsSync(audioPath)) {
+    throw new Error(`Audio file not found: ${audioPath}`);
+  }
+
   const ffprobePath = getFFprobePath();
+  console.log(`[FFprobe] Getting duration for: ${audioPath}`);
+
   return new Promise((resolve, reject) => {
     const ffprobe = spawn(ffprobePath, [
       '-v',
@@ -220,25 +227,31 @@ async function getAudioDuration(audioPath: string): Promise<number> {
     ]);
 
     let output = '';
+    let stderr = '';
+
     ffprobe.stdout.on('data', (data) => {
       output += data.toString();
+    });
+
+    ffprobe.stderr.on('data', (data) => {
+      stderr += data.toString();
     });
 
     ffprobe.on('close', (code) => {
       if (code === 0) {
         const duration = parseFloat(output.trim());
         if (isNaN(duration)) {
-          reject(new Error('Failed to parse audio duration'));
+          reject(new Error(`Failed to parse audio duration from ffprobe output: "${output.trim()}" for ${audioPath}`));
         } else {
           resolve(duration);
         }
       } else {
-        reject(new Error('ffprobe failed to get audio duration'));
+        reject(new Error(`ffprobe failed for ${audioPath} (exit code ${code}): ${stderr.trim()}`));
       }
     });
 
     ffprobe.on('error', (err) => {
-      reject(new Error(`ffprobe spawn error: ${err.message}`));
+      reject(new Error(`ffprobe spawn error: ${err.message}. Is ffprobe installed at ${ffprobePath}?`));
     });
   });
 }
@@ -255,6 +268,7 @@ export interface ImageBasedRenderOptions {
   enableLightRays?: boolean; // Enable animated light rays effect
   enableKenBurns?: boolean; // Enable Ken Burns zoom/pan effect (default: false)
   musicOnlyEndingSec?: number; // Seconds of music-only ending (default: 3)
+  audioDurationSec?: number; // Pre-computed duration in seconds (skips ffprobe if provided)
 }
 
 /**
@@ -353,7 +367,7 @@ export async function renderImageBasedVideo(options: ImageBasedRenderOptions): P
   console.log(`[FFmpeg] Rendering image-based video with ${imagePaths.length} images`);
 
   // Get audio duration
-  const audioDuration = await getAudioDuration(audioPath);
+  const audioDuration = options.audioDurationSec ?? await getAudioDuration(audioPath);
   const fps = 30;
 
   // Music-only ending duration (default 3 seconds)

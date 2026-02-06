@@ -18,6 +18,6 @@ export async function processTts(videoId: string): Promise<void> {
 
   await prisma.video.update({
     where: { id: videoId },
-    data: { audioPath },
+    data: { audioPath, audioDurationMs: durationMs },
   });
 }
