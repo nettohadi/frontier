@@ -12,6 +12,8 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   ListFilter,
 } from 'lucide-react';
 
@@ -51,7 +53,7 @@ interface Topic {
   _count: { videos: number };
 }
 
-const TOPICS_PER_PAGE = 20;
+const TOPICS_PER_PAGE = 10;
 
 export default function TopicsPage() {
   const [allTopics, setAllTopics] = useState<Topic[]>([]);
@@ -495,7 +497,16 @@ export default function TopicsPage() {
                     <p className="text-muted-foreground text-sm">
                       Page {currentPage} of {totalPages}
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                        <span className="hidden sm:inline">First</span>
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
@@ -513,6 +524,15 @@ export default function TopicsPage() {
                       >
                         <span className="hidden sm:inline">Next</span>
                         <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        <span className="hidden sm:inline">Last</span>
+                        <ChevronsRight className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
