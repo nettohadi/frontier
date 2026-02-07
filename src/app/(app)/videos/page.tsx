@@ -13,6 +13,7 @@ import {
   Upload,
   Youtube,
   Music2,
+  RotateCcw,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ interface VideoItem {
   status: string;
   outputPath: string | null;
   errorMessage: string | null;
+  failedStep: string | null;
   createdAt: string;
   uploadedToYouTube: boolean;
   uploadedToTikTok: boolean;
@@ -78,6 +80,7 @@ export default function VideosPage() {
   const [loading, setLoading] = useState(true);
   const [inlinePlayingId, setInlinePlayingId] = useState<string | null>(null);
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
+  const [retryingVideoId, setRetryingVideoId] = useState<string | null>(null);
   const {
     modalState: scheduleModal,
     openModal: openScheduleModal,
@@ -102,6 +105,25 @@ export default function VideosPage() {
     const interval = setInterval(fetchVideos, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const retryVideo = async (videoId: string) => {
+    setRetryingVideoId(videoId);
+    try {
+      const res = await fetch(`/api/videos/${videoId}/retry`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        fetchVideos();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to retry video');
+      }
+    } catch (err) {
+      console.error('Failed to retry video:', err);
+    } finally {
+      setRetryingVideoId(null);
+    }
+  };
 
   const triggerUploadNow = async (scheduleId: string) => {
     setUploadingVideoId(scheduleId);
@@ -271,6 +293,35 @@ export default function VideosPage() {
                       <Clock className="h-2.5 w-2.5" />
                       {formatDate(video.createdAt)}
                     </p>
+
+                    {video.status === 'FAILED' && (
+                      <div className="mt-2 space-y-1.5">
+                        {video.errorMessage && (
+                          <p className="text-[10px] text-red-500 line-clamp-2" title={video.errorMessage}>
+                            {video.errorMessage}
+                          </p>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 w-full gap-1 text-xs border-red-200 text-red-600 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            retryVideo(video.id);
+                          }}
+                          disabled={retryingVideoId === video.id}
+                        >
+                          {retryingVideoId === video.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <RotateCcw className="h-3 w-3" />
+                          )}
+                          {video.failedStep
+                            ? `Retry from ${video.failedStep.replace('generate-', '').replace('render-', '')}`
+                            : 'Retry'}
+                        </Button>
+                      </div>
+                    )}
 
                     {video.outputPath && (
                       <div className="mt-2 space-y-1.5">

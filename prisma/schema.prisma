@@ -64,6 +64,7 @@ model Video {
   // Processing
   status          VideoStatus  @default(PENDING)
   errorMessage    String?      @db.Text
+  failedStep      String?      // Pipeline step that failed (e.g. 'render-video')
   retryCount      Int          @default(0)
 
   // Background video relation

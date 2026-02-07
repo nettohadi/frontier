@@ -117,6 +117,7 @@ export const videoWorker = new Worker<VideoJobData>(
           status: VideoStatus.COMPLETED,
           completedAt: new Date(),
           errorMessage: null,
+          failedStep: null,
         },
       });
 
@@ -149,6 +150,7 @@ videoWorker.on('failed', async (job, err) => {
       data: {
         status: VideoStatus.FAILED,
         errorMessage: err.message,
+        failedStep: job.data.step,
         retryCount: { increment: 1 },
       },
     });
