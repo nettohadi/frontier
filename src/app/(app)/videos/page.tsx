@@ -28,7 +28,6 @@ interface VideoItem {
   id: string;
   topic: string;
   title: string | null;
-  scriptModel: string | null;
   status: string;
   outputPath: string | null;
   errorMessage: string | null;
@@ -42,23 +41,6 @@ interface VideoItem {
     status: string;
     progress: number;
   } | null;
-}
-
-const MODEL_LABELS: Record<string, string> = {
-  'google/gemini-2.0-flash-001': 'Gemini 2.0 Flash',
-  'qwen/qwen-2.5-72b-instruct': 'Qwen 2.5 72B',
-  'deepseek/deepseek-v3.2-20251201': 'DeepSeek v3.2',
-  'google/gemini-2.5-flash': 'Gemini 2.5 Flash',
-  'google/gemini-2.5-pro': 'Gemini 2.5 Pro',
-  'openai/gpt-5.2-20251211': 'GPT-5.2',
-  'openai/gpt-4o': 'GPT-4o',
-  'anthropic/claude-4.5-sonnet-20250929': 'Claude 4.5 Sonnet',
-  'anthropic/claude-4.5-opus-20251124': 'Claude 4.5 Opus',
-};
-
-function formatModelName(model: string | null): string | null {
-  if (!model) return null;
-  return MODEL_LABELS[model] || model.split('/').pop() || model;
 }
 
 const statusConfig: Record<
@@ -304,16 +286,9 @@ export default function VideosPage() {
                     <h3 className="truncate text-sm font-medium">
                       {video.title || video.topicRelation?.name || video.topic}
                     </h3>
-                    <div className="mt-0.5 flex items-center gap-1.5">
-                      <p className="text-muted-foreground truncate text-[10px]">
-                        {video.topicRelation?.name || video.topic}
-                      </p>
-                      {video.scriptModel && (
-                        <Badge className="shrink-0 px-1.5 py-0 text-[9px] border-transparent bg-teal-500/15 text-teal-600 hover:bg-teal-500/15 dark:bg-teal-500/20 dark:text-teal-400">
-                          {formatModelName(video.scriptModel)}
-                        </Badge>
-                      )}
-                    </div>
+                    <p className="text-muted-foreground mt-0.5 truncate text-[10px]">
+                      {video.topicRelation?.name || video.topic}
+                    </p>
                     <p className="text-muted-foreground mt-1 flex items-center gap-1 text-[10px]">
                       <Clock className="h-2.5 w-2.5" />
                       {formatDate(video.createdAt)}

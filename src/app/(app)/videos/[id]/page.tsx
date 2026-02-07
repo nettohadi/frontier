@@ -173,7 +173,7 @@ export default function VideoDetailPage() {
             />
           ) : (
             <div className="group/title flex items-center gap-2">
-              <h1 className="truncate text-3xl font-bold">{video.title || 'Untitled Video'}</h1>
+              <h1 className="text-3xl font-bold">{video.title || 'Untitled Video'}</h1>
               <button
                 className="shrink-0 text-muted-foreground hover:text-primary transition-colors md:opacity-0 md:group-hover/title:opacity-100"
                 onClick={() => {
@@ -186,14 +186,7 @@ export default function VideoDetailPage() {
               </button>
             </div>
           )}
-          <div className="mt-1 flex items-center gap-2">
-            <p className="text-sm text-muted-foreground">ID: {video.id}</p>
-            {video.scriptModel && (
-              <Badge className="px-1.5 py-0 text-[10px] border-transparent bg-teal-500/15 text-teal-600 hover:bg-teal-500/15 dark:bg-teal-500/20 dark:text-teal-400">
-                {formatModelName(video.scriptModel)}
-              </Badge>
-            )}
-          </div>
+          <p className="mt-1 text-sm text-muted-foreground">ID: {video.id}</p>
         </div>
       </div>
 
@@ -207,6 +200,14 @@ export default function VideoDetailPage() {
             <p className="text-sm font-medium text-muted-foreground">Status</p>
             <Badge className="mt-1">{video.status}</Badge>
           </div>
+          {video.scriptModel && (
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Model</p>
+              <Badge className="mt-1 border-transparent bg-teal-500/15 text-teal-600 hover:bg-teal-500/15 dark:bg-teal-500/20 dark:text-teal-400">
+                {formatModelName(video.scriptModel)}
+              </Badge>
+            </div>
+          )}
           {video.topicRelation && (
             <div>
               <p className="text-sm font-medium text-muted-foreground">Topic</p>
