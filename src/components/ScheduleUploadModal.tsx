@@ -29,40 +29,44 @@ export function ScheduleUploadModal({
   const [scheduling, setScheduling] = useState(false);
   const [nextSlot, setNextSlot] = useState<SlotInfo | null>(null);
 
-  // Fetch next available slot when modal opens
-  const fetchNextSlot = useCallback(async () => {
-    setLoading(true);
-    setNextSlot(null);
-    try {
-      const res = await fetch('/api/upload/schedules/preview?count=1');
-      const data = await res.json();
-      if (res.ok && data.slots?.length > 0) {
-        const slot = data.slots[0];
-        setNextSlot({
-          displayTime: slot.displayTime,
-          scheduledAt: slot.scheduledAt,
-        });
-      } else {
-        alert(data.error || data.message || 'No available slots');
-        onOpenChange(false);
-      }
-    } catch (err) {
-      console.error('Failed to get next slot:', err);
-      onOpenChange(false);
-    } finally {
-      setLoading(false);
-    }
-  }, [onOpenChange]);
-
   // Fetch slot when modal opens
   useEffect(() => {
-    if (open && videoId) {
-      fetchNextSlot();
-    }
-    if (!open) {
+    if (!open || !videoId) {
       setNextSlot(null);
+      return;
     }
-  }, [open, videoId, fetchNextSlot]);
+
+    let cancelled = false;
+    async function fetchNextSlot() {
+      setLoading(true);
+      setNextSlot(null);
+      try {
+        const res = await fetch('/api/upload/schedules/preview?count=1');
+        const data = await res.json();
+        if (cancelled) return;
+        if (res.ok && data.slots?.length > 0) {
+          const slot = data.slots[0];
+          setNextSlot({
+            displayTime: slot.displayTime,
+            scheduledAt: slot.scheduledAt,
+          });
+        } else {
+          alert(data.error || data.message || 'No available slots');
+          onOpenChange(false);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Failed to get next slot:', err);
+        onOpenChange(false);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchNextSlot();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, videoId]);
 
   const handleConfirm = async () => {
     if (!videoId) return;
