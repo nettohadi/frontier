@@ -207,18 +207,22 @@ export default function TopicsPage() {
     }
   };
 
+  const [settingNextId, setSettingNextId] = useState<string | null>(null);
+
   const setAsNextTopic = async (topic: Topic) => {
     if (!topic.isActive) return;
-
+    setSettingNextId(topic.id);
     try {
       await fetch('/api/rotation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ setTopic: topic.id }),
       });
-      fetchTopics();
+      await fetchTopics();
     } catch (err) {
       console.error('Failed to set next topic:', err);
+    } finally {
+      setSettingNextId(null);
     }
   };
 
@@ -452,8 +456,13 @@ export default function TopicsPage() {
                                       variant="ghost"
                                       className="h-8 w-8"
                                       onClick={() => setAsNextTopic(topic)}
+                                      disabled={settingNextId === topic.id}
                                     >
-                                      <Target className="h-4 w-4" />
+                                      {settingNextId === topic.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Target className="h-4 w-4" />
+                                      )}
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>Set as Next</TooltipContent>

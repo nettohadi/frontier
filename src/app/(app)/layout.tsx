@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 
+import NextTopLoader from 'nextjs-toploader';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -74,6 +75,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider>
+      <NextTopLoader color="hsl(var(--primary))" height={2} showSpinner={false} />
       <div className="bg-background flex min-h-screen">
         {/* Mobile Header */}
         <header className="bg-background/95 fixed top-0 right-0 left-0 z-50 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:hidden">
