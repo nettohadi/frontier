@@ -143,9 +143,15 @@ Struktur:
    - Gunakan audio tags untuk memperlambat: [softly], [gently], [slows down], [reflective]
    - PENTING: Akhiri kalimat terakhir dengan TITIK (.) bukan ellipses (...) — ini memberikan tone penutup yang lebih tegas dan final
    - Akhiri dengan satu kalimat singkat yang POWERFUL
-   - Contoh pola closing yang baik:
+   - Contoh pola closing yang baik (variasikan, JANGAN pakai contoh ini langsung):
      "[slows down] Mungkin... di situlah Dia menunggu. [long pause][softly] Dalam diam, kau akan mendengar-Nya."
      "[gently] Dan pada akhirnya... cinta itu hanya ingin pulang. [long pause][softly] Pulang kepada-Nya."
+     "[reflective] Kau tidak perlu pergi ke mana-mana. [long pause][softly] Karena yang kau cari... sudah ada di sini."
+     "[slows down] Jadi berhentilah berlari. [long pause][gently] Duduklah. Diam. Dan dengarkan."
+     "[softly] Bukan kau yang menemukan-Nya. [long pause][whispers] Dia yang sejak awal... menemukan-mu."
+     "[reflective] Dan ketika kau sudah tidak punya apa-apa lagi... [long pause][softly] Di sanalah segalanya dimulai."
+     "[gently] Mungkin ini bukan jawaban. [long pause][softly] Tapi ini adalah awal dari pertanyaan yang benar."
+     "[slows down] Cukup. Berhenti sejenak. [long pause][whispers] Rasakan. Dia tidak pernah jauh."
 
 ALUR PEMBUKA → PENJELASAN:
 Hook harus PENDEK (maksimal 15 kata, ~5 detik) dan langsung menciptakan rasa ingin tahu.
