@@ -70,15 +70,15 @@ export default function SettingsPage() {
   const [genSaving, setGenSaving] = useState(false);
 
   const SCRIPT_MODELS = [
-    { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
-    { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro', provider: 'Google' },
-    { value: 'google/gemini-2.0-flash-001', label: 'Gemini 2.0 Flash', provider: 'Google' },
-    { value: 'anthropic/claude-4.5-sonnet-20250929', label: 'Claude 4.5 Sonnet', provider: 'Anthropic' },
-    { value: 'anthropic/claude-4.5-opus-20251124', label: 'Claude 4.5 Opus', provider: 'Anthropic' },
-    { value: 'openai/gpt-4o', label: 'GPT-4o', provider: 'OpenAI' },
-    { value: 'openai/gpt-5.2-20251211', label: 'GPT-5.2', provider: 'OpenAI' },
-    { value: 'deepseek/deepseek-v3.2-20251201', label: 'DeepSeek v3.2', provider: 'DeepSeek' },
-    { value: 'qwen/qwen-2.5-72b-instruct', label: 'Qwen 2.5 72B', provider: 'Qwen' },
+    { value: 'google/gemini-2.0-flash-001', label: 'Gemini 2.0 Flash (cheapest)', provider: '$0.10/M in' },
+    { value: 'qwen/qwen-2.5-72b-instruct', label: 'Qwen 2.5 72B', provider: '$0.12/M in' },
+    { value: 'deepseek/deepseek-v3.2-20251201', label: 'DeepSeek v3.2', provider: '$0.25/M in' },
+    { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: '$0.30/M in' },
+    { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro', provider: '$1.25/M in' },
+    { value: 'openai/gpt-5.2-20251211', label: 'GPT-5.2', provider: '$1.75/M in' },
+    { value: 'openai/gpt-4o', label: 'GPT-4o', provider: '$2.50/M in' },
+    { value: 'anthropic/claude-4.5-sonnet-20250929', label: 'Claude 4.5 Sonnet', provider: '$3/M in' },
+    { value: 'anthropic/claude-4.5-opus-20251124', label: 'Claude 4.5 Opus (most expensive)', provider: '$5/M in' },
   ];
 
   const fetchGenSettings = async () => {
