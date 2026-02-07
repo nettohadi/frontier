@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import AuthSessionProvider from '@/components/session-provider';
 
 export const viewport: Viewport = {
   themeColor: '#7c3aed',
@@ -32,9 +33,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-background min-h-screen font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
+        <AuthSessionProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            {children}
+          </ThemeProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

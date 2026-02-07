@@ -14,6 +14,7 @@ import {
   Calendar,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react';
 
 import NextTopLoader from 'nextjs-toploader';
@@ -22,6 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
@@ -181,6 +183,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Separator className="mb-4" />
             <div className="flex items-center justify-between px-2">
               {!sidebarCollapsed && <ThemeToggle />}
+              {!sidebarCollapsed && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="h-8 w-8"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -194,13 +206,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 )}
               </Button>
             </div>
+            {sidebarCollapsed && (
+              <div className="mt-2 flex justify-center px-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="h-8 w-8"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Mobile bottom section */}
           <div className="absolute right-0 bottom-4 left-0 px-2 md:hidden">
             <Separator className="mb-4" />
-            <div className="flex items-center justify-center px-2">
+            <div className="flex items-center justify-center gap-2 px-2">
               <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="h-8 w-8"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </aside>
