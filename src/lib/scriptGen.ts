@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import type { Topic } from '@prisma/client';
 import type { ScriptGenerationResult } from '@/types';
 import { getNextOpeningHookIndex } from './rotation';
+import { prisma } from './prisma';
 
 const client = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -271,10 +272,14 @@ ${openingHook.name}: ${openingHook.instruction}
 
 Tulis renungan spiritual berdasarkan topik di atas dengan gaya pembuka "${openingHook.name}".`;
 
-  console.log(`[ScriptGen] Generating for topic: ${theme.name}, hook: ${openingHook.name}`);
+  // Read model from settings
+  const genSettings = await prisma.generationSettings.findUnique({ where: { id: 'singleton' } });
+  const model = genSettings?.scriptModel || 'google/gemini-2.5-flash';
+
+  console.log(`[ScriptGen] Generating for topic: ${theme.name}, hook: ${openingHook.name}, model: ${model}`);
 
   const response = await client.chat.completions.create({
-    model: 'google/gemini-2.5-flash',
+    model,
     messages: [
       { role: 'system', content: HAKIKAT_SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },

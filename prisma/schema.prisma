@@ -159,6 +159,13 @@ model PublerSettings {
   updatedAt              DateTime @updatedAt
 }
 
+// Generation settings (singleton pattern)
+model GenerationSettings {
+  id          String   @id @default("singleton")
+  scriptModel String   @default("google/gemini-2.5-flash")
+  updatedAt   DateTime @updatedAt
+}
+
 // Upload scheduling
 model UploadSchedule {
   id               String       @id @default(uuid())

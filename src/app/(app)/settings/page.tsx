@@ -11,6 +11,7 @@ import {
   EyeOff,
   Youtube,
   Music2,
+  Sparkles,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,57 @@ export default function SettingsPage() {
   const [channelsLoading, setChannelsLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
+  // Generation settings
+  const [scriptModel, setScriptModel] = useState('google/gemini-2.5-flash');
+  const [genLoading, setGenLoading] = useState(true);
+  const [genSaving, setGenSaving] = useState(false);
+
+  const SCRIPT_MODELS = [
+    { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
+    { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro', provider: 'Google' },
+    { value: 'google/gemini-2.0-flash-001', label: 'Gemini 2.0 Flash', provider: 'Google' },
+    { value: 'anthropic/claude-4.5-sonnet-20250929', label: 'Claude 4.5 Sonnet', provider: 'Anthropic' },
+    { value: 'anthropic/claude-4.5-opus-20251124', label: 'Claude 4.5 Opus', provider: 'Anthropic' },
+    { value: 'openai/gpt-4o', label: 'GPT-4o', provider: 'OpenAI' },
+    { value: 'openai/gpt-5.2-20251211', label: 'GPT-5.2', provider: 'OpenAI' },
+    { value: 'deepseek/deepseek-v3.2-20251201', label: 'DeepSeek v3.2', provider: 'DeepSeek' },
+    { value: 'qwen/qwen-2.5-72b-instruct', label: 'Qwen 2.5 72B', provider: 'Qwen' },
+  ];
+
+  const fetchGenSettings = async () => {
+    try {
+      const res = await fetch('/api/settings/generation');
+      const data = await res.json();
+      if (data.scriptModel) setScriptModel(data.scriptModel);
+    } catch (err) {
+      console.error('Failed to fetch generation settings:', err);
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
+  const saveGenSettings = async () => {
+    setGenSaving(true);
+    try {
+      const res = await fetch('/api/settings/generation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scriptModel }),
+      });
+      if (res.ok) {
+        toast.success('Model setting saved');
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Failed to save');
+      }
+    } catch (err) {
+      console.error('Failed to save generation settings:', err);
+      toast.error('Failed to save');
+    } finally {
+      setGenSaving(false);
+    }
+  };
+
   const fetchSettings = async () => {
     try {
       const res = await fetch('/api/settings/publer');
@@ -100,6 +152,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchSettings();
+    fetchGenSettings();
   }, []);
 
   useEffect(() => {
@@ -421,6 +474,55 @@ export default function SettingsPage() {
                     <CheckCircle2 className="h-4 w-4" />
                   )}
                   Save Settings
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
+              Script Generation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 md:space-y-6">
+            {genLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">LLM Model</label>
+                  <Select value={scriptModel} onValueChange={setScriptModel}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SCRIPT_MODELS.map((model) => (
+                        <SelectItem key={model.value} value={model.value}>
+                          <span>{model.label}</span>
+                          <span className="text-muted-foreground ml-2 text-xs">
+                            {model.provider}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-muted-foreground text-xs">
+                    Model used for script generation via OpenRouter
+                  </p>
+                </div>
+
+                <Button onClick={saveGenSettings} disabled={genSaving} className="w-full gap-2">
+                  {genSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4" />
+                  )}
+                  Save Model
                 </Button>
               </>
             )}
