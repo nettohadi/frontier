@@ -26,7 +26,7 @@ export default function LoginPage() {
     });
 
     if (res?.error) {
-      setError('Invalid email or password');
+      setError('Invalid credentials or too many attempts. Try again later.');
       setLoading(false);
     } else {
       router.push('/');
