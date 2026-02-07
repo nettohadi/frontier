@@ -49,6 +49,7 @@ model Video {
   description     String?      @db.Text
   script          String?      @db.Text
   scriptWordCount Int?
+  scriptModel     String?
 
   // Script validation
   scriptValidationResult Json?        // Full validation result from second LLM

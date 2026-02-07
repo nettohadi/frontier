@@ -35,6 +35,7 @@ export async function processScript(videoId: string): Promise<void> {
   let description: string = '';
   let script: string = '';
   let wordCount: number = 0;
+  let scriptModel: string = '';
   let validationResult;
 
   // Generation loop with validation
@@ -52,6 +53,7 @@ export async function processScript(videoId: string): Promise<void> {
     description = generated.description;
     script = generated.script;
     wordCount = generated.wordCount;
+    scriptModel = generated.model;
 
     console.log(`[${videoId}] Script generated: "${title}" with ${wordCount} words`);
 
@@ -106,6 +108,7 @@ export async function processScript(videoId: string): Promise<void> {
       description,
       script,
       scriptWordCount: wordCount,
+      scriptModel,
       topicId,
       scriptValidationResult: validationResult as any,
       validationPassed: validationResult?.isValid ?? false,

@@ -47,6 +47,7 @@ export interface ScriptGenerationResult {
   description: string;
   script: string;
   wordCount: number;
+  model: string;
 }
 
 export interface WordAlignment {

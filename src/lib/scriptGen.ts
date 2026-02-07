@@ -386,5 +386,5 @@ Tulis renungan spiritual berdasarkan topik di atas dengan gaya pembuka "${openin
 
   console.log(`[ScriptGen] Generated "${title}" with ${wordCount} words for topic: ${theme.name}`);
 
-  return { title, description, script, wordCount };
+  return { title, description, script, wordCount, model };
 }
