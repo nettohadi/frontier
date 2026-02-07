@@ -78,7 +78,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <NextTopLoader color="hsl(var(--primary))" height={2} showSpinner={false} />
       <div className="bg-background flex min-h-screen">
         {/* Mobile Header */}
-        <header className="bg-background/95 fixed top-0 right-0 left-0 z-50 flex h-14 items-center justify-between border-b px-4 pt-[env(safe-area-inset-top)] backdrop-blur md:hidden">
+        <header className="bg-background/95 fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur md:hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -210,7 +210,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           className={cn(
             'flex-1 transition-all duration-300 min-w-0 overflow-x-hidden',
             // Mobile: no margin, add top padding for header
-            'mt-[calc(3.5rem+env(safe-area-inset-top))] md:mt-0',
+            'mt-[calc(3.75rem+env(safe-area-inset-top))] md:mt-0',
             // Desktop: margin based on sidebar state
             sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
           )}
