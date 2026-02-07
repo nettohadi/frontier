@@ -14,7 +14,6 @@ import {
   Youtube,
   Music2,
   RotateCcw,
-  Pencil,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -106,9 +105,6 @@ export default function VideosPage() {
     setModalOpen: setScheduleModalOpen,
   } = useScheduleUploadModal();
   const playStartedRef = useRef<string | null>(null);
-  const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
-  const [editingTitleValue, setEditingTitleValue] = useState('');
-  const [savingTitleId, setSavingTitleId] = useState<string | null>(null);
 
   const fetchVideos = async () => {
     try {
@@ -169,31 +165,6 @@ export default function VideosPage() {
   };
 
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleString();
-
-  const saveTitle = async (videoId: string) => {
-    if (!editingTitleValue.trim()) {
-      setEditingTitleId(null);
-      return;
-    }
-    setSavingTitleId(videoId);
-    try {
-      const res = await fetch(`/api/videos/${videoId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: editingTitleValue.trim() }),
-      });
-      if (res.ok) {
-        setVideos((prev) =>
-          prev.map((v) => (v.id === videoId ? { ...v, title: editingTitleValue.trim() } : v))
-        );
-      }
-    } catch (err) {
-      console.error('Failed to save title:', err);
-    } finally {
-      setSavingTitleId(null);
-      setEditingTitleId(null);
-    }
-  };
 
   return (
     <>
@@ -330,38 +301,9 @@ export default function VideosPage() {
                   </div>
 
                   <CardContent className="p-3">
-                    {editingTitleId === video.id ? (
-                      <input
-                        type="text"
-                        value={editingTitleValue}
-                        onChange={(e) => setEditingTitleValue(e.target.value)}
-                        onBlur={() => saveTitle(video.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveTitle(video.id);
-                          if (e.key === 'Escape') setEditingTitleId(null);
-                        }}
-                        autoFocus
-                        disabled={savingTitleId === video.id}
-                        className="w-full bg-transparent text-sm font-medium outline-none border-b border-primary"
-                      />
-                    ) : (
-                      <div className="group/title flex items-center gap-1">
-                        <h3 className="truncate text-sm font-medium">
-                          {video.title || video.topicRelation?.name || video.topic}
-                        </h3>
-                        <button
-                          className="shrink-0 text-muted-foreground hover:text-primary transition-colors md:opacity-0 md:group-hover/title:opacity-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingTitleId(video.id);
-                            setEditingTitleValue(video.title || video.topicRelation?.name || video.topic);
-                          }}
-                          title="Edit title"
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
+                    <h3 className="truncate text-sm font-medium">
+                      {video.title || video.topicRelation?.name || video.topic}
+                    </h3>
                     <div className="mt-0.5 flex items-center gap-1.5">
                       <p className="text-muted-foreground truncate text-[10px]">
                         {video.topicRelation?.name || video.topic}

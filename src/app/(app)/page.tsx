@@ -18,6 +18,7 @@ import {
   Upload,
   Youtube,
   Music2,
+  Pencil,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ interface VideoItem {
   topic: string;
   title: string | null;
   description: string | null;
+  scriptModel: string | null;
   style: string;
   status: string;
   script: string | null;
@@ -97,6 +99,23 @@ const pipelineSteps = [
   { key: 'render', label: 'Render', icon: Film, status: 'RENDERING' },
 ];
 
+const MODEL_LABELS: Record<string, string> = {
+  'google/gemini-2.0-flash-001': 'Gemini 2.0 Flash',
+  'qwen/qwen-2.5-72b-instruct': 'Qwen 2.5 72B',
+  'deepseek/deepseek-v3.2-20251201': 'DeepSeek v3.2',
+  'google/gemini-2.5-flash': 'Gemini 2.5 Flash',
+  'google/gemini-2.5-pro': 'Gemini 2.5 Pro',
+  'openai/gpt-5.2-20251211': 'GPT-5.2',
+  'openai/gpt-4o': 'GPT-4o',
+  'anthropic/claude-4.5-sonnet-20250929': 'Claude 4.5 Sonnet',
+  'anthropic/claude-4.5-opus-20251124': 'Claude 4.5 Opus',
+};
+
+function formatModelName(model: string | null): string | null {
+  if (!model) return null;
+  return MODEL_LABELS[model] || model.split('/').pop() || model;
+}
+
 function isProcessing(status: string): boolean {
   return [
     'PENDING',
@@ -151,6 +170,9 @@ export default function DashboardPage() {
   const [playingVideo, setPlayingVideo] = useState<VideoItem | null>(null);
   const [uploadingVideoId, setUploadingVideoId] = useState<string | null>(null);
   const { modalState: scheduleModal, openModal: openScheduleModal, setModalOpen: setScheduleModalOpen } = useScheduleUploadModal();
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
+  const [editingTitleValue, setEditingTitleValue] = useState('');
+  const [savingTitleId, setSavingTitleId] = useState<string | null>(null);
 
   const fetchVideos = async () => {
     try {
@@ -193,6 +215,31 @@ export default function DashboardPage() {
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString();
+  };
+
+  const saveTitle = async (videoId: string) => {
+    if (!editingTitleValue.trim()) {
+      setEditingTitleId(null);
+      return;
+    }
+    setSavingTitleId(videoId);
+    try {
+      const res = await fetch(`/api/videos/${videoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editingTitleValue.trim() }),
+      });
+      if (res.ok) {
+        setVideos((prev) =>
+          prev.map((v) => (v.id === videoId ? { ...v, title: editingTitleValue.trim() } : v))
+        );
+      }
+    } catch (err) {
+      console.error('Failed to save title:', err);
+    } finally {
+      setSavingTitleId(null);
+      setEditingTitleId(null);
+    }
   };
 
   const completedVideos = videos.filter((v) => v.status === 'COMPLETED').length;
@@ -379,13 +426,48 @@ export default function DashboardPage() {
                     >
                       <div className="flex flex-wrap items-start justify-between gap-4 min-w-0 w-full">
                         <div className="min-w-0 flex-1 overflow-hidden">
-                          <h3 className="mb-1 truncate font-semibold">
-                            {video.title || video.topicRelation?.name || video.topic}
-                          </h3>
+                          {editingTitleId === video.id ? (
+                            <input
+                              type="text"
+                              value={editingTitleValue}
+                              onChange={(e) => setEditingTitleValue(e.target.value)}
+                              onBlur={() => saveTitle(video.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') saveTitle(video.id);
+                                if (e.key === 'Escape') setEditingTitleId(null);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              autoFocus
+                              disabled={savingTitleId === video.id}
+                              className="mb-1 w-full bg-transparent font-semibold outline-none border-b border-primary"
+                            />
+                          ) : (
+                            <div className="group/title mb-1 flex items-center gap-1">
+                              <h3 className="truncate font-semibold">
+                                {video.title || video.topicRelation?.name || video.topic}
+                              </h3>
+                              <button
+                                className="shrink-0 text-muted-foreground hover:text-primary transition-colors md:opacity-0 md:group-hover/title:opacity-100"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTitleId(video.id);
+                                  setEditingTitleValue(video.title || video.topicRelation?.name || video.topic);
+                                }}
+                                title="Edit title"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
                           <div className="mb-2 flex flex-wrap items-center gap-2">
                             <span className="text-muted-foreground text-xs">
                               {video.topicRelation?.name || video.topic}
                             </span>
+                            {video.scriptModel && (
+                              <Badge className="px-1.5 py-0 text-[9px] border-transparent bg-teal-500/15 text-teal-600 hover:bg-teal-500/15 dark:bg-teal-500/20 dark:text-teal-400">
+                                {formatModelName(video.scriptModel)}
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                             <Badge

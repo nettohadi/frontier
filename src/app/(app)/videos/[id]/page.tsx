@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, Loader2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,7 @@ interface VideoDetail {
   description: string | null;
   script: string | null;
   scriptWordCount: number | null;
+  scriptModel: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -55,6 +56,23 @@ const qualityConfig = {
   poor: { color: 'text-red-600', badge: 'destructive' as const },
 };
 
+const MODEL_LABELS: Record<string, string> = {
+  'google/gemini-2.0-flash-001': 'Gemini 2.0 Flash',
+  'qwen/qwen-2.5-72b-instruct': 'Qwen 2.5 72B',
+  'deepseek/deepseek-v3.2-20251201': 'DeepSeek v3.2',
+  'google/gemini-2.5-flash': 'Gemini 2.5 Flash',
+  'google/gemini-2.5-pro': 'Gemini 2.5 Pro',
+  'openai/gpt-5.2-20251211': 'GPT-5.2',
+  'openai/gpt-4o': 'GPT-4o',
+  'anthropic/claude-4.5-sonnet-20250929': 'Claude 4.5 Sonnet',
+  'anthropic/claude-4.5-opus-20251124': 'Claude 4.5 Opus',
+};
+
+function formatModelName(model: string | null): string | null {
+  if (!model) return null;
+  return MODEL_LABELS[model] || model.split('/').pop() || model;
+}
+
 export default function VideoDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -62,6 +80,9 @@ export default function VideoDetailPage() {
   const [video, setVideo] = useState<VideoDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingTitleValue, setEditingTitleValue] = useState('');
+  const [savingTitle, setSavingTitle] = useState(false);
 
   useEffect(() => {
     async function fetchVideo() {
@@ -81,6 +102,29 @@ export default function VideoDetailPage() {
 
     fetchVideo();
   }, [videoId]);
+
+  const saveTitle = async () => {
+    if (!editingTitleValue.trim() || !video) {
+      setEditingTitle(false);
+      return;
+    }
+    setSavingTitle(true);
+    try {
+      const res = await fetch(`/api/videos/${videoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editingTitleValue.trim() }),
+      });
+      if (res.ok) {
+        setVideo({ ...video, title: editingTitleValue.trim() });
+      }
+    } catch (err) {
+      console.error('Failed to save title:', err);
+    } finally {
+      setSavingTitle(false);
+      setEditingTitle(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -112,9 +156,44 @@ export default function VideoDetailPage() {
         <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">{video.title || 'Untitled Video'}</h1>
-          <p className="text-sm text-muted-foreground">ID: {video.id}</p>
+        <div className="flex-1 min-w-0">
+          {editingTitle ? (
+            <input
+              type="text"
+              value={editingTitleValue}
+              onChange={(e) => setEditingTitleValue(e.target.value)}
+              onBlur={() => saveTitle()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveTitle();
+                if (e.key === 'Escape') setEditingTitle(false);
+              }}
+              autoFocus
+              disabled={savingTitle}
+              className="w-full bg-transparent text-3xl font-bold outline-none border-b border-primary"
+            />
+          ) : (
+            <div className="group/title flex items-center gap-2">
+              <h1 className="truncate text-3xl font-bold">{video.title || 'Untitled Video'}</h1>
+              <button
+                className="shrink-0 text-muted-foreground hover:text-primary transition-colors md:opacity-0 md:group-hover/title:opacity-100"
+                onClick={() => {
+                  setEditingTitle(true);
+                  setEditingTitleValue(video.title || '');
+                }}
+                title="Edit title"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">ID: {video.id}</p>
+            {video.scriptModel && (
+              <Badge className="px-1.5 py-0 text-[10px] border-transparent bg-teal-500/15 text-teal-600 hover:bg-teal-500/15 dark:bg-teal-500/20 dark:text-teal-400">
+                {formatModelName(video.scriptModel)}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
